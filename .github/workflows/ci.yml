@@ -13,6 +13,7 @@ jobs:
     - name: Build
       run: |
         python3 -m pip install packaging sphinx cairosvg sphinx-argparse
+        python3 -m pip install sphinx-rtd-theme
         cd doc
         make html
         touch build/html/.nojekyll
