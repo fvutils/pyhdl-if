@@ -14,6 +14,8 @@ python3 -m hdl_if api-gen-sv -m sv2py_call -o MyC.svh
 if test $? -ne 0; then exit 1; fi
 
 echo "share: '${share}'"
+echo "python_libdir: ${python_libdir}"
+echo "libs: ${libs}"
 
 verilator --binary \
 	+incdir+${share}/dpi \

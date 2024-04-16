@@ -19,7 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
-from hdl_call_if.hdl_call_endpoint import HdlCallEndpoint
+from hdl_if.call.hdl_call_endpoint import HdlCallEndpoint
 
 class Context(object):
     _inst = None

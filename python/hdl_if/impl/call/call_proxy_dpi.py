@@ -19,7 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
-from hdl_call_if.call_proxy import CallProxy
+from hdl_if.call.call_proxy import CallProxy
 
 class CallProxyDPI(CallProxy):
 

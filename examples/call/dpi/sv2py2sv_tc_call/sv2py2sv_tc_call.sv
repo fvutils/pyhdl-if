@@ -1,6 +1,5 @@
 package pkg;
-    import pyhdl_dpi_if::*;
-    import pyhdl_call_if::*;
+    import pyhdl_if::*;
     `include "MyC.svh"
 
     class MyCImpl extends MyC;
@@ -14,8 +13,7 @@ package pkg;
 endpackage
 
 module sv2py2sv_tc_call;
-    import pyhdl_dpi_if::*;
-    import pyhdl_call_if::*;
+    import pyhdl_if::*;
     import pkg::*;
 
     initial begin

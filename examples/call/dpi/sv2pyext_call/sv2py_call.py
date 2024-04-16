@@ -1,10 +1,10 @@
 import ctypes
-import hdl_call_if as hci
+import hdl_if as hif
 
-@hci.api
+@hif.api
 class MyC(object):
 
-    @hci.expfunc
+    @hif.expfunc
     def countones(self, v : ctypes.c_int) -> ctypes.c_int:
         ret = 0
         while v:

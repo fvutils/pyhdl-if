@@ -509,7 +509,7 @@ def main():
     with open(os.path.join(share_dpi_dir, "pyhdl_dpi_imports.svh"), "w") as fp:
         gen_dpi_imports(fp, functions)
     
-    with open(os.path.join(hdl_if_dir, "impl/pi/vpi/pytf.py"), "w") as fp:
+    with open(os.path.join(hdl_if_dir, "impl/vpi/pytf.py"), "w") as fp:
         gen_vpi_tf(fp, functions)
 
     pass

@@ -29,6 +29,6 @@ export "DPI-C" function pyhdl_call_if_invoke_hdl_t;
 function void pyhdl_call_if_response_py_t(
     int             sem_id,
     PyObject        res);
-    pyhdl_call_if_setSem(sem_id, res);
+    pyhdl_if_setSem(sem_id, res);
 endfunction
 export "DPI-C" function pyhdl_call_if_response_py_t;

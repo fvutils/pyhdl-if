@@ -1,9 +1,9 @@
-    task automatic pyhdl_call_if_invokePyTask(
+    task automatic pyhdl_if_invokePyTask(
         output PyObject     res,
         input PyObject      obj,
         input string        method,
         input PyObject      args);
-        int sem_id = pyhdl_call_if_allocSem();
+        int sem_id = pyhdl_if_allocSem();
         PyObject proxy_h = PyObject_GetAttrString(obj, "__proxy");
         PyObject invoke_py_t = PyObject_GetAttrString(proxy_h, "invoke_py_t");
         PyObject proxy_args = PyTuple_New(3);
@@ -14,10 +14,10 @@
         
         void'(PyObject_Call(invoke_py_t, proxy_args, null));
 
-        pyhdl_call_if_waitSem(sem_id, res);
+        pyhdl_if_waitSem(sem_id, res);
     endtask
 
-    function automatic PyObject pyhdl_call_if_invokePyFunc(
+    function automatic PyObject pyhdl_if_invokePyFunc(
         input PyObject      obj,
         input string        method,
         input PyObject      args);
@@ -56,7 +56,7 @@
         return ret;
     endfunction
 
-    function automatic int pyhdl_call_if_allocSem();
+    function automatic int pyhdl_if_allocSem();
         int ret = -1, i;
 
         for (i=0; i<__callsem_res.size(); i++) begin
@@ -80,7 +80,7 @@
         return ret;
     endfunction
 
-    task automatic pyhdl_call_if_waitSem(
+    task automatic pyhdl_if_waitSem(
         input int           id,
         output PyObject     res);
         __callsem[id].get();
@@ -88,7 +88,7 @@
         __callsem[id] = null;
     endtask
 
-    function automatic void pyhdl_call_if_setSem(
+    function automatic void pyhdl_if_setSem(
         input int           id,
         input PyObject      res);
         __callsem_res[id] = res;
@@ -117,7 +117,7 @@
         return ret;
     endfunction
 
-    function automatic void pyhdl_call_if_connect(
+    function automatic void pyhdl_if_connect(
         PyObject        obj,
         ICallApi        sv_api_if);
         PyObject connect = PyObject_GetAttrString(__ep_h, "connect");

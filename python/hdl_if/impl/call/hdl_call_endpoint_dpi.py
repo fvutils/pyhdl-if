@@ -20,7 +20,7 @@
 #*
 #****************************************************************************
 import ctypes
-from hdl_call_if.hdl_call_endpoint import HdlCallEndpoint
+from hdl_if.call.hdl_call_endpoint import HdlCallEndpoint
 from hdl_if import HdlServices
 
 class HdlCallEndpointDPI(HdlCallEndpoint):

@@ -1,10 +1,10 @@
 import ctypes
-import hdl_call_if as hci
+import hdl_if as hif
 
-@hci.api
+@hif.api
 class MyC(object):
 
-    @hci.exptask
+    @hif.exptask
     async def body(self):
         print("body", flush=True)
         for i in range(100):
@@ -12,7 +12,7 @@ class MyC(object):
             val = await self.read(i)
             print("<-- await read %s" % str(val), flush=True)
 
-    @hci.imptask
+    @hif.imptask
     async def read(self, v : ctypes.c_int) -> ctypes.c_int:
         pass
 

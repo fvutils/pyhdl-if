@@ -1,13 +1,11 @@
 package pkg;
-    import pyhdl_dpi_if::*;
-    import pyhdl_call_if::*;
+    import pyhdl_if::*;
     `include "MyC.svh"
 
 endpackage
 
 module sv2py_call;
-    import pyhdl_dpi_if::*;
-    import pyhdl_call_if::*;
+    import pyhdl_if::*;
     import pkg::*;
 
     initial begin
