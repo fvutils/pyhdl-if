@@ -12,7 +12,7 @@
         void'(PyTuple_SetItem(proxy_args, 1, PyUnicode_FromString(method)));
         void'(PyTuple_SetItem(proxy_args, 2, args));
         
-        void'(PyObject_Call(invoke_py_t, proxy_args, null));
+        void'(pyhdl_pi_if_HandleErr(PyObject_Call(invoke_py_t, proxy_args, null)));
 
         pyhdl_if_waitSem(sem_id, res);
     endtask
@@ -29,7 +29,7 @@
         void'(PyTuple_SetItem(proxy_args, 0, PyUnicode_FromString(method)));
         void'(PyTuple_SetItem(proxy_args, 1, args));
         
-        res = PyObject_Call(invoke_py_f, proxy_args, null);
+        pyhdl_pi_if_HandleErr((res=PyObject_Call(invoke_py_f, proxy_args, null)));
 
         return res;
     endfunction
@@ -110,7 +110,7 @@
         void'(PyTuple_SetItem(args, 1, PyLong_FromLong(obj_id)));
         void'(PyTuple_SetItem(args, 2, init_args));
 
-        ret = PyObject_Call(new_obj, args, null);
+        pyhdl_pi_if_HandleErr((ret=PyObject_Call(new_obj, args, null)));
 
         Py_DecRef(new_obj);
 

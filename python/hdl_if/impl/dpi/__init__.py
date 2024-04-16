@@ -15,7 +15,6 @@ def dpi_init(scope):
 
     ep = None
     try:
-        print("__sv_init: %d" % scope, flush=True)
         ctxt = Context.inst()
 
         ep = HdlCallEndpointDPI(scope)

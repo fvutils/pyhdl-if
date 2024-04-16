@@ -25,8 +25,8 @@ package pyhdl_if;
     import "DPI-C" context function int pyhdl_if_dpi_entry();
     import "DPI-C" context function chandle svGetScope();
 
+    // Cached handles to Python objects
     PyObject        None;
-
     PyObject __hdl_pi_if;
     PyObject __backend;
     PyObject __mkTask;
@@ -35,6 +35,7 @@ package pyhdl_if;
         pure virtual task run();
     endclass
 
+    // 
     bit                                 prv_run_q_running = 0;
     mailbox #(PyHdlPiRunnable)          prv_run_q = new();
     task automatic __pyhdl_pi_if_run();
@@ -112,14 +113,6 @@ package pyhdl_if;
         return obj;
     endfunction
 
-    `include "pyhdl_if_init.svh"
-    function automatic bit __do_init();
-        bit ret = __pyhdl_if_init();
-        return ret;
-    endfunction
-
-
-    bit __init = __do_init();
     
     function automatic PyObject pyhdl_pi_if_mkTask(PyObject callable);
         PyObject args = PyTuple_New(1);
@@ -173,6 +166,14 @@ package pyhdl_if;
     `include "pyhdl_if_call_init.svh"
     `include "pyhdl_if_call_api.svh"
     `include "pyhdl_if_call_dpi.svh"
+
+    `include "pyhdl_if_init.svh"
+    function automatic bit __do_init();
+        bit ret = __pyhdl_if_init();
+        return ret;
+    endfunction
+
+    bit __init = __do_init();
 
     /****************************************************************
      * PyHDL-IF TLM 

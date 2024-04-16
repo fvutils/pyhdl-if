@@ -53,10 +53,10 @@ class Backend(object):
         elif cls._inst is None:
             import sys
             if "cocotb" in sys.modules.keys():
-                from .impl.backend_cocotb import BackendCocotb
+                from .impl.pi.backend_cocotb import BackendCocotb
                 return BackendCocotb()
             else:
-                from .impl.backend_asyncio import BackendAsyncio
+                from .impl.pi.backend_asyncio import BackendAsyncio
                 return BackendAsyncio()
 
         return cls._inst
