@@ -5,15 +5,16 @@
 
 PyHDL-IF Documentation
 =========================
-PyHDL-IF provides low-level procedural interfaces between Python and
-various HDL simulator interfaces. PyHDL-IF provides some minimal 
-abstraction interfaces across HDL simulator APIs, but primarily focuses
-on providing direct interfaces.
+PyHDL-IF implements a procedural interface between Python and
+various HDL simulator interfaces. The library focuses on simplifying 
+the task of implementing interactions between HDL and Python at a 
+variety of abstraction levels.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-  
+
+   overview  
    sim_integ
    sv_api
 
