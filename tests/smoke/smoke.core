@@ -1,0 +1,16 @@
+CAPI=2:
+
+name: smoke
+
+filesets:
+  hvl:
+    files:
+    - top.sv
+    file_type: systemVerilogSource
+    depend: 
+      - hdl_call_if
+
+targets:
+  default:
+    filesets:
+      - hvl

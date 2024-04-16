@@ -1,0 +1,40 @@
+
+package:
+  name: pyhdl-if
+
+  #  setup-deps:
+  #- ninja
+  #- cython
+
+  dep-sets:
+
+  - name: default
+    deps:
+    - name: pytest
+      src: pypi
+
+  - name: default-dev
+    deps:
+    - name: pytest
+      src: pypi
+    - name: pytest-fv
+      url: https://github.com/fvutils/pytest-fv.git
+    - name: fusesoc
+      url: https://github.com/olofk/fusesoc.git
+    - name: pcpp
+      src: pypi
+    - name: cxxheaderparser
+      src: pypi
+    - name: ivpm
+      url: https://github.com/fvutils/ivpm.git
+    - name: sphinx
+      src: pypi
+    - name: sphinx-rtd-theme
+      src: pypi
+    - name: cairosvg
+      src: pypi
+    - name: sphinx-argparse
+      src: pypi
+    - name: packaging
+      src: pypi
+
