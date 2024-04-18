@@ -16,7 +16,7 @@
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -48,8 +48,14 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Simulator Integration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#systemverilog-dpi">SystemVerilog (DPI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#systemverilog-dpi">SystemVerilog (DPI)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#source">Source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dpi-shared-library">DPI Shared Library</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#verilog-vpi">Verilog (VPI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vhdl-vhpi">VHDL (VHPI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vhdl-fli">VHDL (FLI)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sv_api.html">SystemVerilog API</a></li>
@@ -83,9 +89,38 @@
 <h1>Simulator Integration<a class="headerlink" href="#simulator-integration" title="Link to this heading"></a></h1>
 <section id="systemverilog-dpi">
 <h2>SystemVerilog (DPI)<a class="headerlink" href="#systemverilog-dpi" title="Link to this heading"></a></h2>
+<section id="source">
+<h3>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h3>
+<p>The PyHDL-IF SystemVerilog package must be compiled prior to
+compilation of code that uses PyHDL-IF artifacts. If you use
+a FuseSoC-based build system, simply place a dependency on
+<cite>fvutils::pyhdl-if</cite>.</p>
+<p>If you directly specify sources:
+- Obtain the <cite>share</cite> directory by calling: <cite>python3 -c “import hdl_if; print(hdl_if.share())”</cite>
+- Specify <cite>${share}/dpi</cite> as an include directory
+- Specify <cite>${share}/dpi/pyhdl_if.sv</cite> as a source file</p>
+</section>
+<section id="dpi-shared-library">
+<h3>DPI Shared Library<a class="headerlink" href="#dpi-shared-library" title="Link to this heading"></a></h3>
+<p>Two shared libraries must be specified as DPI libraries to the simulator:
+- PyHDL-IF entrypoint
+- Python</p>
+<p>Obtain the paths to these libraries by running:
+<cite>python3 -c ‘import hdl_if; print(” “.join(hdl_if.libs(“dpi”)))’</cite></p>
+<p>Specify these as DPI libraries to your simulator using its preferred mechanism.</p>
+</section>
 </section>
 <section id="verilog-vpi">
 <h2>Verilog (VPI)<a class="headerlink" href="#verilog-vpi" title="Link to this heading"></a></h2>
+<p>TBD</p>
+</section>
+<section id="vhdl-vhpi">
+<h2>VHDL (VHPI)<a class="headerlink" href="#vhdl-vhpi" title="Link to this heading"></a></h2>
+<p>TBD</p>
+</section>
+<section id="vhdl-fli">
+<h2>VHDL (FLI)<a class="headerlink" href="#vhdl-fli" title="Link to this heading"></a></h2>
+<p>TBD</p>
 </section>
 </section>
 
