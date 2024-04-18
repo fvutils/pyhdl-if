@@ -1,6 +1,6 @@
 CAPI=2:
 
-name: pyhdl-if::pi
+name: fvutils::pyhdl-if
 
 filesets:
   hvl:
