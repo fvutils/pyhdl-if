@@ -50,7 +50,6 @@ class ReqFifoDecoratorImpl(InterfaceDecoratorImplBase):
         async def closure(self, obj):
             model = self._model
             if T.__name__ not in model._if_m.keys():
-                print("keys: %s" % str(model._if_m.keys()), flush=True)
                 raise Exception("Method %s is unbound" % T.__name__)
             ifc = model._if_m[T.__name__]
             await ifc.put(obj)

@@ -77,17 +77,23 @@ interface tlm_hvl2hdl_fifo #(
         endfunction
 
         virtual task invokeTask(
-            string      method,
-            PyObject    args);
+            output PyObject    retval,
+            input string       method,
+            input PyObject     args);
             bit [Twidth-1:0]    tmp = 0;
             PyObject obj, intval, rshift;
+
+            $display("invokeTask: method=%0s", method);
+
+            retval = None;
+
             case (method)
                 "put": begin
-                    obj = PyTuple_GetItem(args, 0);
-                    intval = PyTuple_New(0);
+                    intval = PyTuple_GetItem(args, 0);
 
                     if (Twidth <= 64) begin
                         tmp = PyLong_AsUnsignedLongLong(intval)[Twidth-1:0];
+                        $display("tmp=%08h", tmp);
                     end else begin
                         rshift = PyObject_GetAttrString(intval, "__rshift__");
                         $display("TODO: implement >64-bit");

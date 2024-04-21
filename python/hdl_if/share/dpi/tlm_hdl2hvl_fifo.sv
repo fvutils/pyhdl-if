@@ -78,16 +78,14 @@ interface tlm_hdl2hvl_fifo #(
             retval = None;
             case (method)
                 "get": begin
-                    PyObject intval = None;
                     get(tmp[Twidth-1:0]);
 
                     if (Twidth <= 64) begin
-                        intval = PyLong_FromUnsignedLongLong(tmp);
+                        retval = PyLong_FromUnsignedLongLong(tmp);
                     end else begin
                         $display("TODO: implement >64-bit");
                         $finish;
                     end
-                    retval = intval;
                 end
                 default: begin
                     $display("Fatal Error: unsupported task call %0s", method);
@@ -95,7 +93,6 @@ interface tlm_hdl2hvl_fifo #(
                 end
             endcase
         endtask
-
     endclass
 
     Closure             __closure;

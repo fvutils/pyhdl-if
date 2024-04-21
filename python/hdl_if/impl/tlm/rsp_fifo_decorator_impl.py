@@ -44,12 +44,21 @@ class RspFifoDecoratorImpl(InterfaceDecoratorImplBase):
 
         async def closure(self):
             model = self._model
-            obj = params[0][0]()
             if T.__name__ not in model._if_m.keys():
                 raise Exception("Method %s is unbound" % T.__name__)
             ifc = model._if_m[T.__name__]
             ival = await ifc.get()
+            sz = int(((ival-1)/8)+1)
+            bval = bytearray(sz)
+
+            for i in range(sz):
+                bval[i] = (ival & 0xFF)
+                ival >>= 8
+
+            obj = rtype.from_buffer_copy(bval)
+
             # TODO: populate obj from ival
+
             return obj
         return closure
 

@@ -26,9 +26,7 @@ class StreamRsp(Stream):
     def __init__(self, name):
         super().__init__(StreamKind.Rsp, name)
 
-    async def get(self, obj):
-        await self.proxy.invoke_hdl_t(
-            "get",
-            (obj,)
-        )
+    async def get(self) -> int:
+        intval = await self.proxy.invoke_hdl_t("get", ())
+        return intval
 

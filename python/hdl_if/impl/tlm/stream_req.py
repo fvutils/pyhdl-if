@@ -34,6 +34,7 @@ class StreamReq(Stream):
             data |= d
 
         # TODO: Check if this is a valid object
+        print("put::data 0x%08x" % data, flush=True)
         await self.proxy.invoke_hdl_t(
             "put",
             (data,)

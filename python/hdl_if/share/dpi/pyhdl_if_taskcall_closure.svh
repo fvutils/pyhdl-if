@@ -21,7 +21,9 @@ class TaskCallClosure implements PyHdlPiRunnable;
         evt_obj_set = PyObject_GetAttrString(m_evt_obj, "set");
         args = PyTuple_New(1);
 
+        $display("--> invokeTask");
         m_obj.invokeTask(res, m_method_name, m_args);
+        $display("<-- invokeTask");
 
         if (res == null) begin
             res = None;
