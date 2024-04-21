@@ -20,8 +20,8 @@
 #*
 #****************************************************************************
 import typeworks
-from hdl_tlm_if.tlm_ifc import TlmIfc
-from hdl_tlm_if.tlm_ifc_rgy import TlmIfcRgy
+from hdl_if.tlm.tlm_ifc import TlmIfc
+from hdl_if.tlm.tlm_ifc_rgy import TlmIfcRgy
 from .type_info_tlm_if import TypeInfoTlmIF
 
 class TlmInterfaceDecoratorImpl(typeworks.ClsDecoratorBase):
@@ -35,14 +35,17 @@ class TlmInterfaceDecoratorImpl(typeworks.ClsDecoratorBase):
         return TlmIfc
     
     def pre_decorate(self, T):
-        from hdl_tlm_if.tlm_method import TlmMethod
+        from hdl_if.tlm.tlm_method import TlmMethod
         tlm_if_ti = TypeInfoTlmIF.get(self.get_typeinfo())
         self.tlm_ifc = TlmIfc(tlm_if_ti, T.__qualname__)
 
         # TODO: collect registered TLM methods from base classes
         if_methods = typeworks.DeclRgy.pop_decl(TlmMethod)
 
+        print("if_methods: %d" % len(if_methods))
+
         tlm_if_ti._if_method_l.extend(if_methods)
+        self.tlm_ifc._if_method_l.extend(if_methods)
 
         super().pre_decorate(T)
     

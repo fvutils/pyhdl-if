@@ -27,6 +27,6 @@ class InterfaceDecoratorImplBase(typeworks.MethodDecoratorBase):
         super().__init__(args, kwargs)
 
     def get_category(self):
-        from hdl_tlm_if.tlm_method import TlmMethod
+        from hdl_if.tlm.tlm_method import TlmMethod
         return TlmMethod
 

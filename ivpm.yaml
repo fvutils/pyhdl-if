@@ -19,6 +19,10 @@ package:
       src: pypi
     - name: pytest-fv
       url: https://github.com/fvutils/pytest-fv.git
+    - name: pytypeworks
+      url: https://github.com/mballance-utils/pytypeworks.git
+    - name: pyvsc-dataclasses
+      url: https://github.com/vsc-tools/pyvsc-dataclasses.git
     - name: fusesoc
       url: https://github.com/olofk/fusesoc.git
     - name: pcpp

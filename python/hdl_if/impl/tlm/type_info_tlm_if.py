@@ -21,7 +21,7 @@
 #****************************************************************************
 import typeworks
 from typing import List
-from hdl_tlm_if.tlm_method import TlmMethod
+from hdl_if.tlm.tlm_method import TlmMethod
 from .model_info_tlm_if import ModelInfoTlmIF
 
 class TypeInfoTlmIF(object):
@@ -46,7 +46,7 @@ class TypeInfoTlmIF(object):
     @staticmethod
     def get(info) -> 'TypeInfoTlmIF':
         if not hasattr(info, TypeInfoTlmIF.ATTR_NAME):
-            from hdl_tlm_if.tlm_ifc import TlmIfc
+            from hdl_if.tlm.tlm_ifc import TlmIfc
             setattr(info, TypeInfoTlmIF.ATTR_NAME, TlmIfc(info, info.T.__qualname__))
         return getattr(info, TypeInfoTlmIF.ATTR_NAME)
 

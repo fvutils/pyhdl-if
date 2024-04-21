@@ -28,8 +28,19 @@ class RspFifoDecoratorImpl(InterfaceDecoratorImplBase):
         self.proxy = None
 
     def decorate(self, T):
-        from hdl_tlm_if.tlm_method import TlmMethod, TlmMethodKind
-        self.proxy = TlmMethod(T.__name__, TlmMethodKind.Rsp, None, None)
+        from hdl_if.tlm.tlm_method import TlmMethod, TlmMethodKind
+
+        is_method, rtype, params = self.get_signature()
+
+        if rtype is None:
+            raise Exception("Response FIFO must specify a return type")
+        if len(params) > 0:
+            raise Exception("Respoonse FIFO must not have parameters")
+
+        if not hasattr(rtype, "_fields_"):
+            raise Exception("FIFO response type must derive from ctypes.Structure")
+
+        self.proxy = TlmMethod(T.__name__, TlmMethodKind.Rsp, None, rtype)
 
         async def closure(self, obj):
             model = self._model

@@ -19,6 +19,8 @@
 #*     Author: 
 #*
 #****************************************************************************
+import ctypes
+from hdl_if.tlm.tlm_method import TlmMethod
 from .type_info_tlm_if import TypeInfoTlmIF
 
 class GenIfcSv(object):
@@ -29,7 +31,7 @@ class GenIfcSv(object):
         self._is_vlog = is_vlog
 
     def gen_ifc_module(self, ifc : TypeInfoTlmIF, fp):
-        from hdl_tlm_if.tlm_method import TlmMethodKind
+        from hdl_if.tlm.tlm_method import TlmMethodKind
         self._fp = fp
         self._ind = ""
 
@@ -41,20 +43,23 @@ class GenIfcSv(object):
 
         # TODO: Eventually, we will want parameters here
 
+        print("ifc.getMethods: %d" % len(ifc.getMethods()))
+
         for i,m in enumerate(ifc.getMethods()):
             if m.kind in (TlmMethodKind.Req, TlmMethodKind.Rsp):
-                self.println("parameter WIDTH_%s = %s%s" % (
+                self.println("parameter WIDTH_%s = %s," % (
                     m.name,
-                    self.getWidthExpr(m),
-                    "," if (i+1)<len(ifc.getMethods()) else ""))
+                    self.getWidthExpr(m.t1 if m.kind == TlmMethodKind.Req else m.t2)))
             else:
                 self.println("parameter WIDTH_%s_req = %s," % (
                     m.name,
-                    self.getWidthExpr(m)))
-                self.println("parameter WIDTH_%s_rsp = %s%s" % (
+                    self.getWidthExpr(m.t1)))
+                self.println("parameter WIDTH_%s_rsp = %s," % (
                     m.name,
-                    self.getWidthExpr(m),
-                    "," if (i+1)<len(ifc.getMethods()) else ""))
+                    self.getWidthExpr(m.t2)))
+            self.println("parameter DEPTH_%s = 1%s" % (
+                m.name,
+                "," if (i+1)<len(ifc.getMethods()) else ""))
 
         self.println(") (")
         self.inc_ind()
@@ -107,7 +112,7 @@ class GenIfcSv(object):
                 self.println("tlm_hvl2hdl_fifo #(")
                 self.inc_ind()
                 self.println(".Twidth(WIDTH_%s)," % m.name)
-                self.println(".Tdepth(1)%s" % m.name)
+                self.println(".Tdepth(DEPTH_%s)" % m.name)
                 self.dec_ind()
                 self.println(") %s (" % m.name)
                 self.inc_ind()
@@ -122,7 +127,7 @@ class GenIfcSv(object):
                 self.println("tlm_hdl2hvl_fifo #(")
                 self.inc_ind()
                 self.println(".Twidth(WIDTH_%s)," % m.name)
-                self.println(".Tdepth(1)%s" % m.name)
+                self.println(".Tdepth(DEPTH_%s)" % m.name)
                 self.dec_ind()
                 self.println(") %s (" % m.name)
                 self.inc_ind()
@@ -143,9 +148,38 @@ class GenIfcSv(object):
         self.println("%s" % (
             "endmodule" if self._is_vlog else "endinterface",
         ))
+
+    _type_width_m = {
+        ctypes.c_longlong : 64,
+        ctypes.c_ulonglong : 64,
+        ctypes.c_int64 : 64,
+        ctypes.c_uint64 : 64,
+        ctypes.c_int : 32,
+        ctypes.c_uint : 32, 
+        ctypes.c_int32 : 32, 
+        ctypes.c_uint32 : 32, 
+        ctypes.c_short : 16,
+        ctypes.c_ushort : 16, 
+        ctypes.c_int16 : 16, 
+        ctypes.c_uint16 : 16, 
+        ctypes.c_byte : 8,
+        ctypes.c_ubyte : 8, 
+        ctypes.c_char : 8,
+        ctypes.c_int8 : 8, 
+        ctypes.c_uint8 : 8, 
+    }
     
-    def getWidthExpr(self, m):
-        return "1"
+    def getWidthExpr(self, t):
+        bits = ""
+        for f in t._fields_:
+            if len(f) > 2:
+                sz = f[2]
+            else:
+                sz = GenIfcSv._type_width_m[f[1]]
+            if len(bits) > 0:
+                bits += "+"
+            bits += str(sz)
+        return bits
 
     def gen_types_pkg(self, ifc : TypeInfoTlmIF, fp):
         self._fp = fp

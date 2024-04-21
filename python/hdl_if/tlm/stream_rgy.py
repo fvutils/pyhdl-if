@@ -19,10 +19,10 @@
 #*     Author: 
 #*
 #****************************************************************************
-from typing import List
 from typeworks import TypeInfo
-from .type_info_tlm_if import TypeInfoTlmIF
-from .stream import Stream
+from typing import List
+from hdl_if.impl.tlm.type_info_tlm_if import TypeInfoTlmIF
+from hdl_if.impl.tlm.stream import Stream
 
 class StreamRgy(object):
 
@@ -40,7 +40,7 @@ class StreamRgy(object):
             be = Backend.inst()
 
             stream_c = len(self._stream_m)
-            while True:
+            for _ in 16:
                 ev = be.mkEvent()
 
                 if stream_c == len(self._stream_m):

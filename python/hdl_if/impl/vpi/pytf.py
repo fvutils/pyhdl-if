@@ -91,21 +91,6 @@ def __PyErr_Display(ud):
     vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
     return 0
 
-__PyErr_DisplayException_fp = None
-__PyErr_DisplayException_f = None
-__PyErr_DisplayException_tf = t_vpi_systf_data()
-def __PyErr_DisplayException(ud):
-    print("Hello from PyErr_DisplayException", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
 __PyErr_ExceptionMatches_fp = None
 __PyErr_ExceptionMatches_f = None
 __PyErr_ExceptionMatches_tf = t_vpi_systf_data()
@@ -115,30 +100,6 @@ def __PyErr_ExceptionMatches(ud):
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
     __t = vpi_scan(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
-__PyErr_GetHandledException_fp = None
-__PyErr_GetHandledException_f = None
-__PyErr_GetHandledException_tf = t_vpi_systf_data()
-def __PyErr_GetHandledException(ud):
-    print("Hello from PyErr_GetHandledException", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
-__PyErr_GetRaisedException_fp = None
-__PyErr_GetRaisedException_f = None
-__PyErr_GetRaisedException_tf = t_vpi_systf_data()
-def __PyErr_GetRaisedException(ud):
-    print("Hello from PyErr_GetRaisedException", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
     __rval = t_vpi_value()
     __rval.format = vpiIntVal
     __rval.value.integer = 20
@@ -396,21 +357,6 @@ def __PyErr_SetFromErrnoWithFilenameObjects(ud):
     vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
     return 0
 
-__PyErr_SetHandledException_fp = None
-__PyErr_SetHandledException_f = None
-__PyErr_SetHandledException_tf = t_vpi_systf_data()
-def __PyErr_SetHandledException(ud):
-    print("Hello from PyErr_SetHandledException", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
 __PyErr_SetImportError_fp = None
 __PyErr_SetImportError_f = None
 __PyErr_SetImportError_tf = t_vpi_systf_data()
@@ -496,21 +442,6 @@ def __PyErr_SetObject(ud):
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
     __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
-__PyErr_SetRaisedException_fp = None
-__PyErr_SetRaisedException_f = None
-__PyErr_SetRaisedException_tf = t_vpi_systf_data()
-def __PyErr_SetRaisedException(ud):
-    print("Hello from PyErr_SetRaisedException", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __arg_h = vpi_iterate(vpiArgument, __tf_h)
     __t = vpi_scan(__arg_h)
     vpi_free_object(__arg_h)
     __rval = t_vpi_value()
@@ -1503,22 +1434,6 @@ def __PyObject_CallObject(ud):
     vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
     return 0
 
-__PyObject_CallOneArg_fp = None
-__PyObject_CallOneArg_f = None
-__PyObject_CallOneArg_tf = t_vpi_systf_data()
-def __PyObject_CallOneArg(ud):
-    print("Hello from PyObject_CallOneArg", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
 __PyObject_Calloc_fp = None
 __PyObject_Calloc_f = None
 __PyObject_Calloc_tf = t_vpi_systf_data()
@@ -1855,21 +1770,6 @@ def __PyObject_GetItem(ud):
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
     __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
-__PyObject_GetItemData_fp = None
-__PyObject_GetItemData_f = None
-__PyObject_GetItemData_tf = t_vpi_systf_data()
-def __PyObject_GetItemData(ud):
-    print("Hello from PyObject_GetItemData", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __arg_h = vpi_iterate(vpiArgument, __tf_h)
     __t = vpi_scan(__arg_h)
     vpi_free_object(__arg_h)
     __rval = t_vpi_value()
@@ -2542,39 +2442,6 @@ def __PyUnicode_AsUnicodeEscapeString(ud):
     vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
     return 0
 
-__PyUnicode_AsWideChar_fp = None
-__PyUnicode_AsWideChar_f = None
-__PyUnicode_AsWideChar_tf = t_vpi_systf_data()
-def __PyUnicode_AsWideChar(ud):
-    print("Hello from PyUnicode_AsWideChar", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
-__PyUnicode_AsWideCharString_fp = None
-__PyUnicode_AsWideCharString_f = None
-__PyUnicode_AsWideCharString_tf = t_vpi_systf_data()
-def __PyUnicode_AsWideCharString(ud):
-    print("Hello from PyUnicode_AsWideCharString", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
 __PyUnicode_BuildEncodingMap_fp = None
 __PyUnicode_BuildEncodingMap_f = None
 __PyUnicode_BuildEncodingMap_tf = t_vpi_systf_data()
@@ -3206,6 +3073,21 @@ def __PyUnicode_GetLength(ud):
     vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
     return 0
 
+__PyUnicode_GetSize_fp = None
+__PyUnicode_GetSize_f = None
+__PyUnicode_GetSize_tf = t_vpi_systf_data()
+def __PyUnicode_GetSize(ud):
+    print("Hello from PyUnicode_GetSize", flush=True)
+    __tf_h = vpi_handle(vpiSysTfCall, None)
+    __arg_h = vpi_iterate(vpiArgument, __tf_h)
+    __t = vpi_scan(__arg_h)
+    vpi_free_object(__arg_h)
+    __rval = t_vpi_value()
+    __rval.format = vpiIntVal
+    __rval.value.integer = 20
+    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    return 0
+
 __PyUnicode_InternFromString_fp = None
 __PyUnicode_InternFromString_f = None
 __PyUnicode_InternFromString_tf = t_vpi_systf_data()
@@ -3470,21 +3352,6 @@ __Py_FinalizeEx_tf = t_vpi_systf_data()
 def __Py_FinalizeEx(ud):
     print("Hello from Py_FinalizeEx", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
-    return 0
-
-__Py_GETENV_fp = None
-__Py_GETENV_f = None
-__Py_GETENV_tf = t_vpi_systf_data()
-def __Py_GETENV(ud):
-    print("Hello from Py_GETENV", flush=True)
-    __tf_h = vpi_handle(vpiSysTfCall, None)
-    __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    vpi_free_object(__arg_h)
     __rval = t_vpi_value()
     __rval.format = vpiIntVal
     __rval.value.integer = 20
@@ -3842,18 +3709,6 @@ def register_tf():
     name = __PyErr_Display_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyErr_Display_tf))
 
-    global __PyErr_DisplayException_fp, __PyErr_DisplayException_f, __PyErr_DisplayException_tf
-    __PyErr_DisplayException_f = getattr(libpy, "PyErr_DisplayException")
-    __PyErr_DisplayException_f.restype = None
-    __PyErr_DisplayException_f.argtypes = [ctypes.c_void_p]
-    __PyErr_DisplayException_tf.tfname = "$PyErr_DisplayException".encode()
-    __PyErr_DisplayException_tf.type = vpiSysTask
-    __PyErr_DisplayException_fp = tf_func_t(__PyErr_DisplayException)
-    __PyErr_DisplayException_tf.calltf = __PyErr_DisplayException_fp
-    __PyErr_DisplayException_tf.userdata = None
-    name = __PyErr_DisplayException_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyErr_DisplayException_tf))
-
     global __PyErr_ExceptionMatches_fp, __PyErr_ExceptionMatches_f, __PyErr_ExceptionMatches_tf
     __PyErr_ExceptionMatches_f = getattr(libpy, "PyErr_ExceptionMatches")
     __PyErr_ExceptionMatches_f.restype = ctypes.c_int
@@ -3865,32 +3720,6 @@ def register_tf():
     __PyErr_ExceptionMatches_tf.userdata = None
     name = __PyErr_ExceptionMatches_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyErr_ExceptionMatches_tf))
-
-    global __PyErr_GetHandledException_fp, __PyErr_GetHandledException_f, __PyErr_GetHandledException_tf
-    __PyErr_GetHandledException_f = getattr(libpy, "PyErr_GetHandledException")
-    __PyErr_GetHandledException_f.restype = ctypes.c_void_p
-    __PyErr_GetHandledException_f.argtypes = []
-    __PyErr_GetHandledException_tf.tfname = "$PyErr_GetHandledException".encode()
-    __PyErr_GetHandledException_tf.type = vpiSysFunc
-    __PyErr_GetHandledException_fp = tf_func_t(__PyErr_GetHandledException)
-    __PyErr_GetHandledException_tf.calltf = __PyErr_GetHandledException_fp
-    __PyErr_GetHandledException_tf.sizetf = sizetf64_fp
-    __PyErr_GetHandledException_tf.userdata = None
-    name = __PyErr_GetHandledException_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyErr_GetHandledException_tf))
-
-    global __PyErr_GetRaisedException_fp, __PyErr_GetRaisedException_f, __PyErr_GetRaisedException_tf
-    __PyErr_GetRaisedException_f = getattr(libpy, "PyErr_GetRaisedException")
-    __PyErr_GetRaisedException_f.restype = ctypes.c_void_p
-    __PyErr_GetRaisedException_f.argtypes = []
-    __PyErr_GetRaisedException_tf.tfname = "$PyErr_GetRaisedException".encode()
-    __PyErr_GetRaisedException_tf.type = vpiSysFunc
-    __PyErr_GetRaisedException_fp = tf_func_t(__PyErr_GetRaisedException)
-    __PyErr_GetRaisedException_tf.calltf = __PyErr_GetRaisedException_fp
-    __PyErr_GetRaisedException_tf.sizetf = sizetf64_fp
-    __PyErr_GetRaisedException_tf.userdata = None
-    name = __PyErr_GetRaisedException_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyErr_GetRaisedException_tf))
 
     global __PyErr_GivenExceptionMatches_fp, __PyErr_GivenExceptionMatches_f, __PyErr_GivenExceptionMatches_tf
     __PyErr_GivenExceptionMatches_f = getattr(libpy, "PyErr_GivenExceptionMatches")
@@ -4094,18 +3923,6 @@ def register_tf():
     name = __PyErr_SetFromErrnoWithFilenameObjects_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyErr_SetFromErrnoWithFilenameObjects_tf))
 
-    global __PyErr_SetHandledException_fp, __PyErr_SetHandledException_f, __PyErr_SetHandledException_tf
-    __PyErr_SetHandledException_f = getattr(libpy, "PyErr_SetHandledException")
-    __PyErr_SetHandledException_f.restype = None
-    __PyErr_SetHandledException_f.argtypes = [ctypes.c_void_p]
-    __PyErr_SetHandledException_tf.tfname = "$PyErr_SetHandledException".encode()
-    __PyErr_SetHandledException_tf.type = vpiSysTask
-    __PyErr_SetHandledException_fp = tf_func_t(__PyErr_SetHandledException)
-    __PyErr_SetHandledException_tf.calltf = __PyErr_SetHandledException_fp
-    __PyErr_SetHandledException_tf.userdata = None
-    name = __PyErr_SetHandledException_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyErr_SetHandledException_tf))
-
     global __PyErr_SetImportError_fp, __PyErr_SetImportError_f, __PyErr_SetImportError_tf
     __PyErr_SetImportError_f = getattr(libpy, "PyErr_SetImportError")
     __PyErr_SetImportError_f.restype = ctypes.c_void_p
@@ -4179,18 +3996,6 @@ def register_tf():
     __PyErr_SetObject_tf.userdata = None
     name = __PyErr_SetObject_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyErr_SetObject_tf))
-
-    global __PyErr_SetRaisedException_fp, __PyErr_SetRaisedException_f, __PyErr_SetRaisedException_tf
-    __PyErr_SetRaisedException_f = getattr(libpy, "PyErr_SetRaisedException")
-    __PyErr_SetRaisedException_f.restype = None
-    __PyErr_SetRaisedException_f.argtypes = [ctypes.c_void_p]
-    __PyErr_SetRaisedException_tf.tfname = "$PyErr_SetRaisedException".encode()
-    __PyErr_SetRaisedException_tf.type = vpiSysTask
-    __PyErr_SetRaisedException_fp = tf_func_t(__PyErr_SetRaisedException)
-    __PyErr_SetRaisedException_tf.calltf = __PyErr_SetRaisedException_fp
-    __PyErr_SetRaisedException_tf.userdata = None
-    name = __PyErr_SetRaisedException_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyErr_SetRaisedException_tf))
 
     global __PyErr_SetString_fp, __PyErr_SetString_f, __PyErr_SetString_tf
     __PyErr_SetString_f = getattr(libpy, "PyErr_SetString")
@@ -5001,19 +4806,6 @@ def register_tf():
     name = __PyObject_CallObject_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyObject_CallObject_tf))
 
-    global __PyObject_CallOneArg_fp, __PyObject_CallOneArg_f, __PyObject_CallOneArg_tf
-    __PyObject_CallOneArg_f = getattr(libpy, "PyObject_CallOneArg")
-    __PyObject_CallOneArg_f.restype = ctypes.c_void_p
-    __PyObject_CallOneArg_f.argtypes = [ctypes.c_void_p,ctypes.c_void_p]
-    __PyObject_CallOneArg_tf.tfname = "$PyObject_CallOneArg".encode()
-    __PyObject_CallOneArg_tf.type = vpiSysFunc
-    __PyObject_CallOneArg_fp = tf_func_t(__PyObject_CallOneArg)
-    __PyObject_CallOneArg_tf.calltf = __PyObject_CallOneArg_fp
-    __PyObject_CallOneArg_tf.sizetf = sizetf64_fp
-    __PyObject_CallOneArg_tf.userdata = None
-    name = __PyObject_CallOneArg_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyObject_CallOneArg_tf))
-
     global __PyObject_Calloc_fp, __PyObject_Calloc_f, __PyObject_Calloc_tf
     __PyObject_Calloc_f = getattr(libpy, "PyObject_Calloc")
     __PyObject_Calloc_f.restype = ctypes.c_void_p
@@ -5286,19 +5078,6 @@ def register_tf():
     __PyObject_GetItem_tf.userdata = None
     name = __PyObject_GetItem_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyObject_GetItem_tf))
-
-    global __PyObject_GetItemData_fp, __PyObject_GetItemData_f, __PyObject_GetItemData_tf
-    __PyObject_GetItemData_f = getattr(libpy, "PyObject_GetItemData")
-    __PyObject_GetItemData_f.restype = ctypes.c_void_p
-    __PyObject_GetItemData_f.argtypes = [ctypes.c_void_p]
-    __PyObject_GetItemData_tf.tfname = "$PyObject_GetItemData".encode()
-    __PyObject_GetItemData_tf.type = vpiSysFunc
-    __PyObject_GetItemData_fp = tf_func_t(__PyObject_GetItemData)
-    __PyObject_GetItemData_tf.calltf = __PyObject_GetItemData_fp
-    __PyObject_GetItemData_tf.sizetf = sizetf64_fp
-    __PyObject_GetItemData_tf.userdata = None
-    name = __PyObject_GetItemData_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyObject_GetItemData_tf))
 
     global __PyObject_GetIter_fp, __PyObject_GetIter_f, __PyObject_GetIter_tf
     __PyObject_GetIter_f = getattr(libpy, "PyObject_GetIter")
@@ -5829,30 +5608,6 @@ def register_tf():
     name = __PyUnicode_AsUnicodeEscapeString_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyUnicode_AsUnicodeEscapeString_tf))
 
-    global __PyUnicode_AsWideChar_fp, __PyUnicode_AsWideChar_f, __PyUnicode_AsWideChar_tf
-    __PyUnicode_AsWideChar_f = getattr(libpy, "PyUnicode_AsWideChar")
-    __PyUnicode_AsWideChar_f.restype = ctypes.c_uint
-    __PyUnicode_AsWideChar_f.argtypes = [ctypes.c_void_p,ctypes.c_char_p,ctypes.c_uint]
-    __PyUnicode_AsWideChar_tf.tfname = "$PyUnicode_AsWideChar".encode()
-    __PyUnicode_AsWideChar_tf.type = vpiSysFunc
-    __PyUnicode_AsWideChar_fp = tf_func_t(__PyUnicode_AsWideChar)
-    __PyUnicode_AsWideChar_tf.calltf = __PyUnicode_AsWideChar_fp
-    __PyUnicode_AsWideChar_tf.userdata = None
-    name = __PyUnicode_AsWideChar_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyUnicode_AsWideChar_tf))
-
-    global __PyUnicode_AsWideCharString_fp, __PyUnicode_AsWideCharString_f, __PyUnicode_AsWideCharString_tf
-    __PyUnicode_AsWideCharString_f = getattr(libpy, "PyUnicode_AsWideCharString")
-    __PyUnicode_AsWideCharString_f.restype = ctypes.c_char_p
-    __PyUnicode_AsWideCharString_f.argtypes = [ctypes.c_void_p,ctypes.POINTER(ctypes.c_uint)]
-    __PyUnicode_AsWideCharString_tf.tfname = "$PyUnicode_AsWideCharString".encode()
-    __PyUnicode_AsWideCharString_tf.type = vpiSysTask
-    __PyUnicode_AsWideCharString_fp = tf_func_t(__PyUnicode_AsWideCharString)
-    __PyUnicode_AsWideCharString_tf.calltf = __PyUnicode_AsWideCharString_fp
-    __PyUnicode_AsWideCharString_tf.userdata = None
-    name = __PyUnicode_AsWideCharString_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__PyUnicode_AsWideCharString_tf))
-
     global __PyUnicode_BuildEncodingMap_fp, __PyUnicode_BuildEncodingMap_f, __PyUnicode_BuildEncodingMap_tf
     __PyUnicode_BuildEncodingMap_f = getattr(libpy, "PyUnicode_BuildEncodingMap")
     __PyUnicode_BuildEncodingMap_f.restype = ctypes.c_void_p
@@ -6337,6 +6092,18 @@ def register_tf():
     name = __PyUnicode_GetLength_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyUnicode_GetLength_tf))
 
+    global __PyUnicode_GetSize_fp, __PyUnicode_GetSize_f, __PyUnicode_GetSize_tf
+    __PyUnicode_GetSize_f = getattr(libpy, "PyUnicode_GetSize")
+    __PyUnicode_GetSize_f.restype = ctypes.c_uint
+    __PyUnicode_GetSize_f.argtypes = [ctypes.c_void_p]
+    __PyUnicode_GetSize_tf.tfname = "$PyUnicode_GetSize".encode()
+    __PyUnicode_GetSize_tf.type = vpiSysFunc
+    __PyUnicode_GetSize_fp = tf_func_t(__PyUnicode_GetSize)
+    __PyUnicode_GetSize_tf.calltf = __PyUnicode_GetSize_fp
+    __PyUnicode_GetSize_tf.userdata = None
+    name = __PyUnicode_GetSize_tf.tfname.decode()
+    ret = vpi_register_systf(ctypes.pointer(__PyUnicode_GetSize_tf))
+
     global __PyUnicode_InternFromString_fp, __PyUnicode_InternFromString_f, __PyUnicode_InternFromString_tf
     __PyUnicode_InternFromString_f = getattr(libpy, "PyUnicode_InternFromString")
     __PyUnicode_InternFromString_f.restype = ctypes.c_void_p
@@ -6551,18 +6318,6 @@ def register_tf():
     __Py_FinalizeEx_tf.userdata = None
     name = __Py_FinalizeEx_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__Py_FinalizeEx_tf))
-
-    global __Py_GETENV_fp, __Py_GETENV_f, __Py_GETENV_tf
-    __Py_GETENV_f = getattr(libpy, "Py_GETENV")
-    __Py_GETENV_f.restype = ctypes.c_char_p
-    __Py_GETENV_f.argtypes = [ctypes.c_char_p]
-    __Py_GETENV_tf.tfname = "$Py_GETENV".encode()
-    __Py_GETENV_tf.type = vpiSysTask
-    __Py_GETENV_fp = tf_func_t(__Py_GETENV)
-    __Py_GETENV_tf.calltf = __Py_GETENV_fp
-    __Py_GETENV_tf.userdata = None
-    name = __Py_GETENV_tf.tfname.decode()
-    ret = vpi_register_systf(ctypes.pointer(__Py_GETENV_tf))
 
     global __Py_GenericAlias_fp, __Py_GenericAlias_f, __Py_GenericAlias_tf
     __Py_GenericAlias_f = getattr(libpy, "Py_GenericAlias")

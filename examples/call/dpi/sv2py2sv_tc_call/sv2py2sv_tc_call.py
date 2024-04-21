@@ -6,13 +6,18 @@ class MyC(object):
 
     @hif.exptask
     async def body(self):
-        print("body", flush=True)
+        exp = []
         for i in range(100):
-            print("--> await read", flush=True)
+            await self.write(4*i, exp[i])
+        for i in range(100):
             val = await self.read(i)
-            print("<-- await read %s" % str(val), flush=True)
 
     @hif.imptask
-    async def read(self, v : ctypes.c_int) -> ctypes.c_int:
+    async def read(self, addr : ctypes.c_uint) -> ctypes.c_uint:
         pass
+
+    @hif.imptask
+    async def write(self, addr : ctypes.c_uint, data : ctypes.c_uint):
+        pass
+
 

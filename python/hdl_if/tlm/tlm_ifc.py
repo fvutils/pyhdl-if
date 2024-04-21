@@ -19,7 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
-from .impl.type_info_tlm_if import TypeInfoTlmIF
+from hdl_if.impl.tlm.type_info_tlm_if import TypeInfoTlmIF
 
 class TlmIfc(TypeInfoTlmIF):
 

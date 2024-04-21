@@ -3,6 +3,7 @@ import ctypes
 import os
 
 from .hdl_services import HdlServices
+from .backend import Backend
 from .decorators import *
 
 # class s_vpi_vlog_info(ctypes.Structure):
@@ -87,8 +88,8 @@ def libs(kind="dpi"):
     if kind != "vpi":
         exe_dir = os.path.dirname(sys.executable)
         python_dir = os.path.dirname(exe_dir)
-        python_dir = sysconfig.get_config_var("installed_platbase")
-        python_libdir = os.path.join(python_dir, 'lib')
+        python_libdir = sysconfig.get_config_var("LIBDIR")
+#        python_libdir = os.path.join(python_dir, 'lib')
 
         ret.append(os.path.join(python_libdir, sysconfig.get_config_var("LDLIBRARY")))
     

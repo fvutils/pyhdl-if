@@ -31,13 +31,7 @@
 
     import "DPI-C" context function void PyErr_Display(input PyObject p0, input PyObject p1, input PyObject p2);
 
-    import "DPI-C" context function void PyErr_DisplayException(input PyObject p0);
-
     import "DPI-C" context function int PyErr_ExceptionMatches(input PyObject p0);
-
-    import "DPI-C" context function PyObject PyErr_GetHandledException();
-
-    import "DPI-C" context function PyObject PyErr_GetRaisedException();
 
     import "DPI-C" context function int PyErr_GivenExceptionMatches(input PyObject p0, input PyObject p1);
 
@@ -71,8 +65,6 @@
 
     import "DPI-C" context function PyObject PyErr_SetFromErrnoWithFilenameObjects(input PyObject p0, input PyObject p1, input PyObject p2);
 
-    import "DPI-C" context function void PyErr_SetHandledException(input PyObject p0);
-
     import "DPI-C" context function PyObject PyErr_SetImportError(input PyObject p0, input PyObject p1, input PyObject p2);
 
     import "DPI-C" context function PyObject PyErr_SetImportErrorSubclass(input PyObject p0, input PyObject p1, input PyObject p2, input PyObject p3);
@@ -84,8 +76,6 @@
     import "DPI-C" context function void PyErr_SetNone(input PyObject p0);
 
     import "DPI-C" context function void PyErr_SetObject(input PyObject p0, input PyObject p1);
-
-    import "DPI-C" context function void PyErr_SetRaisedException(input PyObject p0);
 
     import "DPI-C" context function void PyErr_SetString(input PyObject exception, input string _string);
 
@@ -215,8 +205,6 @@
 
     import "DPI-C" context function PyObject PyObject_CallObject(input PyObject callable, input PyObject args);
 
-    import "DPI-C" context function PyObject PyObject_CallOneArg(input PyObject func, input PyObject arg);
-
     import "DPI-C" context function chandle PyObject_Calloc(input int unsigned nelem, input int unsigned elsize);
 
     import "DPI-C" context function int PyObject_CheckBuffer(input PyObject obj);
@@ -260,8 +248,6 @@
     import "DPI-C" context function PyObject PyObject_GetAttrString(input PyObject p0, input string p1);
 
     import "DPI-C" context function PyObject PyObject_GetItem(input PyObject o, input PyObject key);
-
-    import "DPI-C" context function chandle PyObject_GetItemData(input PyObject obj);
 
     import "DPI-C" context function PyObject PyObject_GetIter(input PyObject p0);
 
@@ -347,10 +333,6 @@
 
     import "DPI-C" context function PyObject PyUnicode_AsUnicodeEscapeString(input PyObject unicode);
 
-    import "DPI-C" context function int unsigned PyUnicode_AsWideChar(input PyObject unicode, input string w, input int unsigned size);
-
-    import "DPI-C" context function string PyUnicode_AsWideCharString(input PyObject unicode, output int unsigned size);
-
     import "DPI-C" context function PyObject PyUnicode_BuildEncodingMap(input PyObject _string);
 
     import "DPI-C" context function int PyUnicode_Compare(input PyObject left, input PyObject right);
@@ -427,6 +409,8 @@
 
     import "DPI-C" context function int unsigned PyUnicode_GetLength(input PyObject unicode);
 
+    import "DPI-C" context function int unsigned PyUnicode_GetSize(input PyObject unicode);
+
     import "DPI-C" context function PyObject PyUnicode_InternFromString(input string u);
 
     import "DPI-C" context function int PyUnicode_IsIdentifier(input PyObject s);
@@ -460,8 +444,6 @@
     import "DPI-C" context function void Py_Finalize();
 
     import "DPI-C" context function int Py_FinalizeEx();
-
-    import "DPI-C" context function string Py_GETENV(input string name);
 
     import "DPI-C" context function PyObject Py_GenericAlias(input PyObject p0, input PyObject p1);
 

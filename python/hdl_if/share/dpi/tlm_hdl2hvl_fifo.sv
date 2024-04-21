@@ -7,9 +7,7 @@ interface tlm_hdl2hvl_fifo #(
     input               valid,
     output              ready,
     input[Twidth-1:0]   dat_i);
-    import pyhdl_dpi_if::*;
-    import pyhdl_call_if::*;
-    import pyhdl_tlm_if::*;
+    import pyhdl_if::*;
     localparam pointer_w = (Tdepth > 1)?$clog2(Tdepth):1;
     localparam counter_w = pointer_w+1;
 
@@ -30,6 +28,7 @@ interface tlm_hdl2hvl_fifo #(
             pop = 0;
         end else begin
             case ({push, pop})
+            2'b00: begin end
             2'b01: begin // Pop with no push
                 count <= count - 1;
                 rptr <= ((rptr + 1) & (Tdepth-1));
@@ -62,7 +61,7 @@ interface tlm_hdl2hvl_fifo #(
         pop = 1;
     endtask
 
-    class Closure implements PyHdlCallApiIF;
+    class Closure implements ICallApi;
 
         virtual function PyObject invokeFunc(
             string      method,
@@ -74,14 +73,14 @@ interface tlm_hdl2hvl_fifo #(
         virtual task invokeTask(
             string      method,
             PyObject    args);
-            bit [Twidth-1:0]    tmp = 0;
+            bit [(Twidth>64)?(Twidth-1):63:0]    tmp = 0;
             case (method)
                 "get": begin
                     PyObject obj = PyTuple_GetItem(args, 0);
                     PyObject fromint_m = PyObject_GetAttrString(obj, "fromint");
                     PyObject fromint_args = PyTuple_New(1);
                     PyObject intval = null;
-                    get(tmp);
+                    get(tmp[Twidth-1:0]);
 
                     if (Twidth <= 64) begin
                         intval = PyLong_FromUnsignedLongLong(tmp);
@@ -89,8 +88,8 @@ interface tlm_hdl2hvl_fifo #(
                         $display("TODO: implement >64-bit");
                         $finish;
                     end
-                    PyTuple_SetItem(fromint_args, 0, intval);
-                    PyObject_Call(fromint_m, fromint_args, null);
+                    void'(PyTuple_SetItem(fromint_args, 0, intval));
+                    void'(pyhdl_pi_if_HandleErr(PyObject_Call(fromint_m, fromint_args, null)));
                 end
                 default: begin
                     $display("Fatal Error: unsupported task call %0s", method);

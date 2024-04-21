@@ -19,6 +19,11 @@
 #*     Author: 
 #*
 #****************************************************************************
+import importlib
+import os
+import traceback
+from hdl_if.impl.tlm.gen_ifc_sv import GenIfcSv
+from hdl_if.tlm.tlm_ifc_rgy import TlmIfcRgy
 
 class CmdIfcGenSv(object):
 
@@ -26,6 +31,32 @@ class CmdIfcGenSv(object):
         pass
 
     def __call__(self, args):
+        # First, load up the specified modules
+        if not hasattr(args, "module") or args.module is None or len(args.module) == 0:
+            raise Exception("Must specify modules to load")
+
+        for m in args.module:
+            try:
+                importlib.import_module(m)
+            except ImportError as e:
+                traceback.print_exception(e)
+                raise Exception("Failed to import module \"%s\": %s" % (
+                    m, str(e)))
+            
+        rgy = TlmIfcRgy.inst()
+
+        if len(rgy.getTlmIfcs()) == 0:
+            raise Exception("No interfaces defined")
+        
+        if os.path.dirname(args.output) != "" and not os.path.isdir(os.path.dirname(args.output)):
+            os.makedirs(os.path.dirname(args.output))
+
+        with open(args.output, "w") as fp:
+            gen = GenIfcSv(args.style in ("vl", "verilog"))
+
+            for ifc in rgy.getTlmIfcs():
+                gen.gen_ifc_module(ifc, fp)
+
         
         pass
 

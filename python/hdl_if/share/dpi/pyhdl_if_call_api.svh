@@ -29,7 +29,7 @@
         void'(PyTuple_SetItem(proxy_args, 0, PyUnicode_FromString(method)));
         void'(PyTuple_SetItem(proxy_args, 1, args));
         
-        pyhdl_pi_if_HandleErr((res=PyObject_Call(invoke_py_f, proxy_args, null)));
+        res = pyhdl_pi_if_HandleErr(PyObject_Call(invoke_py_f, proxy_args, null));
 
         return res;
     endfunction
@@ -110,7 +110,7 @@
         void'(PyTuple_SetItem(args, 1, PyLong_FromLong(obj_id)));
         void'(PyTuple_SetItem(args, 2, init_args));
 
-        pyhdl_pi_if_HandleErr((ret=PyObject_Call(new_obj, args, null)));
+        ret = pyhdl_pi_if_HandleErr(PyObject_Call(new_obj, args, null));
 
         Py_DecRef(new_obj);
 

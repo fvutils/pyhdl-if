@@ -28,9 +28,8 @@ class ReqFifoDecoratorImpl(InterfaceDecoratorImplBase):
         self.proxy = None
 
     def decorate(self, T):
-        from hdl_tlm_if.tlm_method import TlmMethod, TlmMethodKind
-        from typeworks.impl.typeinfo import TypeInfo
-        from vsc_dataclasses.impl.typeinfo_randclass import TypeInfoRandClass
+        import ctypes
+        from hdl_if.tlm.tlm_method import TlmMethod, TlmMethodKind
 
         is_method, rtype, params = self.get_signature()
 
@@ -40,14 +39,13 @@ class ReqFifoDecoratorImpl(InterfaceDecoratorImplBase):
             raise Exception("Request-FIFO method must have exactly one data parameter (%d)" % len(params))
 
         ptype = params[0][1]
-        ptype_info = TypeInfo.get(ptype, False)
 
-        if ptype_info is None:
-            raise Exception("FIFO data-parameter types must be registered as randclass")
+        if hasattr(ptype, "_fields_"):
+            pass
+        else:
+            raise Exception("FIFO data-parameter type (%s) must derived from ctypes.Structure" % str(type(ptype)))
         
-        ptype_ti = TypeInfoRandClass.get(ptype_info)
-
-        self.proxy = TlmMethod(T.__name__, TlmMethodKind.Req, ptype_ti, None)
+        self.proxy = TlmMethod(T.__name__, TlmMethodKind.Req, ptype, None)
 
         async def closure(self, obj):
             model = self._model

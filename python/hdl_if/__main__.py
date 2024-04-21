@@ -31,6 +31,11 @@ def getparser():
     ifc_gen_sv = subparsers.add_parser("ifc-gen-sv")
     ifc_gen_sv.add_argument("-m", "--module", action="append",
         help="Specifies a Python module to load")
+    ifc_gen_sv.add_argument("-t", "--types", action="store_true",
+        help="Generate a 'types' file containing packed struct definitions")
+    ifc_gen_sv.add_argument("-s", "--style", choices=("vl", "verilog", "sv", "systemverilog"),
+        default="sv",
+        help="Specifies the style of output")
     ifc_gen_sv.add_argument("-o", "--output", 
         help="Specifies the output file")
     ifc_gen_sv.add_argument("ifc",

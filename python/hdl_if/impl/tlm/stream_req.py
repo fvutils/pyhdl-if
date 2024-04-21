@@ -27,9 +27,15 @@ class StreamReq(Stream):
         super().__init__(StreamKind.Req, name)
 
     async def put(self, obj):
+        dat_arr = bytes(obj)
+        data = 0
+        for d in reversed(dat_arr):
+            data <<= 8
+            data |= d
+
         # TODO: Check if this is a valid object
         await self.proxy.invoke_hdl_t(
             "put",
-            (obj,)
+            (data,)
         )
 

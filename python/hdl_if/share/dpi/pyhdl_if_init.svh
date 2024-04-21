@@ -50,5 +50,7 @@ function automatic bit __pyhdl_if_init();
 
     ret &= __pyhdl_if_call_init();
 
+    ret &= __pyhdl_if_tlm_init();
+
     return ret;
 endfunction

@@ -18,7 +18,7 @@
  * Created on:
  *     Author: 
  *
- * Handles Python- and simulator-integration start-up tasks for pyhdl-pi-if.
+ * Handles Python- and simulator-integration start-up tasks for pyhdl-if
  ****************************************************************************/
 #if defined(_WIN32)
 #include <windows.h>
@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-// #include "Python.h"
 
 #undef DEBUG_INIT
 
@@ -113,7 +112,6 @@ void (*vlog_startup_routines[])() = {
     pyhdl_if_vpi_entry,
     0
 };
-
 
 static lib_h_t find_python_lib();
 

@@ -31,6 +31,18 @@ package pyhdl_if;
     PyObject __backend;
     PyObject __mkTask;
 
+    // TLM interface fields
+    PyObject            stream_rgy;
+    PyObject            register_stream;
+    PyObject            stream_req_t;
+    PyObject            stream_rsp_t;
+
+    typedef enum {
+        StreamKind_Req,
+        StreamKind_Rsp,
+        StreamKind_ReqRsp
+    } stream_kind_e;
+
     interface class PyHdlPiRunnable;
         pure virtual task run();
     endclass
@@ -167,6 +179,8 @@ package pyhdl_if;
     `include "pyhdl_if_call_api.svh"
     `include "pyhdl_if_call_dpi.svh"
 
+    `include "pyhdl_if_tlm_init.svh"
+
     `include "pyhdl_if_init.svh"
     function automatic bit __do_init();
         bit ret = __pyhdl_if_init();
@@ -178,6 +192,35 @@ package pyhdl_if;
     /****************************************************************
      * PyHDL-IF TLM 
      ****************************************************************/
+
+    function automatic PyObject pyhdl_tlm_if_registerStream(
+        stream_kind_e   kind,
+        string          iname,
+        ICallApi        impl);
+        PyObject args = PyTuple_New(1);
+        PyObject obj_h;
+
+        void'(PyTuple_SetItem(args, 0, PyUnicode_FromString(iname)));
+
+        case (kind)
+            StreamKind_Req:
+                obj_h = pyhdl_call_if_new(stream_req_t, impl, args);
+            StreamKind_Rsp:
+                obj_h = pyhdl_call_if_new(stream_rsp_t, impl, args);
+            default: begin
+                $display("Fatal Error: unknown stream type");
+                $finish;
+            end
+        endcase
+
+        begin
+            args = PyTuple_New(1);
+            void'(PyTuple_SetItem(args, 0, obj_h));
+            void'(pyhdl_pi_if_HandleErr(PyObject_Call(register_stream, args, null)));
+        end
+
+        return obj_h;
+    endfunction
 
 endpackage
 

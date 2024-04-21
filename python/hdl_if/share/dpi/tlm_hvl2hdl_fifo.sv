@@ -7,9 +7,7 @@ interface tlm_hvl2hdl_fifo #(
     output              valid,
     input               ready,
     output[Twidth-1:0]  dat_o);
-    import pyhdl_dpi_if::*;
-    import pyhdl_call_if::*;
-    import pyhdl_tlm_if::*;
+    import pyhdl_if::*;
     localparam pointer_w = (Tdepth > 1)?$clog2(Tdepth):1;
     localparam counter_w = pointer_w+1;
 
@@ -33,6 +31,7 @@ interface tlm_hvl2hdl_fifo #(
             push = 0;
         end else begin
             case ({push, pop})
+            2'b00: begin end
             2'b01: begin // Pop with no push
                 count <= count - 1;
                 rptr <= ((rptr+1) & (Tdepth-1));
@@ -68,7 +67,7 @@ interface tlm_hvl2hdl_fifo #(
         // Wait to take effect
     endtask
 
-    class Closure implements PyHdlCallApiIF;
+    class Closure implements ICallApi;
 
         virtual function PyObject invokeFunc(
             string      method,
@@ -89,13 +88,13 @@ interface tlm_hvl2hdl_fifo #(
                     PyObject intval = PyObject_Call(intval_m, intval_args, null);
 
                     if (Twidth <= 64) begin
-                        tmp = PyLong_AsUnsignedLongLong(intval);
+                        tmp = PyLong_AsUnsignedLongLong(intval)[Twidth-1:0];
                     end else begin
                         PyObject rshift = PyObject_GetAttrString(intval, "__rshift__");
                         $display("TODO: implement >64-bit");
                         $finish;
                     end
-                    put(tmp);
+                    put(tmp); 
                 end
                 default: begin
                     $display("Fatal Error: unsupported task call %0s", method);

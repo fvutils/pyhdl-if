@@ -19,7 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
-from hdl_if.call import CallProxy
+from hdl_if.call.call_proxy import CallProxy
 from enum import Enum, auto
 
 class StreamKind(Enum):
