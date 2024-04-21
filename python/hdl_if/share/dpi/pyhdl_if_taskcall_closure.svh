@@ -17,9 +17,9 @@ class TaskCallClosure implements PyHdlPiRunnable;
     endfunction
 
     virtual task run();
-        PyObject evt_obj_set = PyObject_GetAttrString(m_evt_obj, "set");
-        PyObject args = PyTuple_New(1);
-        PyObject res;
+        PyObject args, res, evt_obj_set;
+        evt_obj_set = PyObject_GetAttrString(m_evt_obj, "set");
+        args = PyTuple_New(1);
 
         m_obj.invokeTask(res, m_method_name, m_args);
 

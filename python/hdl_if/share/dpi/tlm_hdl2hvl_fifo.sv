@@ -71,15 +71,14 @@ interface tlm_hdl2hvl_fifo #(
         endfunction
 
         virtual task invokeTask(
-            string      method,
-            PyObject    args);
+            output PyObject     retval,
+            input string        method,
+            input PyObject      args);
             bit [(Twidth>64)?(Twidth-1):63:0]    tmp = 0;
+            retval = None;
             case (method)
                 "get": begin
-                    PyObject obj = PyTuple_GetItem(args, 0);
-                    PyObject fromint_m = PyObject_GetAttrString(obj, "fromint");
-                    PyObject fromint_args = PyTuple_New(1);
-                    PyObject intval = null;
+                    PyObject intval = None;
                     get(tmp[Twidth-1:0]);
 
                     if (Twidth <= 64) begin
@@ -88,8 +87,7 @@ interface tlm_hdl2hvl_fifo #(
                         $display("TODO: implement >64-bit");
                         $finish;
                     end
-                    void'(PyTuple_SetItem(fromint_args, 0, intval));
-                    void'(pyhdl_pi_if_HandleErr(PyObject_Call(fromint_m, fromint_args, null)));
+                    retval = intval;
                 end
                 default: begin
                     $display("Fatal Error: unsupported task call %0s", method);

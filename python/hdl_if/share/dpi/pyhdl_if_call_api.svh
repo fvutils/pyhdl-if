@@ -4,9 +4,11 @@
         input string        method,
         input PyObject      args);
         int sem_id = pyhdl_if_allocSem();
-        PyObject proxy_h = PyObject_GetAttrString(obj, "__proxy");
-        PyObject invoke_py_t = PyObject_GetAttrString(proxy_h, "invoke_py_t");
-        PyObject proxy_args = PyTuple_New(3);
+        PyObject proxy_h, invoke_py_t, proxy_args;
+
+        proxy_h = PyObject_GetAttrString(obj, "__proxy");
+        invoke_py_t = PyObject_GetAttrString(proxy_h, "invoke_py_t");
+        proxy_args = PyTuple_New(3);
 
         void'(PyTuple_SetItem(proxy_args, 0, PyLong_FromLong(sem_id)));
         void'(PyTuple_SetItem(proxy_args, 1, PyUnicode_FromString(method)));
@@ -22,9 +24,11 @@
         input string        method,
         input PyObject      args);
         PyObject res;
-        PyObject proxy_h = PyObject_GetAttrString(obj, "__proxy");
-        PyObject invoke_py_f = PyObject_GetAttrString(proxy_h, "invoke_py_f");
-        PyObject proxy_args = PyTuple_New(2);
+        PyObject proxy_h, invoke_py_f, proxy_args;
+
+        proxy_h = PyObject_GetAttrString(obj, "__proxy");
+        invoke_py_f = PyObject_GetAttrString(proxy_h, "invoke_py_f");
+        proxy_args = PyTuple_New(2);
 
         void'(PyTuple_SetItem(proxy_args, 0, PyUnicode_FromString(method)));
         void'(PyTuple_SetItem(proxy_args, 1, args));
@@ -99,10 +103,12 @@
         PyObject        cls_t,
         ICallApi        sv_api_if,
         PyObject        init_args);
-        PyObject new_obj = PyObject_GetAttrString(__ep_h, "new_obj");
-        PyObject args = PyTuple_New(3);
-        PyObject ret;
-        int obj_id = (sv_api_if != null)?allocObjId(sv_api_if):-1;
+        int obj_id;
+        PyObject args, ret, new_obj;
+        new_obj = PyObject_GetAttrString(__ep_h, "new_obj");
+        args = PyTuple_New(3);
+
+        obj_id = (sv_api_if != null)?allocObjId(sv_api_if):-1;
 
         Py_IncRef(new_obj);
 
@@ -120,10 +126,12 @@
     function automatic void pyhdl_if_connect(
         PyObject        obj,
         ICallApi        sv_api_if);
-        PyObject connect = PyObject_GetAttrString(__ep_h, "connect");
         int obj_id = (sv_api_if != null)?allocObjId(sv_api_if):-1;
-        PyObject args = PyTuple_New(2);
-        PyObject ret;
+        PyObject args, ret, connect;
+        
+        connect = PyObject_GetAttrString(__ep_h, "connect");
+        args = PyTuple_New(2);
+
         void'(PyTuple_SetItem(args, 0, obj));
         void'(PyTuple_SetItem(args, 1, PyLong_FromLong(obj_id)));
         ret = PyObject_Call(connect, args, null);

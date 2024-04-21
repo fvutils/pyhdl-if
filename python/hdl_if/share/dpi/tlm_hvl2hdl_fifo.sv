@@ -80,17 +80,16 @@ interface tlm_hvl2hdl_fifo #(
             string      method,
             PyObject    args);
             bit [Twidth-1:0]    tmp = 0;
+            PyObject obj, intval, rshift;
             case (method)
                 "put": begin
-                    PyObject obj = PyTuple_GetItem(args, 0);
-                    PyObject intval_m = PyObject_GetAttrString(obj, "toint");
-                    PyObject intval_args = PyTuple_New(0);
-                    PyObject intval = PyObject_Call(intval_m, intval_args, null);
+                    obj = PyTuple_GetItem(args, 0);
+                    intval = PyTuple_New(0);
 
                     if (Twidth <= 64) begin
                         tmp = PyLong_AsUnsignedLongLong(intval)[Twidth-1:0];
                     end else begin
-                        PyObject rshift = PyObject_GetAttrString(intval, "__rshift__");
+                        rshift = PyObject_GetAttrString(intval, "__rshift__");
                         $display("TODO: implement >64-bit");
                         $finish;
                     end

@@ -42,12 +42,15 @@ class RspFifoDecoratorImpl(InterfaceDecoratorImplBase):
 
         self.proxy = TlmMethod(T.__name__, TlmMethodKind.Rsp, None, rtype)
 
-        async def closure(self, obj):
+        async def closure(self):
             model = self._model
+            obj = params[0][0]()
             if T.__name__ not in model._if_m.keys():
                 raise Exception("Method %s is unbound" % T.__name__)
             ifc = model._if_m[T.__name__]
-            await ifc.get(obj)
+            ival = await ifc.get()
+            # TODO: populate obj from ival
+            return obj
         return closure
 
     def register(self, T, Tp):

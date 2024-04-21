@@ -40,7 +40,7 @@ class StreamRgy(object):
             be = Backend.inst()
 
             stream_c = len(self._stream_m)
-            for _ in 16:
+            for _ in range(16):
                 ev = be.mkEvent()
 
                 if stream_c == len(self._stream_m):
@@ -73,6 +73,7 @@ class StreamRgy(object):
             ifcs = self._stream_m[path]
 
             if_type_info = TypeInfoTlmIF.get(TypeInfo.get(type(ifc)))
+            print("ifcs: %s" % str(ifcs), flush=True)
             for m in if_type_info._if_method_l:
                 if_t = None
                 for i in ifcs:

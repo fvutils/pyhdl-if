@@ -15,11 +15,12 @@ class PyHdlDpiTimeCB implements PyHdlPiRunnable;
     endfunction
 
     virtual task run();
+        PyObject backend, args, callCallback;
         #(m_time_ps * 1ps);
         if (m_cb_id != -1) begin
-            PyObject backend = pyhdl_pi_if_getBackend();
-            PyObject args = PyTuple_New(1);
-            PyObject callCallback = PyObject_GetAttrString(backend, "callCallback");
+            backend = pyhdl_pi_if_getBackend();
+            args = PyTuple_New(1);
+            callCallback = PyObject_GetAttrString(backend, "callCallback");
             void'(PyTuple_SetItem(args, 0, m_target));
             if (pyhdl_pi_if_HandleErr(PyObject_Call(callCallback, args, null)) == null) begin
                 $display("Fatal Error: failed to invoke timed callback");

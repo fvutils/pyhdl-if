@@ -1,9 +1,11 @@
 
 function automatic bit __pyhdl_if_tlm_init();
-        PyObject stream_rgy_t, inst_m;
-        PyObject args;
-        PyObject hdl_if_tlm = pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if.tlm"));
-        PyObject hdl_if_impl_tlm = pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if.impl.tlm"));
+        PyObject args, stream_rgy_t, inst_m;
+        PyObject hdl_if_tlm, hdl_if_impl_tlm;
+
+        hdl_if_tlm = pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if.tlm"));
+        hdl_if_impl_tlm = pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if.impl.tlm"));
+        
         if (hdl_if_tlm == null) begin
             $display("Fatal Error: Failed to load hdl_if.tlm package");
             $finish;

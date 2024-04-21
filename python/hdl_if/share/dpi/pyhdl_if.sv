@@ -89,12 +89,11 @@ package pyhdl_if;
 
     // Allows the Python environment to process events
     function automatic void pyhdl_pi_if_idle();
-        PyObject args;
-        PyObject idle_h;
+        PyObject args, idle_h, backend_m, backend_c, inst_m;
         if (__backend == null) begin
-            PyObject backend_m = PyImport_ImportModule("hdl_if.backend");
-            PyObject backend_c = PyObject_GetAttrString(backend_m, "Backend");
-            PyObject inst_m = PyObject_GetAttrString(backend_c, "inst");
+            backend_m = PyImport_ImportModule("hdl_if.backend");
+            backend_c = PyObject_GetAttrString(backend_m, "Backend");
+            inst_m = PyObject_GetAttrString(backend_c, "inst");
             args = PyTuple_New(0);
             __backend = PyObject_Call(inst_m, args, null);
             Py_DecRef(args);
@@ -106,11 +105,11 @@ package pyhdl_if;
     endfunction
 
     function automatic PyObject pyhdl_pi_if_getBackend();
-        PyObject args;
+        PyObject args, backend_m, backend_c, inst_m;
         if (__backend == null) begin
-            PyObject backend_m = PyImport_ImportModule("hdl_if.backend");
-            PyObject backend_c = PyObject_GetAttrString(backend_m, "Backend");
-            PyObject inst_m = PyObject_GetAttrString(backend_c, "inst");
+            backend_m = PyImport_ImportModule("hdl_if.backend");
+            backend_c = PyObject_GetAttrString(backend_m, "Backend");
+            inst_m = PyObject_GetAttrString(backend_c, "inst");
             args = PyTuple_New(0);
             __backend = PyObject_Call(inst_m, args, null);
             Py_DecRef(args);
@@ -127,7 +126,8 @@ package pyhdl_if;
 
     
     function automatic PyObject pyhdl_pi_if_mkTask(PyObject callable);
-        PyObject args = PyTuple_New(1);
+        PyObject args;
+        args = PyTuple_New(1);
         void'(PyTuple_SetItem(args, 0, callable));
         return pyhdl_pi_if_HandleErr(PyObject_Call(__mkTask, args, null));
     endfunction
@@ -141,9 +141,11 @@ package pyhdl_if;
         string                  pkg_name,
         string                  cls_name,
         PyObject                args[$]);
-        PyObject pkg = PyImport_ImportModule(pkg_name);
-        PyObject cls_t = PyObject_GetAttrString(pkg, cls_name);
-        PyObject args_o = PyTuple_New(args.size());
+        PyObject pkg, cls_t, args_o;
+
+        pkg = PyImport_ImportModule(pkg_name);
+        cls_t = PyObject_GetAttrString(pkg, cls_name);
+        args_o = PyTuple_New(args.size());
 
         foreach (args[i]) begin
             PyTuple_SetItem(args_o, i, args[i]);
@@ -197,8 +199,9 @@ package pyhdl_if;
         stream_kind_e   kind,
         string          iname,
         ICallApi        impl);
-        PyObject args = PyTuple_New(1);
-        PyObject obj_h;
+        PyObject args, obj_h;
+        
+        args = PyTuple_New(1);
 
         void'(PyTuple_SetItem(args, 0, PyUnicode_FromString(iname)));
 
