@@ -6,7 +6,7 @@ class MyC(object):
 
     @hif.exptask
     async def body(self):
-        exp = []
+        exp = [0]*100
         for i in range(100):
             await self.write(4*i, exp[i])
         for i in range(100):

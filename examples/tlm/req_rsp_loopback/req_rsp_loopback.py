@@ -45,7 +45,7 @@ async def main():
         print("<-- req", flush=True)
 
         rsp = await ifc.rsp()
-        print("rsp: %s" % str(rsp.data))
+        print("rsp: 0x%08x" % rsp.data)
         print("done", flush=True)
 
         req.data += 1

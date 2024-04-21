@@ -19,6 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
+import ctypes
 from .interface_decorator_impl_base import InterfaceDecoratorImplBase
 
 class RspFifoDecoratorImpl(InterfaceDecoratorImplBase):
@@ -48,7 +49,7 @@ class RspFifoDecoratorImpl(InterfaceDecoratorImplBase):
                 raise Exception("Method %s is unbound" % T.__name__)
             ifc = model._if_m[T.__name__]
             ival = await ifc.get()
-            sz = int(((ival-1)/8)+1)
+            sz = ctypes.sizeof(rtype)
             bval = bytearray(sz)
 
             for i in range(sz):
@@ -56,8 +57,6 @@ class RspFifoDecoratorImpl(InterfaceDecoratorImplBase):
                 ival >>= 8
 
             obj = rtype.from_buffer_copy(bval)
-
-            # TODO: populate obj from ival
 
             return obj
         return closure

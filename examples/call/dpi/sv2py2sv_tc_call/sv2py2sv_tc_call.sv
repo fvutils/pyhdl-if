@@ -7,8 +7,8 @@ package pkg;
             output int unsigned retval, 
             input int unsigned addr);
             #1ns;
-            $display("read: %0d", v);
-            retval = v+1;
+            $display("read: 0x%08h", addr);
+            retval = addr+1;
         endtask
 
 	    virtual task write(

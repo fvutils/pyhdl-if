@@ -57,6 +57,7 @@ interface tlm_hdl2hvl_fifo #(
         while (count == 0 || pop == 1) begin
             @(posedge clock);
         end
+
         dat_o = fifo[rptr];
         pop = 1;
     endtask

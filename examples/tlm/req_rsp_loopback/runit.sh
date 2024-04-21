@@ -13,8 +13,6 @@ if test $? -ne 0; then exit 1; fi
 
 echo "share_call: '${share_call}'"
 
-export OPT="-g"
-
 verilator --binary \
 	+incdir+${share}/dpi \
 	${share}/dpi/pyhdl_if.sv \
@@ -26,6 +24,6 @@ verilator --binary \
 if test $? -ne 0; then exit 1; fi
 
 #PYTHONMALLOC=malloc valgrind --tool=memcheck ./obj_dir/Vreq_rsp_loopback
-./obj_dir/Vreq_rsp_loopback
+time ./obj_dir/Vreq_rsp_loopback
 #gdb --args ./obj_dir/Vreq_rsp_loopback
 

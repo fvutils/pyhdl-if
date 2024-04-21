@@ -92,8 +92,9 @@ interface tlm_hvl2hdl_fifo #(
                     intval = PyTuple_GetItem(args, 0);
 
                     if (Twidth <= 64) begin
-                        tmp = PyLong_AsUnsignedLongLong(intval)[Twidth-1:0];
-                        $display("tmp=%08h", tmp);
+                        longint unsigned lval;
+                        lval = PyLong_AsUnsignedLongLong(intval);
+                        tmp = lval[Twidth-1:0];
                     end else begin
                         rshift = PyObject_GetAttrString(intval, "__rshift__");
                         $display("TODO: implement >64-bit");

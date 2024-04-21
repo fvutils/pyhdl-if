@@ -32,6 +32,18 @@ module req_rsp_loopback;
         .rsp_data(req_data)
     );
 
+/*
+    initial begin
+        bit[31:0]     tmp;
+
+        forever begin
+            u_loopback.rsp.get(tmp);
+            $display("Have tmp: %08h", tmp);
+        end
+
+    end
+ */
+
     always @(posedge clock) begin
 	    if (!reset && req_valid && req_ready) begin
 		    $display("req_data: 0x%08h", req_data);
@@ -44,8 +56,8 @@ module req_rsp_loopback;
         automatic PyObject init = PyObject_GetAttrString(req_rsp_loopback_m, "init");
         automatic PyObject args = PyTuple_New(0);
 
-        $dumpfile("trace.vcd");
-        $dumpvars();
+//        $dumpfile("trace.vcd");
+//        $dumpvars();
 
         pyhdl_pi_if_start();
 
