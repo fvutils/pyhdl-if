@@ -31,12 +31,13 @@
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#undef DEBUG_INIT
+#define DEBUG_INIT
 
 #ifdef DEBUG_INIT
 #define DEBUG(fmt, ...) fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout)
@@ -44,16 +45,21 @@
 #define DEBUG(fmt, ...)
 #endif
 
+typedef void *lib_h_t;
+static lib_h_t find_loaded_lib(const char *sym);
+
+#include "py_api_if.h"
+#include "py_vpi_if.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef void *lib_h_t;
-static int _python_initialized = 0;
+static lib_h_t _python_lib = 0;
 
-static int init_python();
+static lib_h_t init_python();
 
-typedef void *PyObject;
+//typedef void *PyObject;
 
 /*******************************************************************
  * pyhdl_if_dpi_entry()
@@ -65,7 +71,7 @@ int pyhdl_if_dpi_entry() {
     PyObject *null_args;
     DEBUG("entry.c");
 
-    if (init_python() == -1) {
+    if (!init_python()) {
         DEBUG("pyhdl-pi-if: Failed to initialize Python");
         return -1;
     }
@@ -81,28 +87,47 @@ int pyhdl_if_dpi_entry() {
 void pyhdl_if_vpi_entry() {
     PyObject *hdl_pi_if_pkg, *hdl_pi_if_init, *res;
     PyObject *null_args;
+    lib_h_t pylib, vpilib;
+
+    uint32_t i;
     DEBUG("entry.c");
 
-    if (init_python() == -1) {
+    if (!(pylib=init_python())) {
         DEBUG("pyhdl-pi-if: Failed to initialize Python");
-        return -1;
+        return;
     }
 
-// TODO:
-#ifdef UNDEFINED
+    if (!py_load_api_struct(pylib)) {
+        DEBUG("pyhdl-if: Failed to load Python API");
+        return;
+    }
+
+    if (!(vpilib=find_loaded_lib("vpi_iterate"))) {
+        DEBUG("pyhdl-if: Failed to load VPI symbols");
+        return;
+    }
+
+    DEBUG("vpillib: %p", vpilib);
+
+    if (!vpi_load_api_struct(vpilib)) {
+        DEBUG("pyhdl-if: Failed to load VPI API\n");
+        return;
+    }
+
     // Just in case...
     DEBUG("--> Py_Initialize");
-    Py_Initialize();
+    prv_py_api.Py_Initialize();
     DEBUG("<-- Py_Initialize");
 
-    hdl_pi_if_pkg = PyImport_ImportModule("hdl_pi_if");
+    hdl_pi_if_pkg = prv_py_api.PyImport_ImportModule("hdl_if.impl.vpi");
     DEBUG("hdl_pi_if_pkg=%p", hdl_pi_if_pkg);
-    hdl_pi_if_init = PyObject_GetAttrString(hdl_pi_if_pkg, "vpi_init");
+    hdl_pi_if_init = prv_py_api.PyObject_GetAttrString(hdl_pi_if_pkg, "vpi_init");
     DEBUG("hdl_pi_if_init=%p", hdl_pi_if_init);
-    null_args = PyTuple_New(0);
-    res = PyObject_Call(hdl_pi_if_init, null_args, 0);
+    null_args = prv_py_api.PyTuple_New(0);
+    res = prv_py_api.PyObject_Call(hdl_pi_if_init, null_args, 0);
     DEBUG("res=%p", res);
-#endif
+
+    vpi_register_python_tf();
 }
 
 /*******************************************************************
@@ -121,27 +146,20 @@ static lib_h_t find_python_lib();
  * - Discover which library implements Python
  * - On Linux, ensure this library is reloaded with global visibility
  *******************************************************************/
-int init_python() {
-    if (!_python_initialized) {
-        lib_h_t pylib = find_python_lib();
-
-        if (!pylib) {
-            return 0;
-        }
-        
-        _python_initialized = 1;
+lib_h_t init_python() {
+    if (!_python_lib) {
+        _python_lib = find_python_lib();
     }
 
-    return _python_initialized;
+    return _python_lib;
 }
 
-static lib_h_t find_loaded_python_lib();
 static lib_h_t find_config_python_lib();
 lib_h_t find_python_lib() {
     lib_h_t lib = 0;
 
     // First, check to see if the library is already loaded
-    if (!(lib = find_loaded_python_lib())) {
+    if (!(lib = find_loaded_lib("Py_Initialize"))) {
         lib = find_config_python_lib();
     }
 
@@ -159,13 +177,24 @@ lib_h_t find_loaded_python_lib(lib_h_t *lib_h) {
 
 }
 #else // Linux
-lib_h_t find_loaded_python_lib() {
+lib_h_t find_loaded_lib(const char *sym) {
     lib_h_t ret = 0;
     pid_t pid = getpid();
     char mapfile_path[256];
     FILE *map_fp;
 
-    DEBUG("find_python_lib(linux)");
+    DEBUG("find_loaded_lib(linux) %s", sym);
+
+    // First, try loading the executable
+    {
+        ret = dlopen(0, RTLD_LAZY);
+        if (dlsym(ret, sym)) {
+            DEBUG("returning %p", ret);
+            return ret;
+        } else {
+            ret = 0;
+        }
+    }
 
     sprintf(mapfile_path, "/proc/%d/maps", pid);
     map_fp = fopen(mapfile_path, "r");
@@ -214,8 +243,8 @@ lib_h_t find_loaded_python_lib() {
                 // Check to see if this is a Python library
                 lib_h_t lib = dlopen(path, RTLD_LAZY);
                 if (lib) {
-                    void *sym = dlsym(lib, "Py_Initialize");
-                    if (sym) {
+                    void *sym_h = dlsym(lib, sym);
+                    if (sym_h) {
                         DEBUG("Found ");
                         // Re-open the library in global model
                         lib = dlopen(path, RTLD_LAZY | RTLD_GLOBAL);

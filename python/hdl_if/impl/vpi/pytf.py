@@ -23,10 +23,10 @@
 import ctypes
 import os
 import sysconfig
-from .api import t_vpi_systf_data, t_vpi_value
+from .api import t_vpi_systf_data, t_vpi_value, t_vpi_vecval
 from .api import vpi_free_object, vpi_handle, vpi_iterate, vpi_scan
-from .api import vpi_put_value
-from .api import vpiArgument, vpiIntVal, vpiSysFuncSized, vpiSysTfCall, vpiNoDelay
+from .api import vpi_get_value, vpi_put_value
+from .api import vpiArgument, vpiIntVal, vpiStringVal, vpiVectorVal, vpiSysFuncSized, vpiSysTfCall, vpiNoDelay
 
 sizetf_f = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(ctypes.c_byte))
 
@@ -38,3619 +38,2970 @@ def sizetf64(p):
     return 64
 sizetf64_fp = sizetf_f(sizetf64)
 
+tmp_vecval = (t_vpi_vecval * 4)()
+
+def vpi_get_pval_int(arg_it):
+    pval = vpi_scan(arg_it)
+    val_s = t_vpi_value()
+    val_s.format = vpiIntVal
+    vpi_get_value(pval, ctypes.byref(val_s))
+    return val_s.value.integer
+
+def vpi_get_pval_ptr(arg_it):
+    pval = vpi_scan(arg_it)
+    val_s = t_vpi_value()
+    val_s.format = vpiVectorVal
+    val_s.value.vector = ctypes.cast(ctypes.byref(tmp_vecval), ctypes.POINTER(t_vpi_vecval))
+    vpi_get_value(pval, ctypes.byref(val_s))
+    ptr_ival = tmp_vecval[1].aval
+    ptr_ival <<= 32
+    ptr_ival |= tmp_vecval[0].aval
+    print("ptr_ival: 0x%08x" % ptr_ival)
+    return ctypes.cast(ptr_ival, ctypes.c_void_p)
+
+def vpi_get_pval_str(arg_it):
+    pval = vpi_scan(arg_it)
+    val_s = t_vpi_value()
+    val_s.format = vpiStringVal
+    vpi_get_value(pval, ctypes.byref(val_s))
+    return val_s.value.str.decode()
+
+def vpi_set_val_int(val_h, val):
+    val_s = t_vpi_value()
+    val_s.format = vpiIntVal
+    val_s.value.integer = val
+    vpi_put_value(val_h, ctypes.byref(val_s), None, vpiNoDelay)
+
+def vpi_set_val_ptr(val_h, val):
+    val_s = t_vpi_value()
+    val_s.format = vpiVectorVal
+    val_s.value.vector = ctypes.cast(ctypes.byref(tmp_vecval), ctypes.POINTER(t_vpi_vecval))
+    pval = ctypes.pointer(val)
+    print("pval: %s" % str(pval))
+    ival = id(pval.contents.value)
+    print("ival: %08x" % ival)
+    tmp_vecval[0].aval = ival
+    ival >>= 32
+    tmp_vecval[1].aval = ival
+    vpi_put_value(val_h, ctypes.byref(val_s), None, vpiNoDelay)
+
+def vpi_set_val_str(val_h, val):
+    val_s = t_vpi_value()
+    val_s.format = vpiStringVal
+    val_s.value.str = val.encode()
+    vpi_put_value(val_h, ctypes.byref(val_s), None, vpiNoDelay)
+
 __PyErr_BadArgument_fp = None
 __PyErr_BadArgument_f = None
 __PyErr_BadArgument_tf = t_vpi_systf_data()
 def __PyErr_BadArgument(ud):
-    print("Hello from PyErr_BadArgument", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_BadArgument_f()
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyErr_CheckSignals_fp = None
 __PyErr_CheckSignals_f = None
 __PyErr_CheckSignals_tf = t_vpi_systf_data()
 def __PyErr_CheckSignals(ud):
-    print("Hello from PyErr_CheckSignals", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_CheckSignals_f()
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyErr_Clear_fp = None
 __PyErr_Clear_f = None
 __PyErr_Clear_tf = t_vpi_systf_data()
 def __PyErr_Clear(ud):
-    print("Hello from PyErr_Clear", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_Clear_f()
     return 0
 
 __PyErr_Display_fp = None
 __PyErr_Display_f = None
 __PyErr_Display_tf = t_vpi_systf_data()
 def __PyErr_Display(ud):
-    print("Hello from PyErr_Display", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_Display_f(__p0, __p1, __p2)
     return 0
 
 __PyErr_ExceptionMatches_fp = None
 __PyErr_ExceptionMatches_f = None
 __PyErr_ExceptionMatches_tf = t_vpi_systf_data()
 def __PyErr_ExceptionMatches(ud):
-    print("Hello from PyErr_ExceptionMatches", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_ExceptionMatches_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyErr_GivenExceptionMatches_fp = None
 __PyErr_GivenExceptionMatches_f = None
 __PyErr_GivenExceptionMatches_tf = t_vpi_systf_data()
 def __PyErr_GivenExceptionMatches(ud):
-    print("Hello from PyErr_GivenExceptionMatches", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_GivenExceptionMatches_f(__p0, __p1)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyErr_NewException_fp = None
 __PyErr_NewException_f = None
 __PyErr_NewException_tf = t_vpi_systf_data()
 def __PyErr_NewException(ud):
-    print("Hello from PyErr_NewException", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
+    __base = vpi_get_pval_ptr(__arg_h)
+    __dict = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_NewException_f(__name.encode(), __base, __dict)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_NewExceptionWithDoc_fp = None
 __PyErr_NewExceptionWithDoc_f = None
 __PyErr_NewExceptionWithDoc_tf = t_vpi_systf_data()
 def __PyErr_NewExceptionWithDoc(ud):
-    print("Hello from PyErr_NewExceptionWithDoc", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
+    __doc = vpi_get_pval_str(__arg_h)
+    __base = vpi_get_pval_ptr(__arg_h)
+    __dict = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_NewExceptionWithDoc_f(__name.encode(), __doc.encode(), __base, __dict)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_NoMemory_fp = None
 __PyErr_NoMemory_f = None
 __PyErr_NoMemory_tf = t_vpi_systf_data()
 def __PyErr_NoMemory(ud):
-    print("Hello from PyErr_NoMemory", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_NoMemory_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_Occurred_fp = None
 __PyErr_Occurred_f = None
 __PyErr_Occurred_tf = t_vpi_systf_data()
 def __PyErr_Occurred(ud):
-    print("Hello from PyErr_Occurred", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_Occurred_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_Print_fp = None
 __PyErr_Print_f = None
 __PyErr_Print_tf = t_vpi_systf_data()
 def __PyErr_Print(ud):
-    print("Hello from PyErr_Print", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_Print_f()
     return 0
 
 __PyErr_PrintEx_fp = None
 __PyErr_PrintEx_f = None
 __PyErr_PrintEx_tf = t_vpi_systf_data()
 def __PyErr_PrintEx(ud):
-    print("Hello from PyErr_PrintEx", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_PrintEx_f(__p0)
     return 0
 
 __PyErr_ProgramText_fp = None
 __PyErr_ProgramText_f = None
 __PyErr_ProgramText_tf = t_vpi_systf_data()
 def __PyErr_ProgramText(ud):
-    print("Hello from PyErr_ProgramText", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __filename = vpi_get_pval_str(__arg_h)
+    __lineno = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_ProgramText_f(__filename.encode(), __lineno)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_ProgramTextObject_fp = None
 __PyErr_ProgramTextObject_f = None
 __PyErr_ProgramTextObject_tf = t_vpi_systf_data()
 def __PyErr_ProgramTextObject(ud):
-    print("Hello from PyErr_ProgramTextObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __filename = vpi_get_pval_ptr(__arg_h)
+    __lineno = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_ProgramTextObject_f(__filename, __lineno)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_RangedSyntaxLocationObject_fp = None
 __PyErr_RangedSyntaxLocationObject_f = None
 __PyErr_RangedSyntaxLocationObject_tf = t_vpi_systf_data()
 def __PyErr_RangedSyntaxLocationObject(ud):
-    print("Hello from PyErr_RangedSyntaxLocationObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __filename = vpi_get_pval_ptr(__arg_h)
+    __lineno = vpi_get_pval_int(__arg_h)
+    __col_offset = vpi_get_pval_int(__arg_h)
+    __end_lineno = vpi_get_pval_int(__arg_h)
+    __end_col_offset = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_RangedSyntaxLocationObject_f(__filename, __lineno, __col_offset, __end_lineno, __end_col_offset)
     return 0
 
 __PyErr_Restore_fp = None
 __PyErr_Restore_f = None
 __PyErr_Restore_tf = t_vpi_systf_data()
 def __PyErr_Restore(ud):
-    print("Hello from PyErr_Restore", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_Restore_f(__p0, __p1, __p2)
     return 0
 
 __PyErr_SetExcInfo_fp = None
 __PyErr_SetExcInfo_f = None
 __PyErr_SetExcInfo_tf = t_vpi_systf_data()
 def __PyErr_SetExcInfo(ud):
-    print("Hello from PyErr_SetExcInfo", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetExcInfo_f(__p0, __p1, __p2)
     return 0
 
 __PyErr_SetFromErrno_fp = None
 __PyErr_SetFromErrno_f = None
 __PyErr_SetFromErrno_tf = t_vpi_systf_data()
 def __PyErr_SetFromErrno(ud):
-    print("Hello from PyErr_SetFromErrno", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetFromErrno_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_SetFromErrnoWithFilename_fp = None
 __PyErr_SetFromErrnoWithFilename_f = None
 __PyErr_SetFromErrnoWithFilename_tf = t_vpi_systf_data()
 def __PyErr_SetFromErrnoWithFilename(ud):
-    print("Hello from PyErr_SetFromErrnoWithFilename", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __exc = vpi_get_pval_ptr(__arg_h)
+    __filename = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetFromErrnoWithFilename_f(__exc, __filename.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_SetFromErrnoWithFilenameObject_fp = None
 __PyErr_SetFromErrnoWithFilenameObject_f = None
 __PyErr_SetFromErrnoWithFilenameObject_tf = t_vpi_systf_data()
 def __PyErr_SetFromErrnoWithFilenameObject(ud):
-    print("Hello from PyErr_SetFromErrnoWithFilenameObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetFromErrnoWithFilenameObject_f(__p0, __p1)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_SetFromErrnoWithFilenameObjects_fp = None
 __PyErr_SetFromErrnoWithFilenameObjects_f = None
 __PyErr_SetFromErrnoWithFilenameObjects_tf = t_vpi_systf_data()
 def __PyErr_SetFromErrnoWithFilenameObjects(ud):
-    print("Hello from PyErr_SetFromErrnoWithFilenameObjects", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetFromErrnoWithFilenameObjects_f(__p0, __p1, __p2)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_SetImportError_fp = None
 __PyErr_SetImportError_f = None
 __PyErr_SetImportError_tf = t_vpi_systf_data()
 def __PyErr_SetImportError(ud):
-    print("Hello from PyErr_SetImportError", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetImportError_f(__p0, __p1, __p2)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_SetImportErrorSubclass_fp = None
 __PyErr_SetImportErrorSubclass_f = None
 __PyErr_SetImportErrorSubclass_tf = t_vpi_systf_data()
 def __PyErr_SetImportErrorSubclass(ud):
-    print("Hello from PyErr_SetImportErrorSubclass", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
+    __p3 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetImportErrorSubclass_f(__p0, __p1, __p2, __p3)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyErr_SetInterrupt_fp = None
 __PyErr_SetInterrupt_f = None
 __PyErr_SetInterrupt_tf = t_vpi_systf_data()
 def __PyErr_SetInterrupt(ud):
-    print("Hello from PyErr_SetInterrupt", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetInterrupt_f()
     return 0
 
 __PyErr_SetInterruptEx_fp = None
 __PyErr_SetInterruptEx_f = None
 __PyErr_SetInterruptEx_tf = t_vpi_systf_data()
 def __PyErr_SetInterruptEx(ud):
-    print("Hello from PyErr_SetInterruptEx", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __signum = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetInterruptEx_f(__signum)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyErr_SetNone_fp = None
 __PyErr_SetNone_f = None
 __PyErr_SetNone_tf = t_vpi_systf_data()
 def __PyErr_SetNone(ud):
-    print("Hello from PyErr_SetNone", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetNone_f(__p0)
     return 0
 
 __PyErr_SetObject_fp = None
 __PyErr_SetObject_f = None
 __PyErr_SetObject_tf = t_vpi_systf_data()
 def __PyErr_SetObject(ud):
-    print("Hello from PyErr_SetObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetObject_f(__p0, __p1)
     return 0
 
 __PyErr_SetString_fp = None
 __PyErr_SetString_f = None
 __PyErr_SetString_tf = t_vpi_systf_data()
 def __PyErr_SetString(ud):
-    print("Hello from PyErr_SetString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __exception = vpi_get_pval_ptr(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SetString_f(__exception, ___string.encode())
     return 0
 
 __PyErr_SyntaxLocation_fp = None
 __PyErr_SyntaxLocation_f = None
 __PyErr_SyntaxLocation_tf = t_vpi_systf_data()
 def __PyErr_SyntaxLocation(ud):
-    print("Hello from PyErr_SyntaxLocation", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __filename = vpi_get_pval_str(__arg_h)
+    __lineno = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SyntaxLocation_f(__filename.encode(), __lineno)
     return 0
 
 __PyErr_SyntaxLocationEx_fp = None
 __PyErr_SyntaxLocationEx_f = None
 __PyErr_SyntaxLocationEx_tf = t_vpi_systf_data()
 def __PyErr_SyntaxLocationEx(ud):
-    print("Hello from PyErr_SyntaxLocationEx", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __filename = vpi_get_pval_str(__arg_h)
+    __lineno = vpi_get_pval_int(__arg_h)
+    __col_offset = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SyntaxLocationEx_f(__filename.encode(), __lineno, __col_offset)
     return 0
 
 __PyErr_SyntaxLocationObject_fp = None
 __PyErr_SyntaxLocationObject_f = None
 __PyErr_SyntaxLocationObject_tf = t_vpi_systf_data()
 def __PyErr_SyntaxLocationObject(ud):
-    print("Hello from PyErr_SyntaxLocationObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __filename = vpi_get_pval_ptr(__arg_h)
+    __lineno = vpi_get_pval_int(__arg_h)
+    __col_offset = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_SyntaxLocationObject_f(__filename, __lineno, __col_offset)
     return 0
 
 __PyErr_WarnEx_fp = None
 __PyErr_WarnEx_f = None
 __PyErr_WarnEx_tf = t_vpi_systf_data()
 def __PyErr_WarnEx(ud):
-    print("Hello from PyErr_WarnEx", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __category = vpi_get_pval_ptr(__arg_h)
+    __message = vpi_get_pval_str(__arg_h)
+    __stack_level = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_WarnEx_f(__category, __message.encode(), __stack_level)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyErr_WarnExplicit_fp = None
 __PyErr_WarnExplicit_f = None
 __PyErr_WarnExplicit_tf = t_vpi_systf_data()
 def __PyErr_WarnExplicit(ud):
-    print("Hello from PyErr_WarnExplicit", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __category = vpi_get_pval_ptr(__arg_h)
+    __message = vpi_get_pval_str(__arg_h)
+    __filename = vpi_get_pval_str(__arg_h)
+    __lineno = vpi_get_pval_int(__arg_h)
+    ___module = vpi_get_pval_str(__arg_h)
+    __registry = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_WarnExplicit_f(__category, __message.encode(), __filename.encode(), __lineno, ___module.encode(), __registry)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyErr_WarnExplicitObject_fp = None
 __PyErr_WarnExplicitObject_f = None
 __PyErr_WarnExplicitObject_tf = t_vpi_systf_data()
 def __PyErr_WarnExplicitObject(ud):
-    print("Hello from PyErr_WarnExplicitObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __category = vpi_get_pval_ptr(__arg_h)
+    __message = vpi_get_pval_ptr(__arg_h)
+    __filename = vpi_get_pval_ptr(__arg_h)
+    __lineno = vpi_get_pval_int(__arg_h)
+    ___module = vpi_get_pval_ptr(__arg_h)
+    __registry = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_WarnExplicitObject_f(__category, __message, __filename, __lineno, ___module, __registry)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyErr_WriteUnraisable_fp = None
 __PyErr_WriteUnraisable_f = None
 __PyErr_WriteUnraisable_tf = t_vpi_systf_data()
 def __PyErr_WriteUnraisable(ud):
-    print("Hello from PyErr_WriteUnraisable", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyErr_WriteUnraisable_f(__p0)
     return 0
 
 __PyEval_EvalCode_fp = None
 __PyEval_EvalCode_f = None
 __PyEval_EvalCode_tf = t_vpi_systf_data()
 def __PyEval_EvalCode(ud):
-    print("Hello from PyEval_EvalCode", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyEval_EvalCode_f(__p0, __p1, __p2)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyEval_GetBuiltins_fp = None
 __PyEval_GetBuiltins_f = None
 __PyEval_GetBuiltins_tf = t_vpi_systf_data()
 def __PyEval_GetBuiltins(ud):
-    print("Hello from PyEval_GetBuiltins", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyEval_GetBuiltins_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyEval_GetFuncDesc_fp = None
 __PyEval_GetFuncDesc_f = None
 __PyEval_GetFuncDesc_tf = t_vpi_systf_data()
 def __PyEval_GetFuncDesc(ud):
-    print("Hello from PyEval_GetFuncDesc", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyEval_GetFuncDesc_f(__p0)
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __PyEval_GetFuncName_fp = None
 __PyEval_GetFuncName_f = None
 __PyEval_GetFuncName_tf = t_vpi_systf_data()
 def __PyEval_GetFuncName(ud):
-    print("Hello from PyEval_GetFuncName", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyEval_GetFuncName_f(__p0)
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __PyEval_GetGlobals_fp = None
 __PyEval_GetGlobals_f = None
 __PyEval_GetGlobals_tf = t_vpi_systf_data()
 def __PyEval_GetGlobals(ud):
-    print("Hello from PyEval_GetGlobals", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyEval_GetGlobals_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyEval_GetLocals_fp = None
 __PyEval_GetLocals_f = None
 __PyEval_GetLocals_tf = t_vpi_systf_data()
 def __PyEval_GetLocals(ud):
-    print("Hello from PyEval_GetLocals", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyEval_GetLocals_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_AddModule_fp = None
 __PyImport_AddModule_f = None
 __PyImport_AddModule_tf = t_vpi_systf_data()
 def __PyImport_AddModule(ud):
-    print("Hello from PyImport_AddModule", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_AddModule_f(__name.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_AddModuleObject_fp = None
 __PyImport_AddModuleObject_f = None
 __PyImport_AddModuleObject_tf = t_vpi_systf_data()
 def __PyImport_AddModuleObject(ud):
-    print("Hello from PyImport_AddModuleObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_AddModuleObject_f(__name)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_ExecCodeModule_fp = None
 __PyImport_ExecCodeModule_f = None
 __PyImport_ExecCodeModule_tf = t_vpi_systf_data()
 def __PyImport_ExecCodeModule(ud):
-    print("Hello from PyImport_ExecCodeModule", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
+    __co = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ExecCodeModule_f(__name.encode(), __co)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_ExecCodeModuleEx_fp = None
 __PyImport_ExecCodeModuleEx_f = None
 __PyImport_ExecCodeModuleEx_tf = t_vpi_systf_data()
 def __PyImport_ExecCodeModuleEx(ud):
-    print("Hello from PyImport_ExecCodeModuleEx", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
+    __co = vpi_get_pval_ptr(__arg_h)
+    __pathname = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ExecCodeModuleEx_f(__name.encode(), __co, __pathname.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_ExecCodeModuleObject_fp = None
 __PyImport_ExecCodeModuleObject_f = None
 __PyImport_ExecCodeModuleObject_tf = t_vpi_systf_data()
 def __PyImport_ExecCodeModuleObject(ud):
-    print("Hello from PyImport_ExecCodeModuleObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_ptr(__arg_h)
+    __co = vpi_get_pval_ptr(__arg_h)
+    __pathname = vpi_get_pval_ptr(__arg_h)
+    __cpathname = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ExecCodeModuleObject_f(__name, __co, __pathname, __cpathname)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_ExecCodeModuleWithPathnames_fp = None
 __PyImport_ExecCodeModuleWithPathnames_f = None
 __PyImport_ExecCodeModuleWithPathnames_tf = t_vpi_systf_data()
 def __PyImport_ExecCodeModuleWithPathnames(ud):
-    print("Hello from PyImport_ExecCodeModuleWithPathnames", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
+    __co = vpi_get_pval_ptr(__arg_h)
+    __pathname = vpi_get_pval_str(__arg_h)
+    __cpathname = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ExecCodeModuleWithPathnames_f(__name.encode(), __co, __pathname.encode(), __cpathname.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_GetImporter_fp = None
 __PyImport_GetImporter_f = None
 __PyImport_GetImporter_tf = t_vpi_systf_data()
 def __PyImport_GetImporter(ud):
-    print("Hello from PyImport_GetImporter", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __path = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_GetImporter_f(__path)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_GetMagicNumber_fp = None
 __PyImport_GetMagicNumber_f = None
 __PyImport_GetMagicNumber_tf = t_vpi_systf_data()
 def __PyImport_GetMagicNumber(ud):
-    print("Hello from PyImport_GetMagicNumber", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_GetMagicNumber_f()
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyImport_GetMagicTag_fp = None
 __PyImport_GetMagicTag_f = None
 __PyImport_GetMagicTag_tf = t_vpi_systf_data()
 def __PyImport_GetMagicTag(ud):
-    print("Hello from PyImport_GetMagicTag", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_GetMagicTag_f()
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __PyImport_GetModule_fp = None
 __PyImport_GetModule_f = None
 __PyImport_GetModule_tf = t_vpi_systf_data()
 def __PyImport_GetModule(ud):
-    print("Hello from PyImport_GetModule", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_GetModule_f(__name)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_GetModuleDict_fp = None
 __PyImport_GetModuleDict_f = None
 __PyImport_GetModuleDict_tf = t_vpi_systf_data()
 def __PyImport_GetModuleDict(ud):
-    print("Hello from PyImport_GetModuleDict", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_GetModuleDict_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_Import_fp = None
 __PyImport_Import_f = None
 __PyImport_Import_tf = t_vpi_systf_data()
 def __PyImport_Import(ud):
-    print("Hello from PyImport_Import", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_Import_f(__name)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_ImportFrozenModule_fp = None
 __PyImport_ImportFrozenModule_f = None
 __PyImport_ImportFrozenModule_tf = t_vpi_systf_data()
 def __PyImport_ImportFrozenModule(ud):
-    print("Hello from PyImport_ImportFrozenModule", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ImportFrozenModule_f(__name.encode())
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyImport_ImportFrozenModuleObject_fp = None
 __PyImport_ImportFrozenModuleObject_f = None
 __PyImport_ImportFrozenModuleObject_tf = t_vpi_systf_data()
 def __PyImport_ImportFrozenModuleObject(ud):
-    print("Hello from PyImport_ImportFrozenModuleObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ImportFrozenModuleObject_f(__name)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyImport_ImportModule_fp = None
 __PyImport_ImportModule_f = None
 __PyImport_ImportModule_tf = t_vpi_systf_data()
 def __PyImport_ImportModule(ud):
-    print("Hello from PyImport_ImportModule", flush=True)
+    import importlib
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    print("--> ImportModule_f", flush=True)
+    val = "call_python"
+    val_b = val.encode()
+    print("val: %s ; val_b: %s" % (str(val), str(val_b)))
+#    __rval = __PyImport_ImportModule_f(val_b)
+    __rval = importlib.import_module(val)
+    print("<-- ImportModule_f", flush=True)
+    print("__rval=%s" % str(__rval), flush=True)
+    vpi_set_val_ptr(__tf_h, ctypes.py_object(__rval))
     return 0
 
 __PyImport_ImportModuleLevel_fp = None
 __PyImport_ImportModuleLevel_f = None
 __PyImport_ImportModuleLevel_tf = t_vpi_systf_data()
 def __PyImport_ImportModuleLevel(ud):
-    print("Hello from PyImport_ImportModuleLevel", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
+    __globals = vpi_get_pval_ptr(__arg_h)
+    __locals = vpi_get_pval_ptr(__arg_h)
+    __fromlist = vpi_get_pval_ptr(__arg_h)
+    __level = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ImportModuleLevel_f(__name.encode(), __globals, __locals, __fromlist, __level)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_ImportModuleLevelObject_fp = None
 __PyImport_ImportModuleLevelObject_f = None
 __PyImport_ImportModuleLevelObject_tf = t_vpi_systf_data()
 def __PyImport_ImportModuleLevelObject(ud):
-    print("Hello from PyImport_ImportModuleLevelObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_ptr(__arg_h)
+    __globals = vpi_get_pval_ptr(__arg_h)
+    __locals = vpi_get_pval_ptr(__arg_h)
+    __fromlist = vpi_get_pval_ptr(__arg_h)
+    __level = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ImportModuleLevelObject_f(__name, __globals, __locals, __fromlist, __level)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_ImportModuleNoBlock_fp = None
 __PyImport_ImportModuleNoBlock_f = None
 __PyImport_ImportModuleNoBlock_tf = t_vpi_systf_data()
 def __PyImport_ImportModuleNoBlock(ud):
-    print("Hello from PyImport_ImportModuleNoBlock", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __name = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ImportModuleNoBlock_f(__name.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyImport_ReloadModule_fp = None
 __PyImport_ReloadModule_f = None
 __PyImport_ReloadModule_tf = t_vpi_systf_data()
 def __PyImport_ReloadModule(ud):
-    print("Hello from PyImport_ReloadModule", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __m = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyImport_ReloadModule_f(__m)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_AsDouble_fp = None
 __PyLong_AsDouble_f = None
 __PyLong_AsDouble_tf = t_vpi_systf_data()
 def __PyLong_AsDouble(ud):
-    print("Hello from PyLong_AsDouble", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsDouble_f(__p0)
+    vpi_set_val_double(__tf_h, __rval)
     return 0
 
 __PyLong_AsLong_fp = None
 __PyLong_AsLong_f = None
 __PyLong_AsLong_tf = t_vpi_systf_data()
 def __PyLong_AsLong(ud):
-    print("Hello from PyLong_AsLong", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = ctypes.cast(vpi_get_pval_ptr(__arg_h), ctypes.py_object)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = int(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyLong_AsLongAndOverflow_fp = None
 __PyLong_AsLongAndOverflow_f = None
 __PyLong_AsLongAndOverflow_tf = t_vpi_systf_data()
 def __PyLong_AsLongAndOverflow(ud):
-    print("Hello from PyLong_AsLongAndOverflow", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsLongAndOverflow_f(__p0, __p1)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyLong_AsLongLong_fp = None
 __PyLong_AsLongLong_f = None
 __PyLong_AsLongLong_tf = t_vpi_systf_data()
 def __PyLong_AsLongLong(ud):
-    print("Hello from PyLong_AsLongLong", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsLongLong_f(__p0)
+    vpi_set_val_int64(__tf_h, __rval)
     return 0
 
 __PyLong_AsLongLongAndOverflow_fp = None
 __PyLong_AsLongLongAndOverflow_f = None
 __PyLong_AsLongLongAndOverflow_tf = t_vpi_systf_data()
 def __PyLong_AsLongLongAndOverflow(ud):
-    print("Hello from PyLong_AsLongLongAndOverflow", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsLongLongAndOverflow_f(__p0, __p1)
+    vpi_set_val_int64(__tf_h, __rval)
     return 0
 
 __PyLong_AsSize_t_fp = None
 __PyLong_AsSize_t_f = None
 __PyLong_AsSize_t_tf = t_vpi_systf_data()
 def __PyLong_AsSize_t(ud):
-    print("Hello from PyLong_AsSize_t", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsSize_t_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyLong_AsSsize_t_fp = None
 __PyLong_AsSsize_t_f = None
 __PyLong_AsSsize_t_tf = t_vpi_systf_data()
 def __PyLong_AsSsize_t(ud):
-    print("Hello from PyLong_AsSsize_t", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsSsize_t_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyLong_AsUnsignedLong_fp = None
 __PyLong_AsUnsignedLong_f = None
 __PyLong_AsUnsignedLong_tf = t_vpi_systf_data()
 def __PyLong_AsUnsignedLong(ud):
-    print("Hello from PyLong_AsUnsignedLong", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsUnsignedLong_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyLong_AsUnsignedLongLong_fp = None
 __PyLong_AsUnsignedLongLong_f = None
 __PyLong_AsUnsignedLongLong_tf = t_vpi_systf_data()
 def __PyLong_AsUnsignedLongLong(ud):
-    print("Hello from PyLong_AsUnsignedLongLong", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsUnsignedLongLong_f(__p0)
+    vpi_set_val_int64(__tf_h, __rval)
     return 0
 
 __PyLong_AsUnsignedLongLongMask_fp = None
 __PyLong_AsUnsignedLongLongMask_f = None
 __PyLong_AsUnsignedLongLongMask_tf = t_vpi_systf_data()
 def __PyLong_AsUnsignedLongLongMask(ud):
-    print("Hello from PyLong_AsUnsignedLongLongMask", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsUnsignedLongLongMask_f(__p0)
+    vpi_set_val_int64(__tf_h, __rval)
     return 0
 
 __PyLong_AsUnsignedLongMask_fp = None
 __PyLong_AsUnsignedLongMask_f = None
 __PyLong_AsUnsignedLongMask_tf = t_vpi_systf_data()
 def __PyLong_AsUnsignedLongMask(ud):
-    print("Hello from PyLong_AsUnsignedLongMask", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsUnsignedLongMask_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyLong_AsVoidPtr_fp = None
 __PyLong_AsVoidPtr_f = None
 __PyLong_AsVoidPtr_tf = t_vpi_systf_data()
 def __PyLong_AsVoidPtr(ud):
-    print("Hello from PyLong_AsVoidPtr", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_AsVoidPtr_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromDouble_fp = None
 __PyLong_FromDouble_f = None
 __PyLong_FromDouble_tf = t_vpi_systf_data()
 def __PyLong_FromDouble(ud):
-    print("Hello from PyLong_FromDouble", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_double(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromDouble_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromLong_fp = None
 __PyLong_FromLong_f = None
 __PyLong_FromLong_tf = t_vpi_systf_data()
 def __PyLong_FromLong(ud):
-    print("Hello from PyLong_FromLong", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __p0
+    vpi_set_val_ptr(__tf_h, ctypes.py_object(__rval))
     return 0
 
 __PyLong_FromLongLong_fp = None
 __PyLong_FromLongLong_f = None
 __PyLong_FromLongLong_tf = t_vpi_systf_data()
 def __PyLong_FromLongLong(ud):
-    print("Hello from PyLong_FromLongLong", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int64(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromLongLong_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromSize_t_fp = None
 __PyLong_FromSize_t_f = None
 __PyLong_FromSize_t_tf = t_vpi_systf_data()
 def __PyLong_FromSize_t(ud):
-    print("Hello from PyLong_FromSize_t", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromSize_t_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromSsize_t_fp = None
 __PyLong_FromSsize_t_f = None
 __PyLong_FromSsize_t_tf = t_vpi_systf_data()
 def __PyLong_FromSsize_t(ud):
-    print("Hello from PyLong_FromSsize_t", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromSsize_t_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromString_fp = None
 __PyLong_FromString_f = None
 __PyLong_FromString_tf = t_vpi_systf_data()
 def __PyLong_FromString(ud):
-    print("Hello from PyLong_FromString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_str(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromString_f(__p0.encode(), __p1, __p2)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromUnicodeObject_fp = None
 __PyLong_FromUnicodeObject_f = None
 __PyLong_FromUnicodeObject_tf = t_vpi_systf_data()
 def __PyLong_FromUnicodeObject(ud):
-    print("Hello from PyLong_FromUnicodeObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __u = vpi_get_pval_ptr(__arg_h)
+    __base = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromUnicodeObject_f(__u, __base)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromUnsignedLong_fp = None
 __PyLong_FromUnsignedLong_f = None
 __PyLong_FromUnsignedLong_tf = t_vpi_systf_data()
 def __PyLong_FromUnsignedLong(ud):
-    print("Hello from PyLong_FromUnsignedLong", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromUnsignedLong_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromUnsignedLongLong_fp = None
 __PyLong_FromUnsignedLongLong_f = None
 __PyLong_FromUnsignedLongLong_tf = t_vpi_systf_data()
 def __PyLong_FromUnsignedLongLong(ud):
-    print("Hello from PyLong_FromUnsignedLongLong", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int64(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromUnsignedLongLong_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_FromVoidPtr_fp = None
 __PyLong_FromVoidPtr_f = None
 __PyLong_FromVoidPtr_tf = t_vpi_systf_data()
 def __PyLong_FromVoidPtr(ud):
-    print("Hello from PyLong_FromVoidPtr", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_FromVoidPtr_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyLong_GetInfo_fp = None
 __PyLong_GetInfo_f = None
 __PyLong_GetInfo_tf = t_vpi_systf_data()
 def __PyLong_GetInfo(ud):
-    print("Hello from PyLong_GetInfo", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyLong_GetInfo_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_ASCII_fp = None
 __PyObject_ASCII_f = None
 __PyObject_ASCII_tf = t_vpi_systf_data()
 def __PyObject_ASCII(ud):
-    print("Hello from PyObject_ASCII", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_ASCII_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_AsFileDescriptor_fp = None
 __PyObject_AsFileDescriptor_f = None
 __PyObject_AsFileDescriptor_tf = t_vpi_systf_data()
 def __PyObject_AsFileDescriptor(ud):
-    print("Hello from PyObject_AsFileDescriptor", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_AsFileDescriptor_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_Bytes_fp = None
 __PyObject_Bytes_f = None
 __PyObject_Bytes_tf = t_vpi_systf_data()
 def __PyObject_Bytes(ud):
-    print("Hello from PyObject_Bytes", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Bytes_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_Call_fp = None
 __PyObject_Call_f = None
 __PyObject_Call_tf = t_vpi_systf_data()
 def __PyObject_Call(ud):
-    print("Hello from PyObject_Call", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    callable = ctypes.cast(vpi_get_pval_ptr(__arg_h), ctypes.py_object)
+    args = ctypes.cast(vpi_get_pval_ptr(__arg_h), ctypes.py_object)
+    kwargs = ctypes.cast(vpi_get_pval_ptr(__arg_h), ctypes.py_object)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = callable(*args)
+    vpi_set_val_ptr(__tf_h, ctypes.py_object(__rval))
     return 0
 
 __PyObject_CallFinalizer_fp = None
 __PyObject_CallFinalizer_f = None
 __PyObject_CallFinalizer_tf = t_vpi_systf_data()
 def __PyObject_CallFinalizer(ud):
-    print("Hello from PyObject_CallFinalizer", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_CallFinalizer_f(__p0)
     return 0
 
 __PyObject_CallFinalizerFromDealloc_fp = None
 __PyObject_CallFinalizerFromDealloc_f = None
 __PyObject_CallFinalizerFromDealloc_tf = t_vpi_systf_data()
 def __PyObject_CallFinalizerFromDealloc(ud):
-    print("Hello from PyObject_CallFinalizerFromDealloc", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_CallFinalizerFromDealloc_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_CallNoArgs_fp = None
 __PyObject_CallNoArgs_f = None
 __PyObject_CallNoArgs_tf = t_vpi_systf_data()
 def __PyObject_CallNoArgs(ud):
-    print("Hello from PyObject_CallNoArgs", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __func = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_CallNoArgs_f(__func)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_CallObject_fp = None
 __PyObject_CallObject_f = None
 __PyObject_CallObject_tf = t_vpi_systf_data()
 def __PyObject_CallObject(ud):
-    print("Hello from PyObject_CallObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __callable = vpi_get_pval_ptr(__arg_h)
+    __args = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_CallObject_f(__callable, __args)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_Calloc_fp = None
 __PyObject_Calloc_f = None
 __PyObject_Calloc_tf = t_vpi_systf_data()
 def __PyObject_Calloc(ud):
-    print("Hello from PyObject_Calloc", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __nelem = vpi_get_pval_int(__arg_h)
+    __elsize = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Calloc_f(__nelem, __elsize)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_CheckBuffer_fp = None
 __PyObject_CheckBuffer_f = None
 __PyObject_CheckBuffer_tf = t_vpi_systf_data()
 def __PyObject_CheckBuffer(ud):
-    print("Hello from PyObject_CheckBuffer", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __obj = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_CheckBuffer_f(__obj)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_ClearWeakRefs_fp = None
 __PyObject_ClearWeakRefs_f = None
 __PyObject_ClearWeakRefs_tf = t_vpi_systf_data()
 def __PyObject_ClearWeakRefs(ud):
-    print("Hello from PyObject_ClearWeakRefs", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_ClearWeakRefs_f(__p0)
     return 0
 
 __PyObject_CopyData_fp = None
 __PyObject_CopyData_f = None
 __PyObject_CopyData_tf = t_vpi_systf_data()
 def __PyObject_CopyData(ud):
-    print("Hello from PyObject_CopyData", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __dest = vpi_get_pval_ptr(__arg_h)
+    __src = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_CopyData_f(__dest, __src)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_DelItem_fp = None
 __PyObject_DelItem_f = None
 __PyObject_DelItem_tf = t_vpi_systf_data()
 def __PyObject_DelItem(ud):
-    print("Hello from PyObject_DelItem", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __o = vpi_get_pval_ptr(__arg_h)
+    __key = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_DelItem_f(__o, __key)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_DelItemString_fp = None
 __PyObject_DelItemString_f = None
 __PyObject_DelItemString_tf = t_vpi_systf_data()
 def __PyObject_DelItemString(ud):
-    print("Hello from PyObject_DelItemString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __o = vpi_get_pval_ptr(__arg_h)
+    __key = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_DelItemString_f(__o, __key.encode())
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_Dir_fp = None
 __PyObject_Dir_f = None
 __PyObject_Dir_tf = t_vpi_systf_data()
 def __PyObject_Dir(ud):
-    print("Hello from PyObject_Dir", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Dir_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_Format_fp = None
 __PyObject_Format_f = None
 __PyObject_Format_tf = t_vpi_systf_data()
 def __PyObject_Format(ud):
-    print("Hello from PyObject_Format", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __obj = vpi_get_pval_ptr(__arg_h)
+    __format_spec = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Format_f(__obj, __format_spec)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_Free_fp = None
 __PyObject_Free_f = None
 __PyObject_Free_tf = t_vpi_systf_data()
 def __PyObject_Free(ud):
-    print("Hello from PyObject_Free", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __ptr = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Free_f(__ptr)
     return 0
 
 __PyObject_GC_Del_fp = None
 __PyObject_GC_Del_f = None
 __PyObject_GC_Del_tf = t_vpi_systf_data()
 def __PyObject_GC_Del(ud):
-    print("Hello from PyObject_GC_Del", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GC_Del_f(__p0)
     return 0
 
 __PyObject_GC_IsFinalized_fp = None
 __PyObject_GC_IsFinalized_f = None
 __PyObject_GC_IsFinalized_tf = t_vpi_systf_data()
 def __PyObject_GC_IsFinalized(ud):
-    print("Hello from PyObject_GC_IsFinalized", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GC_IsFinalized_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_GC_IsTracked_fp = None
 __PyObject_GC_IsTracked_f = None
 __PyObject_GC_IsTracked_tf = t_vpi_systf_data()
 def __PyObject_GC_IsTracked(ud):
-    print("Hello from PyObject_GC_IsTracked", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GC_IsTracked_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_GC_Track_fp = None
 __PyObject_GC_Track_f = None
 __PyObject_GC_Track_tf = t_vpi_systf_data()
 def __PyObject_GC_Track(ud):
-    print("Hello from PyObject_GC_Track", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GC_Track_f(__p0)
     return 0
 
 __PyObject_GC_UnTrack_fp = None
 __PyObject_GC_UnTrack_f = None
 __PyObject_GC_UnTrack_tf = t_vpi_systf_data()
 def __PyObject_GC_UnTrack(ud):
-    print("Hello from PyObject_GC_UnTrack", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GC_UnTrack_f(__p0)
     return 0
 
 __PyObject_GenericGetAttr_fp = None
 __PyObject_GenericGetAttr_f = None
 __PyObject_GenericGetAttr_tf = t_vpi_systf_data()
 def __PyObject_GenericGetAttr(ud):
-    print("Hello from PyObject_GenericGetAttr", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GenericGetAttr_f(__p0, __p1)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_GenericGetDict_fp = None
 __PyObject_GenericGetDict_f = None
 __PyObject_GenericGetDict_tf = t_vpi_systf_data()
 def __PyObject_GenericGetDict(ud):
-    print("Hello from PyObject_GenericGetDict", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GenericGetDict_f(__p0, __p1)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_GenericSetAttr_fp = None
 __PyObject_GenericSetAttr_f = None
 __PyObject_GenericSetAttr_tf = t_vpi_systf_data()
 def __PyObject_GenericSetAttr(ud):
-    print("Hello from PyObject_GenericSetAttr", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GenericSetAttr_f(__p0, __p1, __p2)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_GenericSetDict_fp = None
 __PyObject_GenericSetDict_f = None
 __PyObject_GenericSetDict_tf = t_vpi_systf_data()
 def __PyObject_GenericSetDict(ud):
-    print("Hello from PyObject_GenericSetDict", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GenericSetDict_f(__p0, __p1, __p2)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_GetAIter_fp = None
 __PyObject_GetAIter_f = None
 __PyObject_GetAIter_tf = t_vpi_systf_data()
 def __PyObject_GetAIter(ud):
-    print("Hello from PyObject_GetAIter", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GetAIter_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_GetAttr_fp = None
 __PyObject_GetAttr_f = None
 __PyObject_GetAttr_tf = t_vpi_systf_data()
 def __PyObject_GetAttr(ud):
-    print("Hello from PyObject_GetAttr", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GetAttr_f(__p0, __p1)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
+#********************************************************************
+#* 
+#********************************************************************
 __PyObject_GetAttrString_fp = None
 __PyObject_GetAttrString_f = None
 __PyObject_GetAttrString_tf = t_vpi_systf_data()
 def __PyObject_GetAttrString(ud):
-    print("Hello from PyObject_GetAttrString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_str(__arg_h)
+
+    __p0 = ctypes.cast(__p0, ctypes.py_object).value
+
+    print("__p0: %s" % str(__p0))
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+#    __rval = __PyObject_GetAttrString_f(__p0, __p1.encode())
+    __rval = getattr(__p0, __p1)
+    print("__rval: %s" % str(__rval))
+    vpi_set_val_ptr(__tf_h, ctypes.py_object(__rval))
     return 0
 
 __PyObject_GetItem_fp = None
 __PyObject_GetItem_f = None
 __PyObject_GetItem_tf = t_vpi_systf_data()
 def __PyObject_GetItem(ud):
-    print("Hello from PyObject_GetItem", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __o = vpi_get_pval_ptr(__arg_h)
+    __key = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GetItem_f(__o, __key)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_GetIter_fp = None
 __PyObject_GetIter_f = None
 __PyObject_GetIter_tf = t_vpi_systf_data()
 def __PyObject_GetIter(ud):
-    print("Hello from PyObject_GetIter", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_GetIter_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_HasAttr_fp = None
 __PyObject_HasAttr_f = None
 __PyObject_HasAttr_tf = t_vpi_systf_data()
 def __PyObject_HasAttr(ud):
-    print("Hello from PyObject_HasAttr", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_HasAttr_f(__p0, __p1)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_HasAttrString_fp = None
 __PyObject_HasAttrString_f = None
 __PyObject_HasAttrString_tf = t_vpi_systf_data()
 def __PyObject_HasAttrString(ud):
-    print("Hello from PyObject_HasAttrString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_HasAttrString_f(__p0, __p1.encode())
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_IS_GC_fp = None
 __PyObject_IS_GC_f = None
 __PyObject_IS_GC_tf = t_vpi_systf_data()
 def __PyObject_IS_GC(ud):
-    print("Hello from PyObject_IS_GC", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __obj = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_IS_GC_f(__obj)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_Init_fp = None
 __PyObject_Init_f = None
 __PyObject_Init_tf = t_vpi_systf_data()
 def __PyObject_Init(ud):
-    print("Hello from PyObject_Init", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Init_f(__p0, __p1)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_IsInstance_fp = None
 __PyObject_IsInstance_f = None
 __PyObject_IsInstance_tf = t_vpi_systf_data()
 def __PyObject_IsInstance(ud):
-    print("Hello from PyObject_IsInstance", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __object = vpi_get_pval_ptr(__arg_h)
+    __typeorclass = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_IsInstance_f(__object, __typeorclass)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_IsSubclass_fp = None
 __PyObject_IsSubclass_f = None
 __PyObject_IsSubclass_tf = t_vpi_systf_data()
 def __PyObject_IsSubclass(ud):
-    print("Hello from PyObject_IsSubclass", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __object = vpi_get_pval_ptr(__arg_h)
+    __typeorclass = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_IsSubclass_f(__object, __typeorclass)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_IsTrue_fp = None
 __PyObject_IsTrue_f = None
 __PyObject_IsTrue_tf = t_vpi_systf_data()
 def __PyObject_IsTrue(ud):
-    print("Hello from PyObject_IsTrue", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_IsTrue_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_LengthHint_fp = None
 __PyObject_LengthHint_f = None
 __PyObject_LengthHint_tf = t_vpi_systf_data()
 def __PyObject_LengthHint(ud):
-    print("Hello from PyObject_LengthHint", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __o = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_LengthHint_f(__o, __p1)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_Malloc_fp = None
 __PyObject_Malloc_f = None
 __PyObject_Malloc_tf = t_vpi_systf_data()
 def __PyObject_Malloc(ud):
-    print("Hello from PyObject_Malloc", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __size = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Malloc_f(__size)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_Not_fp = None
 __PyObject_Not_f = None
 __PyObject_Not_tf = t_vpi_systf_data()
 def __PyObject_Not(ud):
-    print("Hello from PyObject_Not", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Not_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_Realloc_fp = None
 __PyObject_Realloc_f = None
 __PyObject_Realloc_tf = t_vpi_systf_data()
 def __PyObject_Realloc(ud):
-    print("Hello from PyObject_Realloc", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __ptr = vpi_get_pval_ptr(__arg_h)
+    __new_size = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Realloc_f(__ptr, __new_size)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_Repr_fp = None
 __PyObject_Repr_f = None
 __PyObject_Repr_tf = t_vpi_systf_data()
 def __PyObject_Repr(ud):
-    print("Hello from PyObject_Repr", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Repr_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_RichCompare_fp = None
 __PyObject_RichCompare_f = None
 __PyObject_RichCompare_tf = t_vpi_systf_data()
 def __PyObject_RichCompare(ud):
-    print("Hello from PyObject_RichCompare", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_RichCompare_f(__p0, __p1, __p2)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_RichCompareBool_fp = None
 __PyObject_RichCompareBool_f = None
 __PyObject_RichCompareBool_tf = t_vpi_systf_data()
 def __PyObject_RichCompareBool(ud):
-    print("Hello from PyObject_RichCompareBool", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_RichCompareBool_f(__p0, __p1, __p2)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_SelfIter_fp = None
 __PyObject_SelfIter_f = None
 __PyObject_SelfIter_tf = t_vpi_systf_data()
 def __PyObject_SelfIter(ud):
-    print("Hello from PyObject_SelfIter", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_SelfIter_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_SetAttr_fp = None
 __PyObject_SetAttr_f = None
 __PyObject_SetAttr_tf = t_vpi_systf_data()
 def __PyObject_SetAttr(ud):
-    print("Hello from PyObject_SetAttr", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_SetAttr_f(__p0, __p1, __p2)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_SetAttrString_fp = None
 __PyObject_SetAttrString_f = None
 __PyObject_SetAttrString_tf = t_vpi_systf_data()
 def __PyObject_SetAttrString(ud):
-    print("Hello from PyObject_SetAttrString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_str(__arg_h)
+    __p2 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_SetAttrString_f(__p0, __p1.encode(), __p2)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_SetItem_fp = None
 __PyObject_SetItem_f = None
 __PyObject_SetItem_tf = t_vpi_systf_data()
 def __PyObject_SetItem(ud):
-    print("Hello from PyObject_SetItem", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __o = vpi_get_pval_ptr(__arg_h)
+    __key = vpi_get_pval_ptr(__arg_h)
+    __v = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_SetItem_f(__o, __key, __v)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_Size_fp = None
 __PyObject_Size_f = None
 __PyObject_Size_tf = t_vpi_systf_data()
 def __PyObject_Size(ud):
-    print("Hello from PyObject_Size", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __o = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Size_f(__o)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyObject_Str_fp = None
 __PyObject_Str_f = None
 __PyObject_Str_tf = t_vpi_systf_data()
 def __PyObject_Str(ud):
-    print("Hello from PyObject_Str", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Str_f(__p0)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyObject_Type_fp = None
 __PyObject_Type_f = None
 __PyObject_Type_tf = t_vpi_systf_data()
 def __PyObject_Type(ud):
-    print("Hello from PyObject_Type", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __o = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyObject_Type_f(__o)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyTuple_GetItem_fp = None
 __PyTuple_GetItem_f = None
 __PyTuple_GetItem_tf = t_vpi_systf_data()
 def __PyTuple_GetItem(ud):
-    print("Hello from PyTuple_GetItem", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyTuple_GetItem_f(__p0, __p1)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyTuple_GetSlice_fp = None
 __PyTuple_GetSlice_f = None
 __PyTuple_GetSlice_tf = t_vpi_systf_data()
 def __PyTuple_GetSlice(ud):
-    print("Hello from PyTuple_GetSlice", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_int(__arg_h)
+    __p2 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyTuple_GetSlice_f(__p0, __p1, __p2)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
+#********************************************************************
+#* 
+#********************************************************************
 __PyTuple_New_fp = None
 __PyTuple_New_f = None
 __PyTuple_New_tf = t_vpi_systf_data()
 def __PyTuple_New(ud):
-    print("Hello from PyTuple_New", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __size = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = [None]*__size
+    print("__rval: %s" % str(__rval))
+    vpi_set_val_ptr(__tf_h, ctypes.py_object(__rval))
     return 0
 
 __PyTuple_SetItem_fp = None
 __PyTuple_SetItem_f = None
 __PyTuple_SetItem_tf = t_vpi_systf_data()
 def __PyTuple_SetItem(ud):
-    print("Hello from PyTuple_SetItem", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = ctypes.cast(vpi_get_pval_ptr(__arg_h), ctypes.py_object).value
+    __p1 = vpi_get_pval_int(__arg_h)
+    __p2 = ctypes.cast(vpi_get_pval_ptr(__arg_h), ctypes.py_object).value
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+#    __rval = __PyTuple_SetItem_f(__p0, __p1, __p2)
+    print("__pi: %s" % str(__p0))
+    __p0[__p1] = __p2
+    # if __p1 == 0:
+    #     __p0 = (__p2, __p0[1:])
+    # elif __p1 == (len(__p0)-1):
+    #     __p0 = (__p0[0:-2], __p2)
+    # else:
+    #     __p0 = (__p0[0:__p1-1], __p2, __p0[__p1+1:])
+    vpi_set_val_int(__tf_h, 1)
     return 0
 
 __PyTuple_Size_fp = None
 __PyTuple_Size_f = None
 __PyTuple_Size_tf = t_vpi_systf_data()
 def __PyTuple_Size(ud):
-    print("Hello from PyTuple_Size", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyTuple_Size_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsASCIIString_fp = None
 __PyUnicode_AsASCIIString_f = None
 __PyUnicode_AsASCIIString_tf = t_vpi_systf_data()
 def __PyUnicode_AsASCIIString(ud):
-    print("Hello from PyUnicode_AsASCIIString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsASCIIString_f(__unicode)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsCharmapString_fp = None
 __PyUnicode_AsCharmapString_f = None
 __PyUnicode_AsCharmapString_tf = t_vpi_systf_data()
 def __PyUnicode_AsCharmapString(ud):
-    print("Hello from PyUnicode_AsCharmapString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
+    __mapping = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsCharmapString_f(__unicode, __mapping)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsDecodedObject_fp = None
 __PyUnicode_AsDecodedObject_f = None
 __PyUnicode_AsDecodedObject_tf = t_vpi_systf_data()
 def __PyUnicode_AsDecodedObject(ud):
-    print("Hello from PyUnicode_AsDecodedObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
+    __encoding = vpi_get_pval_str(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsDecodedObject_f(__unicode, __encoding.encode(), __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsDecodedUnicode_fp = None
 __PyUnicode_AsDecodedUnicode_f = None
 __PyUnicode_AsDecodedUnicode_tf = t_vpi_systf_data()
 def __PyUnicode_AsDecodedUnicode(ud):
-    print("Hello from PyUnicode_AsDecodedUnicode", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
+    __encoding = vpi_get_pval_str(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsDecodedUnicode_f(__unicode, __encoding.encode(), __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsEncodedObject_fp = None
 __PyUnicode_AsEncodedObject_f = None
 __PyUnicode_AsEncodedObject_tf = t_vpi_systf_data()
 def __PyUnicode_AsEncodedObject(ud):
-    print("Hello from PyUnicode_AsEncodedObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
+    __encoding = vpi_get_pval_str(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsEncodedObject_f(__unicode, __encoding.encode(), __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsEncodedString_fp = None
 __PyUnicode_AsEncodedString_f = None
 __PyUnicode_AsEncodedString_tf = t_vpi_systf_data()
 def __PyUnicode_AsEncodedString(ud):
-    print("Hello from PyUnicode_AsEncodedString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
+    __encoding = vpi_get_pval_str(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsEncodedString_f(__unicode, __encoding.encode(), __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsEncodedUnicode_fp = None
 __PyUnicode_AsEncodedUnicode_f = None
 __PyUnicode_AsEncodedUnicode_tf = t_vpi_systf_data()
 def __PyUnicode_AsEncodedUnicode(ud):
-    print("Hello from PyUnicode_AsEncodedUnicode", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
+    __encoding = vpi_get_pval_str(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsEncodedUnicode_f(__unicode, __encoding.encode(), __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsLatin1String_fp = None
 __PyUnicode_AsLatin1String_f = None
 __PyUnicode_AsLatin1String_tf = t_vpi_systf_data()
 def __PyUnicode_AsLatin1String(ud):
-    print("Hello from PyUnicode_AsLatin1String", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsLatin1String_f(__unicode)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsRawUnicodeEscapeString_fp = None
 __PyUnicode_AsRawUnicodeEscapeString_f = None
 __PyUnicode_AsRawUnicodeEscapeString_tf = t_vpi_systf_data()
 def __PyUnicode_AsRawUnicodeEscapeString(ud):
-    print("Hello from PyUnicode_AsRawUnicodeEscapeString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsRawUnicodeEscapeString_f(__unicode)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsUTF16String_fp = None
 __PyUnicode_AsUTF16String_f = None
 __PyUnicode_AsUTF16String_tf = t_vpi_systf_data()
 def __PyUnicode_AsUTF16String(ud):
-    print("Hello from PyUnicode_AsUTF16String", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsUTF16String_f(__unicode)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsUTF32String_fp = None
 __PyUnicode_AsUTF32String_f = None
 __PyUnicode_AsUTF32String_tf = t_vpi_systf_data()
 def __PyUnicode_AsUTF32String(ud):
-    print("Hello from PyUnicode_AsUTF32String", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsUTF32String_f(__unicode)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsUTF8_fp = None
 __PyUnicode_AsUTF8_f = None
 __PyUnicode_AsUTF8_tf = t_vpi_systf_data()
 def __PyUnicode_AsUTF8(ud):
-    print("Hello from PyUnicode_AsUTF8", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsUTF8_f(__unicode)
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsUTF8AndSize_fp = None
 __PyUnicode_AsUTF8AndSize_f = None
 __PyUnicode_AsUTF8AndSize_tf = t_vpi_systf_data()
 def __PyUnicode_AsUTF8AndSize(ud):
-    print("Hello from PyUnicode_AsUTF8AndSize", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
+    __size = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsUTF8AndSize_f(__unicode, __size)
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsUTF8String_fp = None
 __PyUnicode_AsUTF8String_f = None
 __PyUnicode_AsUTF8String_tf = t_vpi_systf_data()
 def __PyUnicode_AsUTF8String(ud):
-    print("Hello from PyUnicode_AsUTF8String", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsUTF8String_f(__unicode)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_AsUnicodeEscapeString_fp = None
 __PyUnicode_AsUnicodeEscapeString_f = None
 __PyUnicode_AsUnicodeEscapeString_tf = t_vpi_systf_data()
 def __PyUnicode_AsUnicodeEscapeString(ud):
-    print("Hello from PyUnicode_AsUnicodeEscapeString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_AsUnicodeEscapeString_f(__unicode)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_BuildEncodingMap_fp = None
 __PyUnicode_BuildEncodingMap_f = None
 __PyUnicode_BuildEncodingMap_tf = t_vpi_systf_data()
 def __PyUnicode_BuildEncodingMap(ud):
-    print("Hello from PyUnicode_BuildEncodingMap", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_BuildEncodingMap_f(___string)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_Compare_fp = None
 __PyUnicode_Compare_f = None
 __PyUnicode_Compare_tf = t_vpi_systf_data()
 def __PyUnicode_Compare(ud):
-    print("Hello from PyUnicode_Compare", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __left = vpi_get_pval_ptr(__arg_h)
+    __right = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Compare_f(__left, __right)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_CompareWithASCIIString_fp = None
 __PyUnicode_CompareWithASCIIString_f = None
 __PyUnicode_CompareWithASCIIString_tf = t_vpi_systf_data()
 def __PyUnicode_CompareWithASCIIString(ud):
-    print("Hello from PyUnicode_CompareWithASCIIString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __left = vpi_get_pval_ptr(__arg_h)
+    __right = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_CompareWithASCIIString_f(__left, __right.encode())
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_Concat_fp = None
 __PyUnicode_Concat_f = None
 __PyUnicode_Concat_tf = t_vpi_systf_data()
 def __PyUnicode_Concat(ud):
-    print("Hello from PyUnicode_Concat", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __left = vpi_get_pval_ptr(__arg_h)
+    __right = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Concat_f(__left, __right)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_Contains_fp = None
 __PyUnicode_Contains_f = None
 __PyUnicode_Contains_tf = t_vpi_systf_data()
 def __PyUnicode_Contains(ud):
-    print("Hello from PyUnicode_Contains", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __container = vpi_get_pval_ptr(__arg_h)
+    __element = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Contains_f(__container, __element)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_CopyCharacters_fp = None
 __PyUnicode_CopyCharacters_f = None
 __PyUnicode_CopyCharacters_tf = t_vpi_systf_data()
 def __PyUnicode_CopyCharacters(ud):
-    print("Hello from PyUnicode_CopyCharacters", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __to = vpi_get_pval_ptr(__arg_h)
+    __to_start = vpi_get_pval_int(__arg_h)
+    __from = vpi_get_pval_ptr(__arg_h)
+    __from_start = vpi_get_pval_int(__arg_h)
+    __how_many = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_CopyCharacters_f(__to, __to_start, __from, __from_start, __how_many)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_Count_fp = None
 __PyUnicode_Count_f = None
 __PyUnicode_Count_tf = t_vpi_systf_data()
 def __PyUnicode_Count(ud):
-    print("Hello from PyUnicode_Count", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __str = vpi_get_pval_ptr(__arg_h)
+    __substr = vpi_get_pval_ptr(__arg_h)
+    __start = vpi_get_pval_int(__arg_h)
+    ___end = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Count_f(__str, __substr, __start, ___end)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_Decode_fp = None
 __PyUnicode_Decode_f = None
 __PyUnicode_Decode_tf = t_vpi_systf_data()
 def __PyUnicode_Decode(ud):
-    print("Hello from PyUnicode_Decode", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_str(__arg_h)
+    __size = vpi_get_pval_int(__arg_h)
+    __encoding = vpi_get_pval_str(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Decode_f(__s.encode(), __size, __encoding.encode(), __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeASCII_fp = None
 __PyUnicode_DecodeASCII_f = None
 __PyUnicode_DecodeASCII_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeASCII(ud):
-    print("Hello from PyUnicode_DecodeASCII", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeASCII_f(___string.encode(), __length, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeCharmap_fp = None
 __PyUnicode_DecodeCharmap_f = None
 __PyUnicode_DecodeCharmap_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeCharmap(ud):
-    print("Hello from PyUnicode_DecodeCharmap", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __mapping = vpi_get_pval_ptr(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeCharmap_f(___string.encode(), __length, __mapping, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeFSDefault_fp = None
 __PyUnicode_DecodeFSDefault_f = None
 __PyUnicode_DecodeFSDefault_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeFSDefault(ud):
-    print("Hello from PyUnicode_DecodeFSDefault", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeFSDefault_f(__s.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeFSDefaultAndSize_fp = None
 __PyUnicode_DecodeFSDefaultAndSize_f = None
 __PyUnicode_DecodeFSDefaultAndSize_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeFSDefaultAndSize(ud):
-    print("Hello from PyUnicode_DecodeFSDefaultAndSize", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_str(__arg_h)
+    __size = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeFSDefaultAndSize_f(__s.encode(), __size)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeLatin1_fp = None
 __PyUnicode_DecodeLatin1_f = None
 __PyUnicode_DecodeLatin1_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeLatin1(ud):
-    print("Hello from PyUnicode_DecodeLatin1", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeLatin1_f(___string.encode(), __length, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeLocale_fp = None
 __PyUnicode_DecodeLocale_f = None
 __PyUnicode_DecodeLocale_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeLocale(ud):
-    print("Hello from PyUnicode_DecodeLocale", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __str = vpi_get_pval_str(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeLocale_f(__str.encode(), __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeLocaleAndSize_fp = None
 __PyUnicode_DecodeLocaleAndSize_f = None
 __PyUnicode_DecodeLocaleAndSize_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeLocaleAndSize(ud):
-    print("Hello from PyUnicode_DecodeLocaleAndSize", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __str = vpi_get_pval_str(__arg_h)
+    __len = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeLocaleAndSize_f(__str.encode(), __len, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeRawUnicodeEscape_fp = None
 __PyUnicode_DecodeRawUnicodeEscape_f = None
 __PyUnicode_DecodeRawUnicodeEscape_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeRawUnicodeEscape(ud):
-    print("Hello from PyUnicode_DecodeRawUnicodeEscape", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeRawUnicodeEscape_f(___string.encode(), __length, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUTF16_fp = None
 __PyUnicode_DecodeUTF16_f = None
 __PyUnicode_DecodeUTF16_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUTF16(ud):
-    print("Hello from PyUnicode_DecodeUTF16", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
+    __byteorder = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUTF16_f(___string.encode(), __length, __errors.encode(), __byteorder)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUTF16Stateful_fp = None
 __PyUnicode_DecodeUTF16Stateful_f = None
 __PyUnicode_DecodeUTF16Stateful_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUTF16Stateful(ud):
-    print("Hello from PyUnicode_DecodeUTF16Stateful", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
+    __byteorder = vpi_get_pval_ptr(__arg_h)
+    __consumed = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUTF16Stateful_f(___string.encode(), __length, __errors.encode(), __byteorder, __consumed)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUTF32_fp = None
 __PyUnicode_DecodeUTF32_f = None
 __PyUnicode_DecodeUTF32_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUTF32(ud):
-    print("Hello from PyUnicode_DecodeUTF32", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
+    __byteorder = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUTF32_f(___string.encode(), __length, __errors.encode(), __byteorder)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUTF32Stateful_fp = None
 __PyUnicode_DecodeUTF32Stateful_f = None
 __PyUnicode_DecodeUTF32Stateful_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUTF32Stateful(ud):
-    print("Hello from PyUnicode_DecodeUTF32Stateful", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
+    __byteorder = vpi_get_pval_ptr(__arg_h)
+    __consumed = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUTF32Stateful_f(___string.encode(), __length, __errors.encode(), __byteorder, __consumed)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUTF7_fp = None
 __PyUnicode_DecodeUTF7_f = None
 __PyUnicode_DecodeUTF7_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUTF7(ud):
-    print("Hello from PyUnicode_DecodeUTF7", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUTF7_f(___string.encode(), __length, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUTF7Stateful_fp = None
 __PyUnicode_DecodeUTF7Stateful_f = None
 __PyUnicode_DecodeUTF7Stateful_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUTF7Stateful(ud):
-    print("Hello from PyUnicode_DecodeUTF7Stateful", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
+    __consumed = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUTF7Stateful_f(___string.encode(), __length, __errors.encode(), __consumed)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUTF8_fp = None
 __PyUnicode_DecodeUTF8_f = None
 __PyUnicode_DecodeUTF8_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUTF8(ud):
-    print("Hello from PyUnicode_DecodeUTF8", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUTF8_f(___string.encode(), __length, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUTF8Stateful_fp = None
 __PyUnicode_DecodeUTF8Stateful_f = None
 __PyUnicode_DecodeUTF8Stateful_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUTF8Stateful(ud):
-    print("Hello from PyUnicode_DecodeUTF8Stateful", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
+    __consumed = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUTF8Stateful_f(___string.encode(), __length, __errors.encode(), __consumed)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_DecodeUnicodeEscape_fp = None
 __PyUnicode_DecodeUnicodeEscape_f = None
 __PyUnicode_DecodeUnicodeEscape_tf = t_vpi_systf_data()
 def __PyUnicode_DecodeUnicodeEscape(ud):
-    print("Hello from PyUnicode_DecodeUnicodeEscape", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    ___string = vpi_get_pval_str(__arg_h)
+    __length = vpi_get_pval_int(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_DecodeUnicodeEscape_f(___string.encode(), __length, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_EncodeFSDefault_fp = None
 __PyUnicode_EncodeFSDefault_f = None
 __PyUnicode_EncodeFSDefault_tf = t_vpi_systf_data()
 def __PyUnicode_EncodeFSDefault(ud):
-    print("Hello from PyUnicode_EncodeFSDefault", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_EncodeFSDefault_f(__unicode)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_EncodeLocale_fp = None
 __PyUnicode_EncodeLocale_f = None
 __PyUnicode_EncodeLocale_tf = t_vpi_systf_data()
 def __PyUnicode_EncodeLocale(ud):
-    print("Hello from PyUnicode_EncodeLocale", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_EncodeLocale_f(__unicode, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_FSConverter_fp = None
 __PyUnicode_FSConverter_f = None
 __PyUnicode_FSConverter_tf = t_vpi_systf_data()
 def __PyUnicode_FSConverter(ud):
-    print("Hello from PyUnicode_FSConverter", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_FSConverter_f(__p0, __p1)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_FSDecoder_fp = None
 __PyUnicode_FSDecoder_f = None
 __PyUnicode_FSDecoder_tf = t_vpi_systf_data()
 def __PyUnicode_FSDecoder(ud):
-    print("Hello from PyUnicode_FSDecoder", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_FSDecoder_f(__p0, __p1)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_Find_fp = None
 __PyUnicode_Find_f = None
 __PyUnicode_Find_tf = t_vpi_systf_data()
 def __PyUnicode_Find(ud):
-    print("Hello from PyUnicode_Find", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __str = vpi_get_pval_ptr(__arg_h)
+    __substr = vpi_get_pval_ptr(__arg_h)
+    __start = vpi_get_pval_int(__arg_h)
+    ___end = vpi_get_pval_int(__arg_h)
+    __direction = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Find_f(__str, __substr, __start, ___end, __direction)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_Format_fp = None
 __PyUnicode_Format_f = None
 __PyUnicode_Format_tf = t_vpi_systf_data()
 def __PyUnicode_Format(ud):
-    print("Hello from PyUnicode_Format", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __format = vpi_get_pval_ptr(__arg_h)
+    __args = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Format_f(__format, __args)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_FromEncodedObject_fp = None
 __PyUnicode_FromEncodedObject_f = None
 __PyUnicode_FromEncodedObject_tf = t_vpi_systf_data()
 def __PyUnicode_FromEncodedObject(ud):
-    print("Hello from PyUnicode_FromEncodedObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __obj = vpi_get_pval_ptr(__arg_h)
+    __encoding = vpi_get_pval_str(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_FromEncodedObject_f(__obj, __encoding.encode(), __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_FromObject_fp = None
 __PyUnicode_FromObject_f = None
 __PyUnicode_FromObject_tf = t_vpi_systf_data()
 def __PyUnicode_FromObject(ud):
-    print("Hello from PyUnicode_FromObject", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __obj = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_FromObject_f(__obj)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_FromOrdinal_fp = None
 __PyUnicode_FromOrdinal_f = None
 __PyUnicode_FromOrdinal_tf = t_vpi_systf_data()
 def __PyUnicode_FromOrdinal(ud):
-    print("Hello from PyUnicode_FromOrdinal", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __ordinal = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_FromOrdinal_f(__ordinal)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_FromString_fp = None
 __PyUnicode_FromString_f = None
 __PyUnicode_FromString_tf = t_vpi_systf_data()
 def __PyUnicode_FromString(ud):
-    print("Hello from PyUnicode_FromString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __u = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_FromString_f(__u.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_FromStringAndSize_fp = None
 __PyUnicode_FromStringAndSize_f = None
 __PyUnicode_FromStringAndSize_tf = t_vpi_systf_data()
 def __PyUnicode_FromStringAndSize(ud):
-    print("Hello from PyUnicode_FromStringAndSize", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __u = vpi_get_pval_str(__arg_h)
+    __size = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_FromStringAndSize_f(__u.encode(), __size)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_GetDefaultEncoding_fp = None
 __PyUnicode_GetDefaultEncoding_f = None
 __PyUnicode_GetDefaultEncoding_tf = t_vpi_systf_data()
 def __PyUnicode_GetDefaultEncoding(ud):
-    print("Hello from PyUnicode_GetDefaultEncoding", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_GetDefaultEncoding_f()
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __PyUnicode_GetLength_fp = None
 __PyUnicode_GetLength_f = None
 __PyUnicode_GetLength_tf = t_vpi_systf_data()
 def __PyUnicode_GetLength(ud):
-    print("Hello from PyUnicode_GetLength", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_GetLength_f(__unicode)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_GetSize_fp = None
 __PyUnicode_GetSize_f = None
 __PyUnicode_GetSize_tf = t_vpi_systf_data()
 def __PyUnicode_GetSize(ud):
-    print("Hello from PyUnicode_GetSize", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __unicode = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_GetSize_f(__unicode)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_InternFromString_fp = None
 __PyUnicode_InternFromString_f = None
 __PyUnicode_InternFromString_tf = t_vpi_systf_data()
 def __PyUnicode_InternFromString(ud):
-    print("Hello from PyUnicode_InternFromString", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __u = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_InternFromString_f(__u.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_IsIdentifier_fp = None
 __PyUnicode_IsIdentifier_f = None
 __PyUnicode_IsIdentifier_tf = t_vpi_systf_data()
 def __PyUnicode_IsIdentifier(ud):
-    print("Hello from PyUnicode_IsIdentifier", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_IsIdentifier_f(__s)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_Join_fp = None
 __PyUnicode_Join_f = None
 __PyUnicode_Join_tf = t_vpi_systf_data()
 def __PyUnicode_Join(ud):
-    print("Hello from PyUnicode_Join", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __separator = vpi_get_pval_ptr(__arg_h)
+    __seq = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Join_f(__separator, __seq)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_Partition_fp = None
 __PyUnicode_Partition_f = None
 __PyUnicode_Partition_tf = t_vpi_systf_data()
 def __PyUnicode_Partition(ud):
-    print("Hello from PyUnicode_Partition", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_ptr(__arg_h)
+    __sep = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Partition_f(__s, __sep)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_RPartition_fp = None
 __PyUnicode_RPartition_f = None
 __PyUnicode_RPartition_tf = t_vpi_systf_data()
 def __PyUnicode_RPartition(ud):
-    print("Hello from PyUnicode_RPartition", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_ptr(__arg_h)
+    __sep = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_RPartition_f(__s, __sep)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_RSplit_fp = None
 __PyUnicode_RSplit_f = None
 __PyUnicode_RSplit_tf = t_vpi_systf_data()
 def __PyUnicode_RSplit(ud):
-    print("Hello from PyUnicode_RSplit", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_ptr(__arg_h)
+    __sep = vpi_get_pval_ptr(__arg_h)
+    __maxsplit = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_RSplit_f(__s, __sep, __maxsplit)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_Replace_fp = None
 __PyUnicode_Replace_f = None
 __PyUnicode_Replace_tf = t_vpi_systf_data()
 def __PyUnicode_Replace(ud):
-    print("Hello from PyUnicode_Replace", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __str = vpi_get_pval_ptr(__arg_h)
+    __substr = vpi_get_pval_ptr(__arg_h)
+    __replstr = vpi_get_pval_ptr(__arg_h)
+    __maxcount = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Replace_f(__str, __substr, __replstr, __maxcount)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_RichCompare_fp = None
 __PyUnicode_RichCompare_f = None
 __PyUnicode_RichCompare_tf = t_vpi_systf_data()
 def __PyUnicode_RichCompare(ud):
-    print("Hello from PyUnicode_RichCompare", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __left = vpi_get_pval_ptr(__arg_h)
+    __right = vpi_get_pval_ptr(__arg_h)
+    __op = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_RichCompare_f(__left, __right, __op)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_Split_fp = None
 __PyUnicode_Split_f = None
 __PyUnicode_Split_tf = t_vpi_systf_data()
 def __PyUnicode_Split(ud):
-    print("Hello from PyUnicode_Split", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_ptr(__arg_h)
+    __sep = vpi_get_pval_ptr(__arg_h)
+    __maxsplit = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Split_f(__s, __sep, __maxsplit)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_Splitlines_fp = None
 __PyUnicode_Splitlines_f = None
 __PyUnicode_Splitlines_tf = t_vpi_systf_data()
 def __PyUnicode_Splitlines(ud):
-    print("Hello from PyUnicode_Splitlines", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __s = vpi_get_pval_ptr(__arg_h)
+    __keepends = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Splitlines_f(__s, __keepends)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_Substring_fp = None
 __PyUnicode_Substring_f = None
 __PyUnicode_Substring_tf = t_vpi_systf_data()
 def __PyUnicode_Substring(ud):
-    print("Hello from PyUnicode_Substring", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __str = vpi_get_pval_ptr(__arg_h)
+    __start = vpi_get_pval_int(__arg_h)
+    ___end = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Substring_f(__str, __start, ___end)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __PyUnicode_Tailmatch_fp = None
 __PyUnicode_Tailmatch_f = None
 __PyUnicode_Tailmatch_tf = t_vpi_systf_data()
 def __PyUnicode_Tailmatch(ud):
-    print("Hello from PyUnicode_Tailmatch", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __str = vpi_get_pval_ptr(__arg_h)
+    __substr = vpi_get_pval_ptr(__arg_h)
+    __start = vpi_get_pval_int(__arg_h)
+    ___end = vpi_get_pval_int(__arg_h)
+    __direction = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Tailmatch_f(__str, __substr, __start, ___end, __direction)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __PyUnicode_Translate_fp = None
 __PyUnicode_Translate_f = None
 __PyUnicode_Translate_tf = t_vpi_systf_data()
 def __PyUnicode_Translate(ud):
-    print("Hello from PyUnicode_Translate", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __str = vpi_get_pval_ptr(__arg_h)
+    ___table = vpi_get_pval_ptr(__arg_h)
+    __errors = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __PyUnicode_Translate_f(__str, ___table, __errors.encode())
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __Py_DecRef_fp = None
 __Py_DecRef_f = None
 __Py_DecRef_tf = t_vpi_systf_data()
 def __Py_DecRef(ud):
-    print("Hello from Py_DecRef", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_DecRef_f(__p0)
     return 0
 
 __Py_EnterRecursiveCall_fp = None
 __Py_EnterRecursiveCall_f = None
 __Py_EnterRecursiveCall_tf = t_vpi_systf_data()
 def __Py_EnterRecursiveCall(ud):
-    print("Hello from Py_EnterRecursiveCall", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __where = vpi_get_pval_str(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_EnterRecursiveCall_f(__where.encode())
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __Py_Finalize_fp = None
 __Py_Finalize_f = None
 __Py_Finalize_tf = t_vpi_systf_data()
 def __Py_Finalize(ud):
-    print("Hello from Py_Finalize", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_Finalize_f()
     return 0
 
 __Py_FinalizeEx_fp = None
 __Py_FinalizeEx_f = None
 __Py_FinalizeEx_tf = t_vpi_systf_data()
 def __Py_FinalizeEx(ud):
-    print("Hello from Py_FinalizeEx", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_FinalizeEx_f()
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __Py_GenericAlias_fp = None
 __Py_GenericAlias_f = None
 __Py_GenericAlias_tf = t_vpi_systf_data()
 def __Py_GenericAlias(ud):
-    print("Hello from Py_GenericAlias", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
+    __p1 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GenericAlias_f(__p0, __p1)
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __Py_GetBuildInfo_fp = None
 __Py_GetBuildInfo_f = None
 __Py_GetBuildInfo_tf = t_vpi_systf_data()
 def __Py_GetBuildInfo(ud):
-    print("Hello from Py_GetBuildInfo", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetBuildInfo_f()
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __Py_GetCompiler_fp = None
 __Py_GetCompiler_f = None
 __Py_GetCompiler_tf = t_vpi_systf_data()
 def __Py_GetCompiler(ud):
-    print("Hello from Py_GetCompiler", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetCompiler_f()
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __Py_GetCopyright_fp = None
 __Py_GetCopyright_f = None
 __Py_GetCopyright_tf = t_vpi_systf_data()
 def __Py_GetCopyright(ud):
-    print("Hello from Py_GetCopyright", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetCopyright_f()
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __Py_GetExecPrefix_fp = None
 __Py_GetExecPrefix_f = None
 __Py_GetExecPrefix_tf = t_vpi_systf_data()
 def __Py_GetExecPrefix(ud):
-    print("Hello from Py_GetExecPrefix", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetExecPrefix_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __Py_GetPath_fp = None
 __Py_GetPath_f = None
 __Py_GetPath_tf = t_vpi_systf_data()
 def __Py_GetPath(ud):
-    print("Hello from Py_GetPath", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetPath_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __Py_GetPlatform_fp = None
 __Py_GetPlatform_f = None
 __Py_GetPlatform_tf = t_vpi_systf_data()
 def __Py_GetPlatform(ud):
-    print("Hello from Py_GetPlatform", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetPlatform_f()
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __Py_GetPrefix_fp = None
 __Py_GetPrefix_f = None
 __Py_GetPrefix_tf = t_vpi_systf_data()
 def __Py_GetPrefix(ud):
-    print("Hello from Py_GetPrefix", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetPrefix_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __Py_GetProgramFullPath_fp = None
 __Py_GetProgramFullPath_f = None
 __Py_GetProgramFullPath_tf = t_vpi_systf_data()
 def __Py_GetProgramFullPath(ud):
-    print("Hello from Py_GetProgramFullPath", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetProgramFullPath_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __Py_GetProgramName_fp = None
 __Py_GetProgramName_f = None
 __Py_GetProgramName_tf = t_vpi_systf_data()
 def __Py_GetProgramName(ud):
-    print("Hello from Py_GetProgramName", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetProgramName_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __Py_GetPythonHome_fp = None
 __Py_GetPythonHome_f = None
 __Py_GetPythonHome_tf = t_vpi_systf_data()
 def __Py_GetPythonHome(ud):
-    print("Hello from Py_GetPythonHome", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetPythonHome_f()
+    vpi_set_val_ptr(__tf_h, __rval)
     return 0
 
 __Py_GetRecursionLimit_fp = None
 __Py_GetRecursionLimit_f = None
 __Py_GetRecursionLimit_tf = t_vpi_systf_data()
 def __Py_GetRecursionLimit(ud):
-    print("Hello from Py_GetRecursionLimit", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetRecursionLimit_f()
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __Py_GetVersion_fp = None
 __Py_GetVersion_f = None
 __Py_GetVersion_tf = t_vpi_systf_data()
 def __Py_GetVersion(ud):
-    print("Hello from Py_GetVersion", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_GetVersion_f()
+    vpi_set_val_str(__tf_h, __rval)
     return 0
 
 __Py_IncRef_fp = None
 __Py_IncRef_f = None
 __Py_IncRef_tf = t_vpi_systf_data()
 def __Py_IncRef(ud):
-    print("Hello from Py_IncRef", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_IncRef_f(__p0)
     return 0
 
 __Py_Initialize_fp = None
 __Py_Initialize_f = None
 __Py_Initialize_tf = t_vpi_systf_data()
 def __Py_Initialize(ud):
-    print("Hello from Py_Initialize", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_Initialize_f()
     return 0
 
 __Py_InitializeEx_fp = None
 __Py_InitializeEx_f = None
 __Py_InitializeEx_tf = t_vpi_systf_data()
 def __Py_InitializeEx(ud):
-    print("Hello from Py_InitializeEx", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_InitializeEx_f(__p0)
     return 0
 
 __Py_IsInitialized_fp = None
 __Py_IsInitialized_f = None
 __Py_IsInitialized_tf = t_vpi_systf_data()
 def __Py_IsInitialized(ud):
-    print("Hello from Py_IsInitialized", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_IsInitialized_f()
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __Py_LeaveRecursiveCall_fp = None
 __Py_LeaveRecursiveCall_f = None
 __Py_LeaveRecursiveCall_tf = t_vpi_systf_data()
 def __Py_LeaveRecursiveCall(ud):
-    print("Hello from Py_LeaveRecursiveCall", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_LeaveRecursiveCall_f()
     return 0
 
 __Py_MakePendingCalls_fp = None
 __Py_MakePendingCalls_f = None
 __Py_MakePendingCalls_tf = t_vpi_systf_data()
 def __Py_MakePendingCalls(ud):
-    print("Hello from Py_MakePendingCalls", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_MakePendingCalls_f()
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __Py_ReprEnter_fp = None
 __Py_ReprEnter_f = None
 __Py_ReprEnter_tf = t_vpi_systf_data()
 def __Py_ReprEnter(ud):
-    print("Hello from Py_ReprEnter", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_ReprEnter_f(__p0)
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __Py_ReprLeave_fp = None
 __Py_ReprLeave_f = None
 __Py_ReprLeave_tf = t_vpi_systf_data()
 def __Py_ReprLeave(ud):
-    print("Hello from Py_ReprLeave", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_ptr(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_ReprLeave_f(__p0)
     return 0
 
 __Py_RunMain_fp = None
 __Py_RunMain_f = None
 __Py_RunMain_tf = t_vpi_systf_data()
 def __Py_RunMain(ud):
-    print("Hello from Py_RunMain", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_RunMain_f()
+    vpi_set_val_int(__tf_h, __rval)
     return 0
 
 __Py_SetRecursionLimit_fp = None
 __Py_SetRecursionLimit_f = None
 __Py_SetRecursionLimit_tf = t_vpi_systf_data()
 def __Py_SetRecursionLimit(ud):
-    print("Hello from Py_SetRecursionLimit", flush=True)
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
-    __t = vpi_scan(__arg_h)
+    __p0 = vpi_get_pval_int(__arg_h)
     vpi_free_object(__arg_h)
-    __rval = t_vpi_value()
-    __rval.format = vpiIntVal
-    __rval.value.integer = 20
-    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)
+    __rval = __Py_SetRecursionLimit_f(__p0)
     return 0
 def register_tf():
     from .api import vpi_register_systf, t_vpi_systf_data, vpiSysFunc, vpiSysTask
@@ -3658,6 +3009,7 @@ def register_tf():
     libpy_path = os.path.join(
         sysconfig.get_config_var("LIBDIR"),
         sysconfig.get_config_var("INSTSONAME"))
+    print("libpy_path: %s" % str(libpy_path))
     libpy = ctypes.cdll.LoadLibrary(libpy_path)
 
     tf_func_t = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(ctypes.c_byte))

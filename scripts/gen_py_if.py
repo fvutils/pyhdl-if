@@ -2,7 +2,7 @@
 #*
 #* gen_py_if.py
 #*
-#* Copyright 2023 Matthew Ballance and Contributors
+#* Copyright 2023-2024 Matthew Ballance and Contributors
 #*
 #* Licensed under the Apache License, Version 2.0 (the "License"); you may 
 #* not use this file except in compliance with the License.  
@@ -79,7 +79,7 @@ file_header_sv = """
 /**
  * %s
  *
- * Copyright 2023 Matthew Ballance and Contributors
+ * Copyright 2023-2024 Matthew Ballance and Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may 
  * not use this file except in compliance with the License.  
@@ -102,7 +102,7 @@ file_header_py = """
 #****************************************************************************
 #* %s
 #*
-#* Copyright 2023 Matthew Ballance and Contributors
+#* Copyright 2023-2024 Matthew Ballance and Contributors
 #*
 #* Licensed under the Apache License, Version 2.0 (the "License"); you may 
 #* not use this file except in compliance with the License.  
@@ -134,7 +134,6 @@ class Preprocessor(pcpp.Preprocessor):
         pass
 
 def gen_type(t):
-    ts = t.format()
     if isinstance(t, cxxt.Type):
         return t.format()
     else:
@@ -164,6 +163,15 @@ def gen_ctype_rtype(t):
             return ctype_m[ts]
         else:
             return ts
+
+def gen_c_rtype(t):
+    if t is None:
+        return "void"
+    else:
+        return t.format()
+
+def gen_c_type(t):
+    return t.format()
         
 def get_size_rtype(t):
     global typew_m
@@ -222,7 +230,7 @@ def gen_dpi_imports(fp, functions):
 
         fp.write("    import \"DPI-C\" context function ")
 
-        if f.return_type is None:
+        if f.return_type is None or f.return_type.format() == "void":
             fp.write("void ")
         else:
             fp.write("%s " % gen_dpi_rtype(type_m, f.return_type))
@@ -237,129 +245,435 @@ def gen_dpi_imports(fp, functions):
             fp.write("%s %s" % (gen_dpi_ptype(type_m, p.type), pname))
         fp.write(");\n")
 
+def gen_py_if(fp, functions):
+
+    fp.write(file_header_sv % "py_api_if.h")
+    fp.write("#ifndef INCLUDED_PY_API_IF_H\n")
+    fp.write("#define INCLUDED_PY_API_IF_H\n")
+    fp.write("\n")
+    fp.write("typedef struct PyObject_s *PyObject;\n")
+    fp.write("typedef struct PyTypeObject_s *PyTypeObject;\n")
+    fp.write("typedef ssize_t Py_ssize_t;\n")
+    fp.write("\n")
+    gen_py_api_struct(fp, functions)
+    fp.write("\n")
+    fp.write("static py_api       prv_py_api;\n")
+    fp.write("\n")
+    gen_py_load_api_struct(fp, functions)
+    fp.write("\n")
+    fp.write("#endif /* INCLUDED_PY_API_IF_H */\n")
+    pass
+
 def gen_vpi_tf(fp, functions):
-    fp.write(file_header_py % "py_tf.py")
-    fp.write("import ctypes\n")
-    fp.write("import os\n")
-    fp.write("import sysconfig\n")
-    fp.write("from .api import t_vpi_systf_data, t_vpi_value\n")
-    fp.write("from .api import vpi_free_object, vpi_handle, vpi_iterate, vpi_scan\n")
-    fp.write("from .api import vpi_put_value\n")
-    fp.write("from .api import vpiArgument, vpiIntVal, vpiSysFuncSized, vpiSysTfCall, vpiNoDelay\n")
+    fp.write(file_header_sv % "py_vpi_if.h")
+    fp.write("#ifndef INCLUDED_VPI_TF_IF_H\n")
+    fp.write("#define INCLUDED_VPI_TF_IF_H\n")
+    fp.write('#include "vpi_user.h"\n')
+    fp.write('#include "py_api_if.h"\n')
     fp.write("\n")
 
     # First, emit some general-purpose callback functions
-    fp.write("sizetf_f = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(ctypes.c_byte))\n")
+    # fp.write("sizetf_f = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(ctypes.c_byte))\n")
+    # fp.write("\n")
+    # fp.write("def sizetf32(p):\n")
+    # fp.write("    return 32\n")
+    # fp.write("sizetf32_fp = sizetf_f(sizetf32)\n")
+    # fp.write("\n")
+    # fp.write("def sizetf64(p):\n")
+    # fp.write("    return 64\n")
+    # fp.write("sizetf64_fp = sizetf_f(sizetf64)\n")
+    # fp.write("\n")
+
+    # Emit the API struct that we use to access VPI primitives internally
+    gen_vpi_api_struct(fp)
     fp.write("\n")
-    fp.write("def sizetf32(p):\n")
-    fp.write("    return 32\n")
-    fp.write("sizetf32_fp = sizetf_f(sizetf32)\n")
+
+    fp.write("static s_vpi_vecval prv_vecval[16];\n")
+    fp.write("static vpi_api      prv_vpi_api;\n")
     fp.write("\n")
-    fp.write("def sizetf64(p):\n")
-    fp.write("    return 64\n")
-    fp.write("sizetf64_fp = sizetf_f(sizetf64)\n")
+
+    # Next, emit reusable utility functions
+    gen_vpi_utils(fp)
     fp.write("\n")
+
+    fp.write("static PLI_INT32 sizetf64(PLI_BYTE8 *ud) {\n")
+    fp.write("    return 64;\n")
+    fp.write("}\n")
+
+    # Next, emit TF implementations
+    gen_vpi_py_impl(fp, functions)
+    fp.write("\n")
+
+    gen_vpi_load_api_struct(fp)
+    fp.write("\n")
+
+    # Emit TF registration
+    gen_vpi_tf_reg(fp, functions)
+    fp.write("\n")
+
+#     fp.write("def register_tf():\n")
+#     fp.write("    from .api import vpi_register_systf, t_vpi_systf_data, vpiSysFunc, vpiSysTask\n")
+#     fp.write("\n")
+#     fp.write("    libpy_path = os.path.join(\n")
+#     fp.write("        sysconfig.get_config_var(\"LIBDIR\"),\n")
+#     fp.write("        sysconfig.get_config_var(\"INSTSONAME\"))\n")
+#     fp.write("    libpy = ctypes.cdll.LoadLibrary(libpy_path)\n")
+#     fp.write("\n")
+#     fp.write("    tf_func_t = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(ctypes.c_byte))")
+#     fp.write("\n")
+
+#     for i,f in enumerate(functions):
+#         if i:
+#             fp.write("\n")
+
+#         fp.write("    global __%s_fp, __%s_f, __%s_tf\n" % (
+#             f.name.segments[0].name,
+#             f.name.segments[0].name,
+#             f.name.segments[0].name))
+#         fp.write("    __%s_f = getattr(libpy, \"%s\")\n" % (
+#             f.name.segments[0].name,
+#             f.name.segments[0].name))
+#         fp.write("    __%s_f.restype = %s\n" % (
+#             f.name.segments[0].name,
+#             gen_ctype_rtype(f.return_type)))
+#         fp.write("    __%s_f.argtypes = [%s]\n" % (
+#             f.name.segments[0].name,
+#             ",".join([gen_ctype_rtype(p.type) for p in f.parameters])))
+#         fp.write("    __%s_tf.tfname = \"$%s\".encode()\n" % (
+#             f.name.segments[0].name,
+#             f.name.segments[0].name))
+#         rsize = get_size_rtype(f.return_type)
+#         rtype_s = gen_ctype_rtype(f.return_type)
+#         if f.return_type is None or gen_ctype_rtype(f.return_type) == "None" or rsize is None:
+#             fp.write("    __%s_tf.type = vpiSysTask\n" % (
+#                 f.name.segments[0].name,))
+# #        elif rsize > 32:
+# #            fp.write("    __%s_tf.type = vpiSysFuncSized\n" % (
+# #                f.name.segments[0].name,
+# #                ))
+#         else:
+#             fp.write("    __%s_tf.type = vpiSysFunc\n" % (
+#                 f.name.segments[0].name,
+#                 ))
+#         fp.write("    __%s_fp = tf_func_t(__%s)\n" % (
+#             f.name.segments[0].name,
+#             f.name.segments[0].name))
+#         fp.write("    __%s_tf.calltf = __%s_fp\n" % (
+#             f.name.segments[0].name,
+#             f.name.segments[0].name,
+#             ))
+# #        fp.write("    __%s_tf.compiletf = None\n" % (
+# #            f.name.segments[0].name,
+# #            ))
+#         if rsize is None or rsize <= 32:
+# #            fp.write("    __%s_tf.sizetf = None\n" % (
+# #                f.name.segments[0].name,
+# #                ))
+#             pass
+#         else:
+#             fp.write("    __%s_tf.sizetf = &sizetf64\n" % (
+#                 f.name.segments[0].name,
+#                 ))
+#         fp.write("    __%s_tf.user_data = None\n" %(
+#             f.name.segments[0].name,
+#             ))
+#         fp.write("    name = __%s_tf.tfname.decode()\n" % f.name.segments[0].name)
+# #        fp.write("    print(\"register %s: %s\" % (name, str(vpi_register_systf)))\n")
+#         fp.write("    ret = vpi_register_systf(ctypes.pointer(__%s_tf))\n" %(
+#             f.name.segments[0].name,
+#             ))
+# #        fp.write("    print(\"    ret=%s\" % str(ret))\n")
+    fp.write("#endif /* INCLUDED_VPI_TF_IF_H */\n")
+    pass
+
+def gen_vpi_api_struct(fp):
+    fp.write("typedef struct vpi_api_s {\n")
+    fp.write("    vpiHandle (*vpi_handle)(PLI_INT32 type, vpiHandle hndl);\n")
+    fp.write("    vpiHandle (*vpi_iterate)(PLI_INT32 type, vpiHandle hndl);\n")
+    fp.write("    vpiHandle (*vpi_scan)(vpiHandle hndl);\n")
+    fp.write("    vpiHandle (*vpi_register_systf)(s_vpi_systf_data *data);\n")
+    fp.write("    void (*vpi_get_value)(vpiHandle, s_vpi_value *);\n")
+    fp.write("    vpiHandle (*vpi_put_value)(vpiHandle, s_vpi_value *, s_vpi_time *, PLI_INT32);\n")
+    fp.write("    void (*vpi_free_object)(vpiHandle);\n")
+    fp.write("} vpi_api;\n")
+
+def gen_vpi_load_api_struct(fp):
+    fp.write("static int vpi_load_api_struct(void *lib_h) {\n")
+    fp.write("    uint32_t i, ret=1;\n")
+    fp.write("    struct ft_entry_s {\n")
+    fp.write("        const char *name;\n")
+    fp.write("        void **fpp;\n")
+    fp.write("    } vpi_funcs[] = {\n")
+    funcs = ("vpi_handle", "vpi_iterate", "vpi_scan", "vpi_register_systf",
+             "vpi_get_value", "vpi_put_value", "vpi_free_object")
+    for i,fn in enumerate(funcs):
+        fp.write("        {\"%s\", (void **)&prv_vpi_api.%s}%s\n" % (
+            fn,
+            fn,
+            "," if i+1 < len(funcs) else ""))
+    fp.write("    };\n")
+    fp.write("    for (i=0; i<sizeof(vpi_funcs)/sizeof(struct ft_entry_s); i++) {\n")
+    fp.write("        void *sym = dlsym(lib_h, vpi_funcs[i].name);\n");
+    fp.write("        if (!sym) {\n")
+    fp.write("            ret = 0;\n")
+    fp.write('            fprintf(stdout, "Failed to find symbol %s\\n", vpi_funcs[i].name);\n');
+    fp.write("        }\n")
+    fp.write("        *vpi_funcs[i].fpp = sym;\n");
+    fp.write("    }\n")
+    fp.write("    return ret;\n")
+    fp.write("}\n")
+
+def gen_py_api_struct(fp, functions):
+    fp.write("typedef struct py_api_s {\n")
 
     for i,f in enumerate(functions):
         if i:
             fp.write("\n")
-        fp.write("__%s_fp = None\n" % f.name.segments[0].name)
-        fp.write("__%s_f = None\n" % f.name.segments[0].name)
-        fp.write("__%s_tf = t_vpi_systf_data()\n" % f.name.segments[0].name)
-        fp.write("def __%s(ud):\n" % f.name.segments[0].name)
-        fp.write("    print(\"Hello from %s\", flush=True)\n" % f.name.segments[0].name)
-        fp.write("    __tf_h = vpi_handle(vpiSysTfCall, None)\n")
-        if len(f.parameters) > 0:
-            fp.write("    __arg_h = vpi_iterate(vpiArgument, __tf_h)\n")
-            for j,p in enumerate(f.parameters):
-                fp.write("    __t = vpi_scan(__arg_h)\n")
-                name = mangle_pname(p.name) if p.name is not None else "p%d" % j
+        fp.write("    %s (*%s)(" % (
+            gen_c_rtype(f.return_type),
+            f.name.segments[0].name
+        ))
+        for i,p in enumerate(f.parameters):
+            if i:
+                fp.write(", ")
+            name = "p%0d" % i if p.name is None else p.name
+            fp.write("%s %s" % (p.type.format(), name))
+        fp.write(");\n")
+    fp.write("} py_api;\n")
 
-            fp.write("    vpi_free_object(__arg_h)\n")
+def gen_py_load_api_struct(fp, functions):
+    fp.write("static int py_load_api_struct(void *lib_h) {\n")
+    fp.write("    int ret = 1;\n")
+    fp.write("    uint32_t i;\n")
+    fp.write("    struct fp_entry_s {\n")
+    fp.write("        const char *name;\n")
+    fp.write("        void **fp;\n")
+    fp.write("    } py_funcs[] = {\n")
+    for i,fn in enumerate(functions):
+        fp.write("        {\"%s\", &prv_py_api.%s}%s\n" % (
+            fn.name.segments[0].name,
+            fn.name.segments[0].name,
+            "," if i+1 < len(functions) else ""
+        ))
+    fp.write("    };\n")
+    fp.write("    for (i=0; i<sizeof(py_funcs)/sizeof(struct fp_entry_s); i++) {\n")
+    fp.write("        void *sym = dlsym(lib_h, py_funcs[i].name);\n")
+    fp.write("        if (!sym) {\n")
+    fp.write("            ret = 0;\n")
+    fp.write("        }\n")
+    fp.write("        *(py_funcs[i].fp) = sym;\n")
+    fp.write("    }\n")
+    fp.write("    return ret;\n")
+    fp.write("}\n")
+
+def gen_vpi_utils(fp):
+    fp.write("static int32_t vpi_get_pval_int(vpiHandle arg_it) {\n")
+    fp.write("    vpiHandle pval = prv_vpi_api.vpi_scan(arg_it);\n")
+    fp.write("    s_vpi_value val_s;\n")
+    fp.write("    val_s.format = vpiIntVal;\n")
+    fp.write("    prv_vpi_api.vpi_get_value(pval, &val_s);\n")
+    fp.write("    return val_s.value.integer;\n")
+    fp.write("}\n")
+    fp.write("\n")
+    fp.write("static uintptr_t vpi_get_pval_ptr(vpiHandle arg_it) {\n")
+    fp.write("    vpiHandle pval = prv_vpi_api.vpi_scan(arg_it);\n")
+    fp.write("    uintptr_t ptr_ival;\n")
+    fp.write("    s_vpi_value val_s;\n")
+    fp.write("    val_s.format = vpiVectorVal;\n")
+    fp.write("    val_s.value.vector = prv_vecval;\n")
+    fp.write("    prv_vpi_api.vpi_get_value(pval, &val_s);\n")
+    fp.write("    ptr_ival = prv_vecval[1].aval;\n")
+    fp.write("    ptr_ival <<= 32;\n")
+    fp.write("    ptr_ival |= prv_vecval[0].aval;\n")
+    fp.write("    return ptr_ival;\n")
+    fp.write("}\n")
+    fp.write("\n")
+    fp.write("static const char *vpi_get_pval_str(vpiHandle arg_it) {\n")
+    fp.write("    vpiHandle pval = prv_vpi_api.vpi_scan(arg_it);\n")
+    fp.write("    s_vpi_value val_s;\n")
+    fp.write("    val_s.format = vpiStringVal;\n")
+    fp.write("    prv_vpi_api.vpi_get_value(pval, &val_s);\n")
+    fp.write("    return val_s.value.str;\n")
+    fp.write("}\n")
+    fp.write("\n")
+    # Setters
+    fp.write("static void vpi_set_val_int(vpiHandle val_h, int32_t val) {\n")
+    fp.write("    s_vpi_value val_s;\n")
+    fp.write("    val_s.format = vpiIntVal;\n")
+    fp.write("    val_s.value.integer = val;\n")
+    fp.write("    prv_vpi_api.vpi_put_value(val_h, &val_s, 0, vpiNoDelay);\n")
+    fp.write("}\n")
+    fp.write("\n")
+    fp.write("static void vpi_set_val_ptr(vpiHandle val_h, uintptr_t val) {\n")
+    fp.write("    s_vpi_value val_s;\n")
+    fp.write("    val_s.format = vpiVectorVal;\n")
+    fp.write("    val_s.value.vector = prv_vecval;\n")
+    fp.write("    prv_vecval[0].aval = val;\n")
+    fp.write("    val >>= 32;\n")
+    fp.write("    prv_vecval[1].aval = val;\n")
+    fp.write("    prv_vpi_api.vpi_put_value(val_h, &val_s, 0, vpiNoDelay);\n")
+    fp.write("}\n")
+    fp.write("\n")
+    fp.write("static void vpi_set_val_str(vpiHandle val_h, const char *val) {\n")
+    fp.write("    s_vpi_value val_s;\n")
+    fp.write("    val_s.format = vpiStringVal;\n")
+    fp.write("    val_s.value.str = (char *)val;\n")
+    fp.write("    prv_vpi_api.vpi_put_value(val_h, &val_s, 0, vpiNoDelay);\n")
+    fp.write("}\n")
+    fp.write("\n")
+
+def gen_vpi_py_impl(fp, functions):
+    for i,f in enumerate(functions):
+        if i:
+            fp.write("\n")
+        fp.write("static int _%s(PLI_BYTE8 *ud) {\n" % f.name.segments[0].name)
+        if f.return_type is not None and f.return_type.format() != "void":
+            fp.write("    %s __rval;\n" % gen_c_type(f.return_type))
+        fp.write("    vpiHandle __tf_h = prv_vpi_api.vpi_handle(vpiSysTfCall, 0);\n")
+        if len(f.parameters) > 0:
+            fp.write("    vpiHandle __arg_h = prv_vpi_api.vpi_iterate(vpiArgument, __tf_h);\n")
+            for j,p in enumerate(f.parameters):
+                name = mangle_pname(p.name) if p.name is not None else "p%d" % j
+                fp.write("    %s __%s = %s;\n" % (
+                    gen_c_type(p.type),
+                    name,
+                    gen_vpi_get_param("__arg_h", p.type)))
+
+            fp.write("    prv_vpi_api.vpi_free_object(__arg_h);\n")
+        fp.write("    ")
+        if f.return_type is not None and f.return_type.format() != "void":
+            fp.write("__rval = ")
         
-        if gen_ctype_rtype(f.return_type) != "void":
-            fp.write("    __rval = t_vpi_value()\n")
-            fp.write("    __rval.format = vpiIntVal\n")
-            fp.write("    __rval.value.integer = 20\n")
-            fp.write("    vpi_put_value(__tf_h, ctypes.pointer(__rval), None, vpiNoDelay)\n")
-        fp.write("    return 0\n")
+        # Generate function call
+        fp.write("prv_py_api.%s" % f.name.segments[0].name)
+
+        if len(f.parameters) == 0:
+            fp.write("();")
+        else:
+            fp.write("(")
+            for j,p in enumerate(f.parameters):
+                name = mangle_pname(p.name) if p.name is not None else "p%d" % j
+                if j:
+                    fp.write(", ")
+                fp.write("__%s" % name)
+            fp.write(");")
+        fp.write("\n")
+
+        if f.return_type is not None and f.return_type.format() != "void":
+            fp.write("    %s;\n" % gen_vpi_set('__tf_h', '__rval', f.return_type))
+        fp.write("    return 0;\n")
+        fp.write("}\n")
 
         pass
     
-    fp.write("def register_tf():\n")
-    fp.write("    from .api import vpi_register_systf, t_vpi_systf_data, vpiSysFunc, vpiSysTask\n")
-    fp.write("\n")
-    fp.write("    libpy_path = os.path.join(\n")
-    fp.write("        sysconfig.get_config_var(\"LIBDIR\"),\n")
-    fp.write("        sysconfig.get_config_var(\"INSTSONAME\"))\n")
-    fp.write("    libpy = ctypes.cdll.LoadLibrary(libpy_path)\n")
-    fp.write("\n")
-    fp.write("    tf_func_t = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(ctypes.c_byte))")
-    fp.write("\n")
-
+def gen_vpi_tf_reg(fp, functions):
+    fp.write("static void vpi_register_python_tf() {\n")
+    fp.write("    s_vpi_systf_data *tf;\n")
+    fp.write('    DEBUG("vpi_register_python_tf()");\n')
     for i,f in enumerate(functions):
-        if i:
-            fp.write("\n")
+        fp.write("\n")
 
-        fp.write("    global __%s_fp, __%s_f, __%s_tf\n" % (
-            f.name.segments[0].name,
-            f.name.segments[0].name,
-            f.name.segments[0].name))
-        fp.write("    __%s_f = getattr(libpy, \"%s\")\n" % (
-            f.name.segments[0].name,
-            f.name.segments[0].name))
-        fp.write("    __%s_f.restype = %s\n" % (
-            f.name.segments[0].name,
-            gen_ctype_rtype(f.return_type)))
-        fp.write("    __%s_f.argtypes = [%s]\n" % (
-            f.name.segments[0].name,
-            ",".join([gen_ctype_rtype(p.type) for p in f.parameters])))
-        fp.write("    __%s_tf.tfname = \"$%s\".encode()\n" % (
-            f.name.segments[0].name,
-            f.name.segments[0].name))
+        fp.write("    tf = (s_vpi_systf_data *)malloc(sizeof(s_vpi_systf_data));\n")
+
+        fp.write("    tf->tfname = \"$%s\";\n" % f.name.segments[0].name)
         rsize = get_size_rtype(f.return_type)
         rtype_s = gen_ctype_rtype(f.return_type)
         if f.return_type is None or gen_ctype_rtype(f.return_type) == "None" or rsize is None:
-            fp.write("    __%s_tf.type = vpiSysTask\n" % (
-                f.name.segments[0].name,))
-#        elif rsize > 32:
-#            fp.write("    __%s_tf.type = vpiSysFuncSized\n" % (
-#                f.name.segments[0].name,
-#                ))
+            fp.write("    tf->type = vpiSysTask;\n")
         else:
-            fp.write("    __%s_tf.type = vpiSysFunc\n" % (
-                f.name.segments[0].name,
-                ))
-        fp.write("    __%s_fp = tf_func_t(__%s)\n" % (
-            f.name.segments[0].name,
-            f.name.segments[0].name))
-        fp.write("    __%s_tf.calltf = __%s_fp\n" % (
-            f.name.segments[0].name,
-            f.name.segments[0].name,
-            ))
-#        fp.write("    __%s_tf.compiletf = None\n" % (
-#            f.name.segments[0].name,
-#            ))
+            fp.write("    tf->type = vpiSysFunc;\n")
+
+        fp.write("    tf->calltf = &_%s;\n" % f.name.segments[0].name)
+        fp.write("    tf->compiletf = 0;\n")
         if rsize is None or rsize <= 32:
+            fp.write("    tf->sizetf = 0;\n")
 #            fp.write("    __%s_tf.sizetf = None\n" % (
 #                f.name.segments[0].name,
 #                ))
             pass
         else:
-            fp.write("    __%s_tf.sizetf = sizetf64_fp\n" % (
-                f.name.segments[0].name,
-                ))
-        fp.write("    __%s_tf.userdata = None\n" %(
-            f.name.segments[0].name,
-            ))
-        fp.write("    name = __%s_tf.tfname.decode()\n" % f.name.segments[0].name)
-#        fp.write("    print(\"register %s: %s\" % (name, str(vpi_register_systf)))\n")
-        fp.write("    ret = vpi_register_systf(ctypes.pointer(__%s_tf))\n" %(
-            f.name.segments[0].name,
-            ))
-#        fp.write("    print(\"    ret=%s\" % str(ret))\n")
-        
+            fp.write("    tf->sizetf = &sizetf64;\n")
+        fp.write("    tf->user_data = 0;\n")
+        fp.write("    if (!prv_vpi_api.vpi_register_systf(tf)) {\n")
+        fp.write('        DEBUG("failed to register %s");\n' % f.name.segments[0].name)
+        fp.write("    } else {\n")
+        fp.write('        DEBUG("registered %s");\n' % f.name.segments[0].name)
+        fp.write("    }\n")
+    fp.write("}")
     pass
+
+
+vpi_get_param_tm = {
+    "PyObject*" : "vpi_get_pval_ptr",
+    "PyTypeObject*" : "vpi_get_pval_ptr",
+    "long long" : "vpi_get_pval_int64",
+    "long": "vpi_get_pval_int",
+    "int": "vpi_get_pval_int",
+    "int*": "vpi_get_pval_ptr",
+    "size_t": "vpi_get_pval_int",
+    "size_t*": "vpi_get_pval_ptr",
+    "Py_ssize_t": "vpi_get_pval_int",
+    "Py_ssize_t*": "vpi_get_pval_ptr",
+    "char*": "vpi_get_pval_str",
+    "char**": "vpi_get_pval_ptr",
+    "const char*": "vpi_get_pval_str",
+    "double" : "vpi_get_pval_double",
+    "float" : "vpi_get_pval_double",
+    "unsigned long": "vpi_get_pval_int",
+    "unsigned long long": "vpi_get_pval_int64",
+    "void*" : "vpi_get_pval_ptr",
+    # "wchar_t*" : None,
+    # "void": 0
+}
+
+vpi_set_param_tm = {
+    "PyObject*" : "vpi_set_val_ptr",
+    "PyTypeObject*" : "vpi_set_val_ptr",
+    "long long" : "vpi_set_val_int64",
+    "long": "vpi_set_val_int",
+    "int": "vpi_set_val_int",
+    "int*": "vpi_set_val_ptr",
+    "size_t": "vpi_set_val_int",
+    "size_t*": "vpi_set_val_ptr",
+    "Py_ssize_t": "vpi_set_val_int",
+    "Py_ssize_t*": "vpi_set_val_ptr",
+    "char*": "vpi_set_val_str",
+    "char**": "vpi_set_val_ptr",
+    "const char*": "vpi_set_val_str",
+    "double" : "vpi_set_val_double",
+    "float" : "vpi_set_val_double",
+    "unsigned long": "vpi_set_val_int",
+    "unsigned long long": "vpi_set_val_int64",
+    "void*" : "vpi_set_val_ptr",
+    "wchar_t*" : "vpi_set_val_ptr",
+    # "void": 0
+}
+
+def gen_vpi_get_param(it_name, ptype):
+    tname = ptype.format()
+
+    if tname in vpi_get_param_tm.keys():
+        return vpi_get_param_tm[tname] + "(%s)" % it_name
+    else:
+        raise Exception("parameter type %s is not supported" % ptype.format())
+
+def gen_vpi_set(val_h_name, val_name, ptype):
+    tname = ptype.format()
+
+    if tname in vpi_set_param_tm.keys():
+        return vpi_set_param_tm[tname] + "(%s, %s)" % (val_h_name, val_name)
+    else:
+        raise Exception("value type %s is not supported" % ptype.format())
+
+def gen_py2ctypes(val_h_name, ptype):
+    tname = ptype.format()
+
+    if tname in ("char*", "const char*"):
+        return "%s.encode()" % val_h_name
+    else:
+        return val_h_name
+
+  
 
 def main():
     parser = argparse.ArgumentParser(prog="gen_py_if")
@@ -367,6 +681,7 @@ def main():
 
     scripts_dir = os.path.dirname(os.path.abspath(__file__))
     hdl_if_dir = os.path.abspath(os.path.join(scripts_dir, "../python/hdl_if"))
+    build_dir = os.path.abspath(os.path.join(scripts_dir, "../build"))
     share_dir = os.path.join(hdl_if_dir, "share")
     share_dpi_dir = os.path.join(share_dir, "dpi")
 
@@ -508,8 +823,11 @@ def main():
 
     with open(os.path.join(share_dpi_dir, "pyhdl_dpi_imports.svh"), "w") as fp:
         gen_dpi_imports(fp, functions)
+
+    with open(os.path.join(build_dir, "py_api_if.h"), "w") as fp:
+        gen_py_if(fp, functions)
     
-    with open(os.path.join(hdl_if_dir, "impl/vpi/pytf.py"), "w") as fp:
+    with open(os.path.join(build_dir, "py_vpi_if.h"), "w") as fp:
         gen_vpi_tf(fp, functions)
 
     pass

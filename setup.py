@@ -33,6 +33,8 @@ include_dirs = []
 
 if isSrcBuild:
     include_dirs.append(pythondir)
+    include_dirs.append(os.path.join(proj_dir, "scripts"))
+    include_dirs.append(os.path.join(proj_dir, "build"))
 
 for cv in sysconfig.get_config_vars():
     print("%s: %s" % (cv, sysconfig.get_config_var(cv)))

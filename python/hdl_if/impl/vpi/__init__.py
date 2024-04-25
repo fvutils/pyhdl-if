@@ -3,8 +3,8 @@ import ctypes
 import importlib
 
 try:
-    import hdl_if.vpi.api as api
-    from hdl_if.vpi.api import *
+    import hdl_if.impl.vpi.api as api
+    from hdl_if.impl.vpi.api import *
 except Exception as e:
     print("Exception(vpi::init::1): %s" % str(e), flush=True)
 
@@ -48,11 +48,11 @@ def vpi_init():
 #     except Exception as e:
 #         print("Exception: %s" % str(e), flush=True)
 
-    try:
-        import hdl_pi_if.vpi.pytf as pytf
-        pytf.register_tf()
-    except Exception as e:
-        print("Exception(vpi::init::2): %s" % str(e), flush=True)
+    # try:
+    #     import hdl_if.impl.vpi.pytf as pytf
+    #     pytf.register_tf()
+    # except Exception as e:
+    #     print("Exception(vpi::init::2): %s" % str(e), flush=True)
 
     info = api.t_vpi_vlog_info()
     api.vpi_get_vlog_info(ctypes.pointer(info))

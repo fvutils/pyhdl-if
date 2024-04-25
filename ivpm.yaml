@@ -41,4 +41,6 @@ package:
       src: pypi
     - name: packaging
       src: pypi
+    - name: cocotb
+      src: pypi
 
