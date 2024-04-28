@@ -18,5 +18,5 @@ echo "libs: ${libs}"
 iverilog -g2005-sv call_python.sv -s call_python -o call_python
 if test $? -ne 0; then exit 1; fi
 
-valgrind --tool=memcheck vvp $vvp_args call_python
+gdb --args vvp $vvp_args call_python
 

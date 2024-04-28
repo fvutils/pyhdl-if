@@ -37,7 +37,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define DEBUG_INIT
+#undef DEBUG_INIT
 
 #ifdef DEBUG_INIT
 #define DEBUG(fmt, ...) fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout)
@@ -67,8 +67,6 @@ static lib_h_t init_python();
  * Manages start-up tasks for DPI integration
  *******************************************************************/
 int pyhdl_if_dpi_entry() {
-    PyObject *hdl_pi_if_pkg, *hdl_pi_if_init, *res;
-    PyObject *null_args;
     DEBUG("entry.c");
 
     if (!init_python()) {
@@ -89,7 +87,8 @@ void pyhdl_if_vpi_entry() {
     PyObject *null_args;
     lib_h_t pylib, vpilib;
 
-    uint32_t i;
+    (void)res;
+
     DEBUG("entry.c");
 
     if (!(pylib=init_python())) {
@@ -275,6 +274,7 @@ lib_h_t find_config_python_lib() {
     int32_t linebuf_len = 0, linebuf_max = 0;
     char *ldlibrary = 0;
     char *libdest = 0;
+    char *libdir = 0;
 
     args[0] = "python3";
     args[1] = "-m";
@@ -360,6 +360,8 @@ lib_h_t find_config_python_lib() {
                             ldlibrary = strdup(val_start);
                         } else if (!strcmp(key_start, "LIBDEST")) {
                             libdest = strdup(val_start);
+                        } else if (!strcmp(key_start, "LIBDIR")) {
+                            libdir = strdup(val_start);
                         }
                     }
                 }
@@ -387,16 +389,15 @@ lib_h_t find_config_python_lib() {
         strcat(fullpath, ldlibrary);
 
         // First, try full path
-        if (!(ret = dlopen(fullpath, RTLD_LAZY+RTLD_GLOBAL))) {
-            // Try again with just a relative path
-            DEBUG("Failed to load library via full path %s", fullpath);
-            if (!(ret = dlopen(ldlibrary, RTLD_LAZY+RTLD_GLOBAL))) {
-                DEBUG("Failed to load library via relative path %s", ldlibrary);
-            } else {
-                DEBUG("Successfully loaded library via relative path %s", ldlibrary);
-            }
+        if ((ret = dlopen(fullpath, RTLD_LAZY+RTLD_GLOBAL))) {
+            DEBUG("Successfully loaded via fullpath(1) %s", fullpath);
+        } else if (strcpy(fullpath, libdir) && strcat(fullpath, "/") && strcat(fullpath, ldlibrary) &&
+            (ret=dlopen(fullpath, RTLD_LAZY+RTLD_GLOBAL))) {
+            DEBUG("Successfully loaded via fullpath(2) %s", fullpath);
+        } else if ((ret=dlopen(ldlibrary, RTLD_LAZY+RTLD_GLOBAL))) {
+            DEBUG("Successfully loaded library via relative path %s", ldlibrary);
         } else {
-            DEBUG("Successfully loaded library via fullpath %s", fullpath);
+            DEBUG("Faied to load library");
         }
         free(fullpath);
     }

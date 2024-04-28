@@ -297,6 +297,7 @@ def gen_vpi_tf(fp, functions):
     fp.write("\n")
 
     fp.write("static PLI_INT32 sizetf64(PLI_BYTE8 *ud) {\n")
+    #fp.write('    fprintf(stdout, "sizetf64\\n");\n')
     fp.write("    return 64;\n")
     fp.write("}\n")
 
@@ -451,7 +452,7 @@ def gen_py_load_api_struct(fp, functions):
     fp.write("        void **fp;\n")
     fp.write("    } py_funcs[] = {\n")
     for i,fn in enumerate(functions):
-        fp.write("        {\"%s\", &prv_py_api.%s}%s\n" % (
+        fp.write("        {\"%s\", (void **)&prv_py_api.%s}%s\n" % (
             fn.name.segments[0].name,
             fn.name.segments[0].name,
             "," if i+1 < len(functions) else ""
@@ -471,7 +472,7 @@ def gen_vpi_utils(fp):
     fp.write("static int32_t vpi_get_pval_int(vpiHandle arg_it) {\n")
     fp.write("    vpiHandle pval = prv_vpi_api.vpi_scan(arg_it);\n")
     fp.write("    s_vpi_value val_s;\n")
-    fp.write('    fprintf(stdout, "get_pval_int: pval=%p\\n", pval);\n')
+    #fp.write('    fprintf(stdout, "get_pval_int: pval=%p\\n", pval);\n')
     fp.write("    val_s.format = vpiIntVal;\n")
     fp.write("    prv_vpi_api.vpi_get_value(pval, &val_s);\n")
     fp.write("    return val_s.value.integer;\n")
@@ -481,16 +482,13 @@ def gen_vpi_utils(fp):
     fp.write("    vpiHandle pval = prv_vpi_api.vpi_scan(arg_it);\n")
     fp.write("    uintptr_t ptr_ival;\n")
     fp.write("    s_vpi_value val_s;\n")
-    fp.write('    fprintf(stdout, "get_pval_ptr: pval=%p %d\\n", pval, prv_vpi_api.vpi_get(vpiType, pval));\n')
-    fp.write('    fflush(stdout);')
+    #fp.write('    fprintf(stdout, "get_pval_ptr: pval=%p %d\\n", pval, prv_vpi_api.vpi_get(vpiType, pval));\n')
+    #fp.write('    fflush(stdout);')
     fp.write("    val_s.format = vpiVectorVal;\n")
-    fp.write("    val_s.value.vector = prv_vecval;\n")
-    fp.write("    prv_vecval[0].aval = 0;\n")
-    fp.write("    prv_vecval[1].aval = 0;\n")
     fp.write("    prv_vpi_api.vpi_get_value(pval, &val_s);\n")
-    fp.write("    ptr_ival = prv_vecval[1].aval;\n")
+    fp.write("    ptr_ival = val_s.value.vector[0].bval;\n")
     fp.write("    ptr_ival <<= 32;\n")
-    fp.write("    ptr_ival |= prv_vecval[0].aval;\n")
+    fp.write("    ptr_ival |= val_s.value.vector[0].aval;\n")
     fp.write('    DEBUG("ptr_ival: 0x%08llx", ptr_ival);\n')
     fp.write("    return ptr_ival;\n")
     fp.write("}\n")
@@ -500,8 +498,8 @@ def gen_vpi_utils(fp):
     fp.write("    s_vpi_value val_s;\n")
     fp.write("    val_s.format = vpiStringVal;\n")
     fp.write("    prv_vpi_api.vpi_get_value(pval, &val_s);\n")
-    fp.write('    fprintf(stdout, "pval_str: %s\\n", val_s.value.str);\n')
-    fp.write('    fflush(stdout);\n')
+    #fp.write('    fprintf(stdout, "pval_str: %s\\n", val_s.value.str);\n')
+    #fp.write('    fflush(stdout);\n')
     fp.write("    return val_s.value.str;\n")
     fp.write("}\n")
     fp.write("\n")
@@ -510,7 +508,7 @@ def gen_vpi_utils(fp):
     fp.write("    s_vpi_value val_s;\n")
     fp.write("    val_s.format = vpiIntVal;\n")
     fp.write("    val_s.value.integer = val;\n")
-    fp.write('    fprintf(stdout, "val=%d\\n", val);\n')
+    #fp.write('    fprintf(stdout, "val=%d\\n", val);\n')
     fp.write("    prv_vpi_api.vpi_put_value(val_h, &val_s, 0, vpiNoDelay);\n")
     fp.write("}\n")
     fp.write("\n")
@@ -521,7 +519,7 @@ def gen_vpi_utils(fp):
     fp.write('    DEBUG("set_ptr: ptr=0x%08llx", val);\n')
     fp.write("    prv_vecval[0].aval = val;\n")
     fp.write("    val >>= 32;\n")
-    fp.write("    prv_vecval[1].aval = val;\n")
+    fp.write("    prv_vecval[0].bval = val;\n")
     fp.write('    DEBUG("set_ptr: ptr=0x%08llx ptr_ival={0x%08x,0x%08x}", val, prv_vecval[1].aval, prv_vecval[0].aval);\n')
     fp.write("    prv_vpi_api.vpi_put_value(val_h, &val_s, 0, vpiNoDelay);\n")
     fp.write("}\n")
@@ -534,6 +532,35 @@ def gen_vpi_utils(fp):
     fp.write("}\n")
     fp.write("\n")
 
+vpi_ftype_m = {
+    "PyObject*" : "vpiSizedFunc",
+    "PyTypeObject*" : "vpiSizedFunc",
+    "long long" : "vpiSizedFunc",
+    "long": "vpiIntFunc",
+    "int": "vpiIntFunc",
+    "int*": "vpiSizedFunc",
+    "size_t": "vpiIntFunc",
+    "size_t*": "vpiSizedFunc",
+    "Py_ssize_t": "vpiIntFunc",
+    "Py_ssize_t*": None,
+    "char*": None,
+    "char**": None,
+    "const char*": None,
+    "double" : 64,
+    "float" : 32,
+    "unsigned long": "vpiIntFunc",
+    "unsigned long long": "vpiSizedFunc",
+    "void*" : "vpiSizedFunc",
+    "wchar_t*" : None,
+    "void": 0
+}
+
+def gen_vpi_functype(t):
+    if t.format() in vpi_ftype_m.keys():
+        return vpi_ftype_m[t.format()]
+    else:
+        raise Exception("Unsupported VPI return type %s" % t.format())
+
 def gen_vpi_py_impl(fp, functions):
     for i,f in enumerate(functions):
         if i:
@@ -541,7 +568,8 @@ def gen_vpi_py_impl(fp, functions):
         fp.write("static int _%s(PLI_BYTE8 *ud) {\n" % f.name.segments[0].name)
         if f.return_type is not None and f.return_type.format() != "void":
             fp.write("    %s __rval;\n" % gen_c_type(f.return_type))
-        fp.write("    vpiHandle __tf_h = prv_vpi_api.vpi_handle(vpiSysTfCall, 0);\n")
+        if len(f.parameters) > 0 or (f.return_type is not None and f.return_type.format() != "void"):
+            fp.write("    vpiHandle __tf_h = prv_vpi_api.vpi_handle(vpiSysTfCall, 0);\n")
         if len(f.parameters) > 0:
             fp.write("    vpiHandle __arg_h = prv_vpi_api.vpi_iterate(vpiArgument, __tf_h);\n")
             for j,p in enumerate(f.parameters):
@@ -594,6 +622,7 @@ def gen_vpi_tf_reg(fp, functions):
             fp.write("    tf->type = vpiSysTask;\n")
         else:
             fp.write("    tf->type = vpiSysFunc;\n")
+            fp.write("    tf->sysfunctype = %s;\n" % gen_vpi_functype(f.return_type))
 
         fp.write("    tf->calltf = &_%s;\n" % f.name.segments[0].name)
         fp.write("    tf->compiletf = 0;\n")
@@ -634,7 +663,7 @@ vpi_get_param_tm = {
     "unsigned long": "vpi_get_pval_int",
     "unsigned long long": "vpi_get_pval_int64",
     "void*" : "vpi_get_pval_ptr",
-    # "wchar_t*" : None,
+    "wchar_t*" : "vpi_get_pval_str",
     # "void": 0
 }
 
@@ -665,7 +694,10 @@ def gen_vpi_get_param(it_name, ptype):
     tname = ptype.format()
 
     if tname in vpi_get_param_tm.keys():
-        return vpi_get_param_tm[tname] + "(%s)" % it_name
+        if vpi_get_param_tm[tname] == "vpi_get_pval_ptr":
+            return "(%s)" % tname + vpi_get_param_tm[tname] + "(%s)" % it_name
+        else:
+            return vpi_get_param_tm[tname] + "(%s)" % it_name
     else:
         raise Exception("parameter type %s is not supported" % ptype.format())
 
@@ -673,7 +705,10 @@ def gen_vpi_set(val_h_name, val_name, ptype):
     tname = ptype.format()
 
     if tname in vpi_set_param_tm.keys():
-        return vpi_set_param_tm[tname] + "(%s, %s)" % (val_h_name, val_name)
+        if vpi_set_param_tm[tname] == "vpi_set_val_ptr":
+            return vpi_set_param_tm[tname] + "(%s, (uintptr_t)%s)" % (val_h_name, val_name)
+        else:
+            return vpi_set_param_tm[tname] + "(%s, %s)" % (val_h_name, val_name)
     else:
         raise Exception("value type %s is not supported" % ptype.format())
 

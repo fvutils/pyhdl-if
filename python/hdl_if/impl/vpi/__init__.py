@@ -20,6 +20,8 @@ my_task_h = func_t(my_task)
 
 def vpi_init():
     import ctypes
+    import hdl_if.impl.vpi.call_api as call_api
+    import hdl_if.impl.vpi.pkg_tf as pkg_tf
     print("::vpi_init")
 
     exe = ctypes.cdll.LoadLibrary(None)
@@ -57,6 +59,12 @@ def vpi_init():
     info = api.t_vpi_vlog_info()
     api.vpi_get_vlog_info(ctypes.pointer(info))
     print("product: %s %s" % (info.product.decode(), info.version.decode()))
+
+    try:
+        pkg_tf.register()
+        call_api.register_vpi_tf()
+    except Exception as e:
+        print("Exception: %s" % str(e))
 
     for i in range(info.argc):
         arg = info.argv[i]

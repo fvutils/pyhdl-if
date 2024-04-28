@@ -18,12 +18,9 @@ module call_python();
 
 	    $display("countones: %08h", countones);
 
-            for (i=0; i<1; i=i+1) begin
+            for (i=0; i<256; i=i+1) begin
                 args = $PyTuple_New(1);
-		$display("args: %08h", args);
-        lval = $PyLong_FromLong(i);
-                $display("SetItem: %08h %08h", args, lval);
-                res = $PyTuple_SetItem(args, 0, 2);
+                res = $PyTuple_SetItem(args, 0, $PyLong_FromLong(i));
 		$display("res: %0d", res);
                 res_o = $PyObject_Call(countones, args, 0);
 		$display("res_o: %08h", res_o);
