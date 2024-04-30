@@ -29,13 +29,13 @@ class ImpTaskImpl(object):
         pass
 
     async def __call__(self, api_self, *args, **kwargs):
-        if not hasattr(api_self, "__proxy") or getattr(api_self, "__proxy") is None:
+        if not hasattr(api_self, "_proxy") or getattr(api_self, "_proxy") is None:
             raise Exception("Class is not bound to an HDL object")
         
         if len(kwargs) != 0:
             raise Exception("Only positional arguments are supported")
 
-        proxy : CallProxy = getattr(api_self, "__proxy") 
+        proxy : CallProxy = getattr(api_self, "_proxy") 
         return await proxy.invoke_hdl_t(
             self._md.name,
             args

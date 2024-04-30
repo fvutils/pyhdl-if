@@ -26,6 +26,13 @@ from hdl_if.call.call_proxy import CallProxy
 
 class CallProxyVPI(CallProxy):
 
+    class Req(object):
+        def __init__(self, id, args, ev):
+            self.id = id
+            self.args = args
+            self.ev = ev
+            print("Req.__init__: id=%d" % self.id, flush=True)
+
     def __init__(self, target, ev_h):
         self.target = target
         self.ev_h = ev_h
@@ -49,26 +56,36 @@ class CallProxyVPI(CallProxy):
         be = Backend.inst();
         evt = be.mkEvent()
 
-        self.req_q.append((
-            self.getReqId(method_name), 
+        req = CallProxyVPI.Req(
+            self.method_name_id_m[method_name],
             args, 
-            evt))
+            evt)
+        print("req: %s ; id=%d" % (str(req), req.id))
+        self.req_q.append(req)
 
         # Decide if we need to toggle the VPI event handle
         if not self.ev_h_armed:
             val_s = api.t_vpi_value()
             val_s.format = api.vpiIntVal
             val_s.value.integer = self.ev_v
-            self.ev_v = 0 if self.e_v else 1
+            self.ev_v = 0 if self.ev_v else 1
             api.vpi_put_value(self.ev_h, ctypes.byref(val_s), None, api.vpiNoDelay)
             self.ev_h_armed = True
 
         # Wait for ack
-        return await evt.wait()
+        ret = await evt.wait()
+
+        self.ev_h_armed = False
+
+        return ret
     
     def nextReq(self) -> Tuple[str,Tuple,object]:
+        print("nextReq: len=%d" % len(self.req_q))
         if len(self.req_q) > 0:
             req = self.req_q.pop(0)
+            print("req.id: %s" % str(req.id))
+            print("return %s" % str(req))
+            return req
         else:
             return None
     
@@ -79,6 +96,7 @@ class CallProxyVPI(CallProxy):
             return -1
         
     def setMethodId(self, name, id):
+        print("setMethodId: %s=%d" % (name, id))
         self.method_name_id_m[name] = id
 
     async def invoke_py_t_wrap(

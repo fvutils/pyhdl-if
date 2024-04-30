@@ -6,7 +6,7 @@
         int sem_id = pyhdl_if_allocSem();
         PyObject proxy_h, invoke_py_t, proxy_args;
 
-        proxy_h = PyObject_GetAttrString(obj, "__proxy");
+        proxy_h = PyObject_GetAttrString(obj, "_proxy");
         invoke_py_t = PyObject_GetAttrString(proxy_h, "invoke_py_t");
         proxy_args = PyTuple_New(3);
 
@@ -26,7 +26,7 @@
         PyObject res;
         PyObject proxy_h, invoke_py_f, proxy_args;
 
-        proxy_h = PyObject_GetAttrString(obj, "__proxy");
+        proxy_h = PyObject_GetAttrString(obj, "_proxy");
         invoke_py_f = PyObject_GetAttrString(proxy_h, "invoke_py_f");
         proxy_args = PyTuple_New(2);
 

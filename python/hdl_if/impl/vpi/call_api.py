@@ -28,6 +28,18 @@ from .util import vpi_set_val_obj, vpi_set_val_ptr
 
 tf_func_t = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(ctypes.c_byte))
 
+def CallApi_ack(ud):
+    print("CallApi_ack", flush=True)
+    tf_h = api.vpi_handle(api.vpiSysTfCall, 0)
+    args = api.vpi_iterate(api.vpiArgument, tf_h)
+    req = vpi_get_val_obj(api.vpi_scan(args))
+    rval = vpi_get_val_obj(api.vpi_scan(args))
+    req.ev.set(rval)
+    return 0;
+
+CallApi_ack_tf = api.t_vpi_systf_data()
+CallApi_ack_fp = tf_func_t(CallApi_ack)
+
 def CallApi_init(ud):
     """
     - API-class module
@@ -91,6 +103,11 @@ def register_vpi_tf():
     print("register_vpi_tf", flush=True)
 
     try:
+        CallApi_ack_tf.tfname = "$pyhdl_if_CallApi_ack".encode()
+        CallApi_ack_tf.calltf = CallApi_ack_fp
+        CallApi_ack_tf.type = api.vpiSysTask
+        api.vpi_register_systf(ctypes.byref(CallApi_ack_tf))
+
         CallApi_init_tf.tfname = "$pyhdl_if_CallApi_init".encode()
         CallApi_init_tf.calltf = CallApi_init_fp
         CallApi_init_tf.type = api.vpiSysFunc

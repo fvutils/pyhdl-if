@@ -35,10 +35,22 @@ class GenIfcSv(object):
         self._fp = fp
         self._ind = ""
 
-        self.println("%s %s #(" % (
-            "module" if self._is_vlog else "interface",
-            ifc.name
-            ))
+        self.println("`ifndef PYHDL_IF_VPI")
+        self.println("`ifdef __ICARUS__")
+        self.println("`define PYHDL_IF_VPI 1")
+        self.println("`endif /* __ICARUS__ */")
+        self.println("`endif /* PYHDL_IF_VPI */")
+        self.println()
+        self.println("`ifdef PYHDL_IF_VPI")
+        self.println("`define ENTITY_TYPE module")
+        self.println("`define END_ENTITY_TYPE endmodule")
+        self.println("`else /* PYHDL_IF_VPI */")
+        self.println("`define ENTITY_TYPE interface")
+        self.println("`define END_ENTITY_TYPE endinterface")
+        self.println("`endif /* PYHDL_IF_VPI */")
+        self.println()
+
+        self.println("`ENTITY_TYPE %s #(" % ifc.name)
         self.inc_ind()
 
         # TODO: Eventually, we will want parameters here
@@ -145,9 +157,10 @@ class GenIfcSv(object):
         self.println()
         self.dec_ind()
 
-        self.println("%s" % (
-            "endmodule" if self._is_vlog else "endinterface",
-        ))
+        self.println("`END_ENTITY_TYPE")
+
+        self.println("`undef ENTITY_TYPE")
+        self.println("`undef END_ENTITY_TYPE")
 
     _type_width_m = {
         ctypes.c_longlong : 64,

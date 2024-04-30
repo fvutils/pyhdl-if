@@ -38,5 +38,5 @@ class Stream(object):
 
     @property
     def proxy(self) -> CallProxy:
-        return getattr(self, "__proxy")
+        return getattr(self, "_proxy")
 

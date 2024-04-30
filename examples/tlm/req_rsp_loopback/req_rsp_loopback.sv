@@ -1,19 +1,32 @@
 
+`ifndef __ICARUS__
+`timescale 1ns/1ns
+`endif
 module req_rsp_loopback;
+`ifndef __ICARUS__
     import pyhdl_if::*;
+`endif
 
     reg clock = 0;
     reg reset = 1;
 
     initial begin
         forever begin
+`ifdef __ICARUS__
+            #10;
+`else
             #10ns;
+`endif
             clock = ~clock;
         end 
     end
 
     initial begin
+`ifdef __ICARUS__
+        #100;
+`else
         #100ns;
+`endif
         reset = 0;
     end
 
@@ -51,6 +64,7 @@ module req_rsp_loopback;
     end
 
 
+`ifndef __ICARUS__
     initial begin
         automatic PyObject req_rsp_loopback_m = PyImport_ImportModule("req_rsp_loopback");
         automatic PyObject init = PyObject_GetAttrString(req_rsp_loopback_m, "init");
@@ -70,5 +84,29 @@ module req_rsp_loopback;
         #1us;
         $finish;
     end
+`else /* ICARUS */
+    reg[31:0]       req_rsp_loopback_m;
+    reg[31:0]       init_h;
+    reg[31:0]       args;
+    reg[31:0]       res;
+
+    initial begin
+        $dumpfile("trace.vcd");
+        $dumpvars();
+
+        req_rsp_loopback_m = $PyImport_ImportModule("req_rsp_loopback");
+        init_h = $PyObject_GetAttrString(req_rsp_loopback_m, "init");
+        args = $PyTuple_New(0);
+
+        #0;
+
+        res = $PyObject_Call(init_h, args, 0);
+
+        $pyhdl_if_idle();
+
+        #1000;
+        $finish;
+    end
+`endif
 
 endmodule

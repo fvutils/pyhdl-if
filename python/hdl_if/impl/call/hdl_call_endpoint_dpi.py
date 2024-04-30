@@ -96,12 +96,12 @@ class HdlCallEndpointDPI(HdlCallEndpoint):
     def new_obj(self, cls_t, obj_id, args):
         from .call_proxy_dpi import CallProxyDPI
         ret = cls_t(*args)
-        setattr(ret, "__proxy", CallProxyDPI(ret, obj_id, self))
+        setattr(ret, "_proxy", CallProxyDPI(ret, obj_id, self))
         return ret
     
     def connect(self, obj, obj_id):
         from .call_proxy_dpi import CallProxyDPI
-        setattr(obj, "__proxy", CallProxyDPI(obj, obj_id, self))
+        setattr(obj, "_proxy", CallProxyDPI(obj, obj_id, self))
 
     def _findDPIExportLib(self):
         pass

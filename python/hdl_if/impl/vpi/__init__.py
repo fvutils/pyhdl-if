@@ -21,6 +21,7 @@ my_task_h = func_t(my_task)
 def vpi_init():
     import ctypes
     import hdl_if.impl.vpi.call_api as call_api
+    import hdl_if.impl.vpi.tlm_api as tlm_api
     import hdl_if.impl.vpi.pkg_tf as pkg_tf
     print("::vpi_init")
 
@@ -35,27 +36,6 @@ def vpi_init():
     else:
         print("Failed to find VPI")
 
-#     try:
-
-#         systf_i = api.t_vpi_systf_data()
-#         systf_i.tfname = "$my_task".encode()
-#         systf_i.type = api.vpiSysTask
-#         systf_i.subtype = 0
-#         systf_i.calltf = my_task_h
-# #        systf_i.compiletf = None
-# #        systf_i.sizetf = None
-#         systf_i.userdata = None
-#         ret = api.vpi_register_systf(ctypes.pointer(systf_i))
-#         print("ret: %s" % str(ret), flush=True)
-#     except Exception as e:
-#         print("Exception: %s" % str(e), flush=True)
-
-    # try:
-    #     import hdl_if.impl.vpi.pytf as pytf
-    #     pytf.register_tf()
-    # except Exception as e:
-    #     print("Exception(vpi::init::2): %s" % str(e), flush=True)
-
     info = api.t_vpi_vlog_info()
     api.vpi_get_vlog_info(ctypes.pointer(info))
     print("product: %s %s" % (info.product.decode(), info.version.decode()))
@@ -63,6 +43,7 @@ def vpi_init():
     try:
         pkg_tf.register()
         call_api.register_vpi_tf()
+        tlm_api.register_vpi_tf()
     except Exception as e:
         print("Exception: %s" % str(e))
 
