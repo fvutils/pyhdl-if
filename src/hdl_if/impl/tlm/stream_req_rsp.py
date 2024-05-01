@@ -19,9 +19,29 @@
 #*     Author: 
 #*
 #****************************************************************************
+from .stream import Stream, StreamKind
 
-class StreamReqRsp(object):
+class StreamReqRsp(Stream):
 
-    def __init__(self):
-        pass
+    def __init__(self, name):
+        super().__init__(StreamKind.ReqRsp, name)
+
+    async def put(self, obj):
+        dat_arr = bytes(obj)
+        data = 0
+        for d in reversed(dat_arr):
+            data <<= 8
+            data |= d
+
+        # TODO: Check if this is a valid object
+        print("put::data 0x%08x" % data, flush=True)
+        await self.proxy.invoke_hdl_t(
+            "put",
+            (data,))
+
+    async def get(self) -> int:
+        intval = await self.proxy.invoke_hdl_t("get", ())
+        return intval
+
+
 

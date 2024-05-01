@@ -90,11 +90,15 @@
             @(posedge clock);
         end
 
-        while (count == 0 || pop == 1) begin
+        while ((count == 0 && !push) || pop == 1) begin
             @(posedge clock);
         end
 
-        dat_o = fifo[rptr];
+        if (count == 0) begin
+            dat_o = dat_i;
+        end else begin
+            dat_o = fifo[rptr];
+        end
         pop = 1;
     end
     endtask

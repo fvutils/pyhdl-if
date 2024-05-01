@@ -9,11 +9,11 @@ from setuptools import Extension, setup, find_namespace_packages
 version="0.0.1"
 
 proj_dir = os.path.dirname(os.path.abspath(__file__))
-pythondir = os.path.join(proj_dir, "python")
+pythondir = os.path.join(proj_dir, "src")
 
 try:
     import sys
-    sys.path.insert(0, os.path.join(proj_dir, "python"))
+    sys.path.insert(0, os.path.join(proj_dir, "src"))
     from hdl_if.__build_num__ import BUILD_NUM
     version += ".%d" % BUILD_NUM
 except ImportError:
@@ -23,7 +23,7 @@ isSrcBuild = False
 
 try:
     from ivpm.setup import setup
-    isSrcBuild = os.path.isdir(os.path.join(proj_dir, "python"))
+    isSrcBuild = os.path.isdir(os.path.join(proj_dir, "src"))
     print("Note: performing IVPM source build")
 except ImportError as e:
     from setuptools import setup
@@ -65,8 +65,15 @@ ext = Extension("hdl_if.entry",
 setup_args = dict(
   name = "pyhdl-if",
   version=version,
-  packages=find_namespace_packages(where='python'),
-  package_dir = {'' : 'python'},
+  packages=find_namespace_packages(where='src'),
+  package_dir = {'' : 'src'},
+  package_data = {
+      'hdl_if': [
+          'share/dpi/*',
+          'share/vpi/*',
+          'share/*',
+      ]
+  },
   author = "Matthew Ballance",
   author_email = "matt.ballance@gmail.com",
   description = ("Python interface for HDL programming interfaces"),

@@ -69,7 +69,8 @@ class GenIfcSv(object):
                 self.println("parameter WIDTH_%s_rsp = %s," % (
                     m.name,
                     self.getWidthExpr(m.t2)))
-            self.println("parameter DEPTH_%s = 1%s" % (
+            self.println("parameter DEPTH_%s_req = 1," % m.name)
+            self.println("parameter DEPTH_%s_rsp = 1%s" % (
                 m.name,
                 "," if (i+1)<len(ifc.getMethods()) else ""))
 
@@ -97,13 +98,13 @@ class GenIfcSv(object):
             elif m.kind == TlmMethodKind.ReqRsp:
                 self.println("output %s_req_valid," % m.name)
                 self.println("input  %s_req_ready," % m.name)
-                self.println("output [WIDTH_%s_req-1:0] %s_req," % (
+                self.println("output [WIDTH_%s_req-1:0] %s_req_data," % (
                     m.name,
                     m.name
                 ))
                 self.println("input  %s_rsp_valid," % m.name)
                 self.println("output %s_rsp_ready," % m.name)
-                self.println("input [WIDTH_%s_rsp-1:0] %s_rsp%s" % (
+                self.println("input [WIDTH_%s_rsp-1:0] %s_rsp_data%s" % (
                     m.name,
                     m.name,
                     "," if i+1<len(ifc.getMethods()) else ""
@@ -121,7 +122,7 @@ class GenIfcSv(object):
             if i:
                 self.println()
             if m.kind == TlmMethodKind.Req:
-                self.println("tlm_hvl2hdl_fifo #(")
+                self.println("pyhdl_if_req_fifo #(")
                 self.inc_ind()
                 self.println(".Twidth(WIDTH_%s)," % m.name)
                 self.println(".Tdepth(DEPTH_%s)" % m.name)
@@ -136,7 +137,7 @@ class GenIfcSv(object):
                 self.dec_ind()
                 self.println(");")
             elif m.kind == TlmMethodKind.Rsp:
-                self.println("tlm_hdl2hvl_fifo #(")
+                self.println("pyhdl_if_rsp_fifo #(")
                 self.inc_ind()
                 self.println(".Twidth(WIDTH_%s)," % m.name)
                 self.println(".Tdepth(DEPTH_%s)" % m.name)
@@ -151,8 +152,25 @@ class GenIfcSv(object):
                 self.dec_ind()
                 self.println(");")
             elif m.kind == TlmMethodKind.ReqRsp:
-                pass
-            pass
+                self.println("pyhdl_if_reqrsp_fifo #(")
+                self.inc_ind()
+                self.println(".TReqWidth(WIDTH_%s_req)," % m.name)
+                self.println(".TReqDepth(DEPTH_%s_req)," % m.name)
+                self.println(".TRspWidth(WIDTH_%s_rsp)," % m.name)
+                self.println(".TRspDepth(DEPTH_%s_rsp)" % m.name)
+                self.dec_ind()
+                self.println(") %s (" % m.name)
+                self.inc_ind()
+                self.println(".clock(clock),")
+                self.println(".reset(reset),")
+                self.println(".req_valid(%s_req_valid)," % m.name)
+                self.println(".req_ready(%s_req_ready)," % m.name)
+                self.println(".req_dat_o(%s_req_data)," % m.name)
+                self.println(".rsp_valid(%s_rsp_valid)," % m.name)
+                self.println(".rsp_ready(%s_rsp_ready)," % m.name)
+                self.println(".rsp_dat_i(%s_rsp_data)" % m.name)
+                self.dec_ind()
+                self.println(");")
 
         self.println()
         self.dec_ind()

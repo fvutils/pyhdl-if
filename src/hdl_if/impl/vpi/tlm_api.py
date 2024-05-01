@@ -25,6 +25,7 @@ import hdl_if.impl.vpi.api as api
 from hdl_if.tlm.stream_rgy import StreamRgy
 from hdl_if.impl.tlm.stream_req import StreamReq
 from hdl_if.impl.tlm.stream_rsp import StreamRsp
+from hdl_if.impl.tlm.stream_req_rsp import StreamReqRsp
 from hdl_if.impl.vpi.call_proxy_vpi import CallProxyVPI
 from .call_proxy_vpi import CallProxyVPI
 from .util import vpi_get_val_int, vpi_get_val_obj, vpi_get_val_ptr, vpi_get_val_str
@@ -50,7 +51,7 @@ def TlmApi_registerStream(ud):
     elif kind == "rsp":
         stream = StreamRsp(path)
     elif kind == "reqrsp":
-        pass
+        stream = StreamReqRsp(path)
     else:
         raise Exception("unknown FiFO kind %s" % kind, flush=True)
     print("path: %s" % path, flush=True)

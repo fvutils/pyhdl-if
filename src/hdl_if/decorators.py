@@ -84,6 +84,11 @@ def rsp_fifo(*args, **kwargs):
         return RspFifoDecoratorImpl(args, kwargs)
 
 def reqrsp_fifo(*args, **kwargs):
+    from .impl.tlm.req_rsp_fifo_decorator_impl import ReqRspFifoDecoratorImpl
+    if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+        return ReqRspFifoDecoratorImpl([], {})(args[0])
+    else:
+        return ReqRspFifoDecoratorImpl(args, kwargs)
     pass
 
 def req_mbox(*args, **kwargs):

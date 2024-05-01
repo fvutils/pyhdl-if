@@ -3,15 +3,22 @@ CAPI=2:
 name: fvutils::pyhdl-if
 
 filesets:
-  hvl:
+  pkg:
     file_type: "systemVerilogSource"
     files: 
     - 'dpi/pyhdl_if.sv':
         include_path: "dpi"
+  fifos:
+    file_type: "verilogSource"
+    files: 
+    - 'pyhdl_if_req_fifo.sv'
+    - 'pyhdl_if_rsp_fifo.sv'
+    - 'pyhdl_if_reqrsp_fifo.sv'
 
 
 targets:
   default:
     filesets:
-    - hvl
+    - pkg
+    - fifos
 
