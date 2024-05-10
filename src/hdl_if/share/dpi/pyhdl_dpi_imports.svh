@@ -22,6 +22,7 @@
 
     typedef chandle PyObject;
     typedef chandle PyTypeObject;
+    typedef int unsigned PyGILState_STATE;
 
     import "DPI-C" context function int PyErr_BadArgument();
 
@@ -114,6 +115,12 @@
     import "DPI-C" context function PyObject PyEval_GetGlobals();
 
     import "DPI-C" context function PyObject PyEval_GetLocals();
+
+    import "DPI-C" context function int PyGILState_Check();
+
+    import "DPI-C" context function PyGILState_STATE PyGILState_Ensure();
+
+    import "DPI-C" context function void PyGILState_Release(input PyGILState_STATE p0);
 
     import "DPI-C" context function PyObject PyImport_AddModule(input string name);
 

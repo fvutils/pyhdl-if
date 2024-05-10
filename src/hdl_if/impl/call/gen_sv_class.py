@@ -102,7 +102,7 @@ class GenSVClass(object):
                 self.println("if (CREATE) begin")
                 self.inc_ind()
             self.println("m_obj = create_pyobj();")
-            self.println("pyhdl_if::pyhdl_if_connect(m_obj, this);")
+            self.println("pyhdl_if::pyhdl_if_connectObject(m_obj, this);")
             if self._uvm:
                 self.dec_ind()
                 self.println("end")
@@ -111,7 +111,7 @@ class GenSVClass(object):
             for i,p in enumerate(api.init_params):
                 self.write("%s%s" % (", " if i else "", p[0]))
             self.write(");\n")
-            self.println("pyhdl_if::pyhdl_if_connect(m_obj, this);")
+            self.println("pyhdl_if::pyhdl_if_connectObject(m_obj, this);")
 
         self.dec_ind()
         self.println("endfunction")
@@ -141,12 +141,12 @@ class GenSVClass(object):
             module_name = module_name[:last_dot]
 
         if len(api.init_params) == 0:
-            self.println("static function PyObject create_pyobj(string modname=\"%s\", string clsname=\"%s\");" % (
+            self.println("static function pyhdl_if::PyObject create_pyobj(string modname=\"%s\", string clsname=\"%s\");" % (
                 module_name,
                 api.name
             ))
         elif len(api.init_params) == 1:
-            self.println("function PyObject create_pyobj(%s %s, string modname=\"%s\", string clsname=\"%s\");" % (
+            self.println("function pyhdl_if::PyObject create_pyobj(%s %s, string modname=\"%s\", string clsname=\"%s\");" % (
                 self.svtype(api.init_params[0][1]),
                 api.init_params[0][0],
                 module_name,
@@ -165,16 +165,17 @@ class GenSVClass(object):
             self.dec_ind()
 
         self.inc_ind()
-        self.println("pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(%d);" % len(api.init_params))
-        self.println("pyhdl_if::PyObject __cls_m = pyhdl_if::PyImport_ImportModule(modname);")
-        self.println("pyhdl_if::PyObject __cls_t;")
-        self.println("pyhdl_if::PyObject __obj;")
+        self.println("pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;")
+        self.println("pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();")
+        self.println("__args = pyhdl_if::PyTuple_New(%d);" % len(api.init_params))
+        self.println("__cls_m = pyhdl_if::PyImport_ImportModule(modname);")
         self.println()
         self.println("if (__cls_m == null) begin")
         self.inc_ind()
         self.println("pyhdl_if::PyErr_Print();")
         self.println("$display(\"Fatal Error: Failed to find module %%s\", modname);")
         self.println("$finish;")
+        self.println("pyhdl_if::PyGILState_Release(state);")
         self.println("return null;")
         self.dec_ind()
         self.println("end")
@@ -194,6 +195,7 @@ class GenSVClass(object):
         self.println("pyhdl_if::PyErr_Print();")
         self.println("$display(\"Fatal Error: Failed to find class %%s\", clsname);")
         self.println("$finish;")
+        self.println("pyhdl_if::PyGILState_Release(state);")
         self.println("return null;")
         self.dec_ind()
         self.println("end")
@@ -205,9 +207,12 @@ class GenSVClass(object):
         self.println("pyhdl_if::PyErr_Print();")
         self.println("$display(\"Fatal Error: Failed to construct class %s\");" % api.name)
         self.println("$finish;")
+        self.println("pyhdl_if::PyGILState_Release(state);")
         self.println("return null;")
         self.dec_ind()
         self.println("end")
+        self.println()
+        self.println("pyhdl_if::PyGILState_Release(state);")
         self.println()
         self.println("return __obj;")
         self.dec_ind()
@@ -260,7 +265,7 @@ class GenSVClass(object):
     def gen_init(self, api):
         self.println("function void init(pyhdl_if::PyObject obj);")
         self.inc_ind()
-        self.println("pyhdl_if::pyhdl_if_connect(obj, this);");
+        self.println("pyhdl_if::pyhdl_if_connectObject(obj, this);");
         self.println("m_obj = obj;")
         self.dec_ind()
         self.println("endfunction")
@@ -515,7 +520,7 @@ class GenSVClass(object):
         }
         if type not in type_m.keys():
             raise Exception("Unsupported type %s" % str(type))
-        return type_m[type]
+        return "pyhdl_if::" + type_m[type]
 
     def sv2py_func(self, type):
         type_m = {
@@ -537,7 +542,7 @@ class GenSVClass(object):
         }
         if type not in type_m.keys():
             raise Exception("Unsupported type %s" % str(type))
-        return type_m[type]
+        return "pyhdl_if::" + type_m[type]
 
     def svtype(self, type):
         type_m = {

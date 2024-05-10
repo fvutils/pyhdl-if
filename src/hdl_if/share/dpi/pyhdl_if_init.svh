@@ -2,6 +2,7 @@
 function automatic bit __pyhdl_if_init();
     bit ret = 1;
     PyObject hdl_if_impl, hdl_if_impl_dpi, dpi_init, get_none, args, res;
+    PyGILState_STATE state = PyGILState_Ensure();
 
     if (pyhdl_if_dpi_entry() != 1) begin
         $display("Fatal: Failed to initialize pyhdl-pi-if DPI interface");
@@ -51,6 +52,8 @@ function automatic bit __pyhdl_if_init();
     ret &= __pyhdl_if_call_init();
 
     ret &= __pyhdl_if_tlm_init();
+
+    PyGILState_Release(state);
 
     return ret;
 endfunction

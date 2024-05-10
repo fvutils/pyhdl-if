@@ -151,7 +151,7 @@ package pyhdl_if;
         args_o = PyTuple_New(args.size());
 
         foreach (args[i]) begin
-            PyTuple_SetItem(args_o, i, args[i]);
+            void'(PyTuple_SetItem(args_o, i, args[i]));
         end
 
         return PyObject_Call(cls_t, args_o, null);
@@ -210,9 +210,9 @@ package pyhdl_if;
 
         case (kind)
             StreamKind_Req:
-                obj_h = pyhdl_call_if_new(stream_req_t, impl, args);
+                obj_h = pyhdl_if_newObject(stream_req_t, impl, args);
             StreamKind_Rsp:
-                obj_h = pyhdl_call_if_new(stream_rsp_t, impl, args);
+                obj_h = pyhdl_if_newObject(stream_rsp_t, impl, args);
             default: begin
                 $display("Fatal Error: unknown stream type");
                 $finish;

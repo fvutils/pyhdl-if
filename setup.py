@@ -35,6 +35,13 @@ if isSrcBuild:
     include_dirs.append(pythondir)
     include_dirs.append(os.path.join(proj_dir, "scripts"))
     include_dirs.append(os.path.join(proj_dir, "build"))
+else:
+    # TODO: must consider installation from actual source
+    include_dirs.append(pythondir)
+    if os.path.isdir(os.path.join(proj_dir, "build")):
+        include_dirs.append(os.path.join(proj_dir, "build"))
+    include_dirs.append(os.path.join(proj_dir, "scripts"))
+
 
 for cv in sysconfig.get_config_vars():
     print("%s: %s" % (cv, sysconfig.get_config_var(cv)))
@@ -84,6 +91,8 @@ setup_args = dict(
   keywords = ["SystemVerilog", "Verilog", "VHDL", "RTL", "Python"],
   url = "https://github.com/fvutils/pyhdl-if",
   install_requires=[
+    'pytypeworks',
+    'pyvsc-dataclasses'
   ],
   setup_requires=[
     'setuptools_scm',

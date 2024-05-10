@@ -12,6 +12,12 @@ package:
     deps:
     - name: pytest
       src: pypi
+    - name: pytypeworks
+      src: pypi
+    - name: pyvsc-dataclasses
+      src: pypi
+    - name: fusesoc
+      src: pypi
 
   - name: default-dev
     deps:
@@ -29,8 +35,6 @@ package:
       src: pypi
     - name: cxxheaderparser
       src: pypi
-      #- name: ivpm
-      #url: https://github.com/fvutils/ivpm.git
     - name: sphinx
       src: pypi
     - name: sphinx-rtd-theme

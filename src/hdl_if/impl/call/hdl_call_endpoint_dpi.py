@@ -93,13 +93,13 @@ class HdlCallEndpointDPI(HdlCallEndpoint):
 
     # Note: implementation of object creation is
     # a bit different between environments
-    def new_obj(self, cls_t, obj_id, args):
+    def newObj(self, cls_t, obj_id, args):
         from .call_proxy_dpi import CallProxyDPI
         ret = cls_t(*args)
         setattr(ret, "_proxy", CallProxyDPI(ret, obj_id, self))
         return ret
     
-    def connect(self, obj, obj_id):
+    def connectObj(self, obj, obj_id):
         from .call_proxy_dpi import CallProxyDPI
         setattr(obj, "_proxy", CallProxyDPI(obj, obj_id, self))
 

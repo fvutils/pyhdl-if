@@ -23,8 +23,10 @@
 class HdlCallEndpoint(object):
 
     def __init__(self, name):
+        from hdl_if.hdl_obj_rgy import HdlObjRgy
         self._name = name
         self._backend = None
+        self._obj_rgy = HdlObjRgy.inst()
 
     @property
     def name(self):
@@ -39,6 +41,29 @@ class HdlCallEndpoint(object):
     
     def idle(self):
         be = self.backend
+
+    def invoke_hdl_f(self, obj_id : int, method_name : str, args : tuple):
+        raise NotImplementedError("Class %s doesn't implement invoke_hdl_f" % str(type(self)))
+
+    def invoke_hdl_t(self, 
+                     obj_id, 
+                     evt_obj,
+                     method_name, 
+                     args):
+        raise NotImplementedError("Class %s doesn't implement invoke_hdl_t" % str(type(self)))
+
+    def response_py_t(self, sem_id, res):
+        raise NotImplementedError("Class %s doesn't implement response_py_t" % str(type(self)))
+
+    def newObj(self, cls_t, obj_id, args):
+        raise NotImplementedError("Class %s doesn't implement newObj" % str(type(self)))
+
+    def registerObj(self, obj, inst_path, trim_elems=0):
+        if trim_elems:
+            path_s = inst_path.split(".")
+            path_s = path_s[:-trim_elems]
+            inst_path = ".".join(path_s)
+        self._obj_rgy.registerObj(obj, inst_path)
     
     
 

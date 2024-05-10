@@ -5,6 +5,7 @@ import os
 from .hdl_services import HdlServices
 from .backend import Backend
 from .decorators import *
+from .hdl_obj_rgy import *
 
 # class s_vpi_vlog_info(ctypes.Structure):
 #     _fields_ = [

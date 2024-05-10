@@ -37,7 +37,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#undef DEBUG_INIT
+#define DEBUG_INIT
 
 #ifdef DEBUG_INIT
 #define DEBUG(fmt, ...) fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout)
@@ -184,16 +184,16 @@ lib_h_t find_loaded_lib(const char *sym) {
 
     DEBUG("find_loaded_lib(linux) %s", sym);
 
-    // First, try loading the executable
-    {
-        ret = dlopen(0, RTLD_LAZY);
-        if (dlsym(ret, sym)) {
-            DEBUG("returning %p", ret);
-            return ret;
-        } else {
-            ret = 0;
-        }
-    }
+    // // First, try loading the executable
+    // {
+    //     ret = dlopen(0, RTLD_LAZY);
+    //     if (dlsym(ret, sym)) {
+    //         DEBUG("returning %p", ret);
+    //         return ret;
+    //     } else {
+    //         ret = 0;
+    //     }
+    // }
 
     sprintf(mapfile_path, "/proc/%d/maps", pid);
     map_fp = fopen(mapfile_path, "r");

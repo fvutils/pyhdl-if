@@ -27,3 +27,18 @@ class BackendCocotb(Backend):
         super().__init__()
         pass
 
+    def mkEvent(self):
+        from cocotb.triggers import Event
+        return Event()
+    
+    def mkLock(self):
+        from cocotb.triggers import Lock
+        return Lock()
+    
+    def mkSemaphore(self):
+        raise NotImplementedError("mkSemaphore (class %s)" % str(type(self)))
+    
+    def mkTask(self, coro):
+        import cocotb
+        return cocotb.create_task(coro)
+

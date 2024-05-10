@@ -221,6 +221,8 @@ def gen_dpi_imports(fp, functions):
     # First, create typedefs
     for obj_t in ("PyObject", "PyTypeObject"):
         fp.write("    typedef chandle %s;\n" % obj_t)
+    for obj_t in ("PyGILState_STATE",):
+        fp.write("    typedef int unsigned %s;\n" % obj_t)
 
     fp.write("\n")
 
@@ -254,6 +256,7 @@ def gen_py_if(fp, functions):
     fp.write("typedef struct PyObject_s *PyObject;\n")
     fp.write("typedef struct PyTypeObject_s *PyTypeObject;\n")
     fp.write("typedef ssize_t Py_ssize_t;\n")
+    fp.write("typedef int PyGILState_STATE;\n")
     fp.write("\n")
     gen_py_api_struct(fp, functions)
     fp.write("\n")
@@ -469,7 +472,24 @@ def gen_py_load_api_struct(fp, functions):
     fp.write("}\n")
 
 def gen_vpi_utils(fp):
+    fp.write("static double vpi_get_pval_double(vpiHandle arg_it) {\n")
+    fp.write("    vpiHandle pval = prv_vpi_api.vpi_scan(arg_it);\n")
+    fp.write("    s_vpi_value val_s;\n")
+    #fp.write('    fprintf(stdout, "get_pval_int: pval=%p\\n", pval);\n')
+    fp.write("    val_s.format = vpiIntVal;\n")
+    fp.write("    prv_vpi_api.vpi_get_value(pval, &val_s);\n")
+    fp.write("    return 0.0;\n")
+#    fp.write("    return val_s.value.integer;\n")
+    fp.write("}\n")
     fp.write("static int32_t vpi_get_pval_int(vpiHandle arg_it) {\n")
+    fp.write("    vpiHandle pval = prv_vpi_api.vpi_scan(arg_it);\n")
+    fp.write("    s_vpi_value val_s;\n")
+    #fp.write('    fprintf(stdout, "get_pval_int: pval=%p\\n", pval);\n')
+    fp.write("    val_s.format = vpiIntVal;\n")
+    fp.write("    prv_vpi_api.vpi_get_value(pval, &val_s);\n")
+    fp.write("    return val_s.value.integer;\n")
+    fp.write("}\n")
+    fp.write("static int64_t vpi_get_pval_int64(vpiHandle arg_it) {\n")
     fp.write("    vpiHandle pval = prv_vpi_api.vpi_scan(arg_it);\n")
     fp.write("    s_vpi_value val_s;\n")
     #fp.write('    fprintf(stdout, "get_pval_int: pval=%p\\n", pval);\n')
@@ -504,7 +524,21 @@ def gen_vpi_utils(fp):
     fp.write("}\n")
     fp.write("\n")
     # Setters
+    fp.write("static void vpi_set_val_double(vpiHandle val_h, double val) {\n")
+    fp.write("    s_vpi_value val_s;\n")
+    fp.write("    val_s.format = vpiIntVal;\n")
+    fp.write("    val_s.value.integer = val;\n")
+    #fp.write('    fprintf(stdout, "val=%d\\n", val);\n')
+    fp.write("    prv_vpi_api.vpi_put_value(val_h, &val_s, 0, vpiNoDelay);\n")
+    fp.write("}\n")
     fp.write("static void vpi_set_val_int(vpiHandle val_h, int32_t val) {\n")
+    fp.write("    s_vpi_value val_s;\n")
+    fp.write("    val_s.format = vpiIntVal;\n")
+    fp.write("    val_s.value.integer = val;\n")
+    #fp.write('    fprintf(stdout, "val=%d\\n", val);\n')
+    fp.write("    prv_vpi_api.vpi_put_value(val_h, &val_s, 0, vpiNoDelay);\n")
+    fp.write("}\n")
+    fp.write("static void vpi_set_val_int64(vpiHandle val_h, int32_t val) {\n")
     fp.write("    s_vpi_value val_s;\n")
     fp.write("    val_s.format = vpiIntVal;\n")
     fp.write("    val_s.value.integer = val;\n")
@@ -664,6 +698,7 @@ vpi_get_param_tm = {
     "unsigned long long": "vpi_get_pval_int64",
     "void*" : "vpi_get_pval_ptr",
     "wchar_t*" : "vpi_get_pval_str",
+    "PyGILState_STATE": "vpi_get_pval_int",
     # "void": 0
 }
 
@@ -687,6 +722,7 @@ vpi_set_param_tm = {
     "unsigned long long": "vpi_set_val_int64",
     "void*" : "vpi_set_val_ptr",
     "wchar_t*" : "vpi_set_val_ptr",
+    "PyGILState_STATE": "vpi_set_val_int",
     # "void": 0
 }
 
@@ -727,7 +763,7 @@ def main():
 #    parser.add_argument("outdir", help="Specifies the output directory")
 
     scripts_dir = os.path.dirname(os.path.abspath(__file__))
-    hdl_if_dir = os.path.abspath(os.path.join(scripts_dir, "../python/hdl_if"))
+    hdl_if_dir = os.path.abspath(os.path.join(scripts_dir, "../src/hdl_if"))
     build_dir = os.path.abspath(os.path.join(scripts_dir, "../build"))
     share_dir = os.path.join(hdl_if_dir, "share")
     share_dpi_dir = os.path.join(share_dir, "dpi")
@@ -735,7 +771,7 @@ def main():
     args = parser.parse_args()
 
     include_pref = {"Py_", "PyEval_", "PyErr_", "PyImport_", "PyLong_", "PyObject_", 
-                    "PyTuple_", "PyUnicode_"}
+                    "PyTuple_", "PyUnicode_", "PyGILState_"}
     exclude_pref = {
         "_", "PyAsyncGen_", "PyBuffer_", "PyCapsule_", "PyCode_", "PyComplex_", 
         "PyConfig_", "PyCFunction_", "PyCMethod_", "PyCoro_",
@@ -746,7 +782,7 @@ def main():
         "PyPreConfig_", "PyRun_", "PyState_", "PyStatus_", "PySys_",
         "PyThread_", "PyTraceBack_", "PyTraceMalloc_", 
         "PyUnstable_", "PyWideStringList_",
-        "PyGILState_", "PyInterpreterState_", "PySignal_", "PyThreadState_", "PyStructSequence_",
+        "PyInterpreterState_", "PySignal_", "PyThreadState_", "PyStructSequence_",
         "PyWeakref_",
         "PyDescr_" }
     exclude = {
@@ -769,6 +805,7 @@ def main():
         "PyEval_SetProfile", "PyEval_SetProfileAllThreads", 
         "PyEval_SetTrace", "PyEval_SetTraceAllThreads",
         "PyEval_MergeCompilerFlags",
+        "PyGILState_GetThisThreadState",
         "Py_NewInterpreter", "Py_EndInterpreter", "Py_NewInterpreterFromConfig",
         "PyEval_GetFrame", "PyEval_EvalCodeEx", "PyEval_EvalFrame", "PyEval_EvalFrameEx",
         "PyEval_SaveThread", "PyEval_RestoreThread", "PyEval_AcquireThread",
@@ -871,6 +908,8 @@ def main():
     with open(os.path.join(share_dpi_dir, "pyhdl_dpi_imports.svh"), "w") as fp:
         gen_dpi_imports(fp, functions)
 
+    if not os.path.isdir(build_dir):
+        os.makedirs(build_dir)
     with open(os.path.join(build_dir, "py_api_if.h"), "w") as fp:
         gen_py_if(fp, functions)
     

@@ -1,3 +1,24 @@
+/**
+ * pyhdl_if_call_api.sv
+ *
+ * Copyright 2024 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author: 
+ */
+
     task automatic pyhdl_if_invokePyTask(
         output PyObject     res,
         input PyObject      obj,
@@ -5,6 +26,9 @@
         input PyObject      args);
         int sem_id = pyhdl_if_allocSem();
         PyObject proxy_h, invoke_py_t, proxy_args;
+        PyGILState_STATE state;
+
+        state = PyGILState_Ensure();
 
         proxy_h = PyObject_GetAttrString(obj, "_proxy");
         invoke_py_t = PyObject_GetAttrString(proxy_h, "invoke_py_t");
@@ -17,14 +41,18 @@
         void'(pyhdl_pi_if_HandleErr(PyObject_Call(invoke_py_t, proxy_args, null)));
 
         pyhdl_if_waitSem(sem_id, res);
+
+        PyGILState_Release(state);
     endtask
 
     function automatic PyObject pyhdl_if_invokePyFunc(
         input PyObject      obj,
         input string        method,
         input PyObject      args);
-        PyObject res;
-        PyObject proxy_h, invoke_py_f, proxy_args;
+        PyObject res, proxy_h, invoke_py_f, proxy_args;
+        PyGILState_STATE state;
+
+        state = PyGILState_Ensure();
 
         proxy_h = PyObject_GetAttrString(obj, "_proxy");
         invoke_py_f = PyObject_GetAttrString(proxy_h, "invoke_py_f");
@@ -35,10 +63,10 @@
         
         res = pyhdl_pi_if_HandleErr(PyObject_Call(invoke_py_f, proxy_args, null));
 
+        PyGILState_Release(state);
+
         return res;
     endfunction
-
-
 
     function automatic int allocObjId(ICallApi sv_api_if);
         int ret = -1, i;
@@ -99,13 +127,17 @@
         __callsem[id].put(1);
     endfunction
 
-    function automatic PyObject pyhdl_call_if_new(
+    function automatic PyObject pyhdl_if_newObject(
         PyObject        cls_t,
         ICallApi        sv_api_if,
         PyObject        init_args);
         int obj_id;
         PyObject args, ret, new_obj;
-        new_obj = PyObject_GetAttrString(__ep_h, "new_obj");
+        PyGILState_STATE state;
+
+        state = PyGILState_Ensure();
+
+        new_obj = PyObject_GetAttrString(__ep_h, "newObj");
         args = PyTuple_New(3);
 
         obj_id = (sv_api_if != null)?allocObjId(sv_api_if):-1;
@@ -120,19 +152,44 @@
 
         Py_DecRef(new_obj);
 
+        PyGILState_Release(state);
+
         return ret;
     endfunction
 
-    function automatic void pyhdl_if_connect(
+    function automatic void pyhdl_if_registerObject(
+        PyObject            obj,
+        string              inst_path,
+        int                 trim_elems=0);
+        PyObject args, ret, reg_obj;
+        PyGILState_STATE state = PyGILState_Ensure();
+
+        reg_obj = PyObject_GetAttrString(__ep_h, "registerObj");
+        args = PyTuple_New(3);
+
+        void'(PyTuple_SetItem(args, 0, obj));
+        void'(PyTuple_SetItem(args, 1, PyUnicode_FromString(inst_path)));
+        void'(PyTuple_SetItem(args, 2, PyLong_FromLong(trim_elems)));
+
+        ret = pyhdl_pi_if_HandleErr(PyObject_Call(reg_obj, args, null));
+
+        Py_DecRef(reg_obj);
+
+        PyGILState_Release(state);
+    endfunction
+
+    function automatic void pyhdl_if_connectObject(
         PyObject        obj,
         ICallApi        sv_api_if);
         int obj_id = (sv_api_if != null)?allocObjId(sv_api_if):-1;
         PyObject args, ret, connect;
+        PyGILState_STATE state = PyGILState_Ensure();
         
-        connect = PyObject_GetAttrString(__ep_h, "connect");
+        connect = PyObject_GetAttrString(__ep_h, "connectObj");
         args = PyTuple_New(2);
 
         void'(PyTuple_SetItem(args, 0, obj));
         void'(PyTuple_SetItem(args, 1, PyLong_FromLong(obj_id)));
         ret = PyObject_Call(connect, args, null);
+        PyGILState_Release(state);
     endfunction

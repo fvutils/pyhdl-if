@@ -18,12 +18,12 @@ class TaskCallClosure implements PyHdlPiRunnable;
 
     virtual task run();
         PyObject args, res, evt_obj_set;
+        PyGILState_STATE state = PyGILState_Ensure();
+
         evt_obj_set = PyObject_GetAttrString(m_evt_obj, "set");
         args = PyTuple_New(1);
 
-        $display("--> invokeTask");
         m_obj.invokeTask(res, m_method_name, m_args);
-        $display("<-- invokeTask");
 
         if (res == null) begin
             res = None;
@@ -36,5 +36,7 @@ class TaskCallClosure implements PyHdlPiRunnable;
             $display("Internal Error: Failed to trigger pyhdl_call_if event");
             $finish;
         end
+
+        PyGILState_Release(state);
     endtask
 endclass
