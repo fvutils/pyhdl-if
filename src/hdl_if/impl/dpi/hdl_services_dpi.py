@@ -24,7 +24,7 @@ from hdl_if.hdl_services import HdlServices
 
 class HdlServicesDpi(HdlServices):
 
-    def __init__(self, scope):
+    def __init__(self, scope=None):
         super().__init__("dpi")
         self._scope = scope
 
@@ -45,6 +45,15 @@ class HdlServicesDpi(HdlServices):
             self._RegisterTimeCB.argtypes = [ctypes.py_object, ctypes.c_uint64]
         except Exception as e:
             print("DPI Exception: %s" % str(e), flush=True)
+
+        if self._scope == None:
+            self._scope = self.svGetScope()
+
+    def getPkgScope(self):
+        return self._scope
+
+    def svGetScope(self):
+        return self._svGetScope()
 
     def svSetScope(self, scope):
         self._svSetScope(scope)

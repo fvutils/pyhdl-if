@@ -40,11 +40,12 @@
 #define DEBUG_INIT
 
 #ifdef DEBUG_INIT
-#define DEBUG(fmt, ...) fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout)
+#define DEBUG(fmt, ...) if (prv_debug) {fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout); }
 #else
 #define DEBUG(fmt, ...)
 #endif
 
+static int prv_debug = 0;
 typedef void *lib_h_t;
 static lib_h_t find_loaded_lib(const char *sym);
 
@@ -69,6 +70,11 @@ static lib_h_t init_python();
  *******************************************************************/
 int pyhdl_if_dpi_entry() {
     lib_h_t pylib;
+
+    if (getenv("PYHDL_IF_DEBUG") && getenv("PYHDL_IF_DEBUG")[0] == '1') {
+        prv_debug = 1;
+    }
+
     DEBUG("entry.c");
 
     if (!(pylib=init_python())) {
@@ -95,6 +101,10 @@ void pyhdl_if_vpi_entry() {
     lib_h_t pylib, vpilib;
 
     (void)res;
+
+    if (getenv("PYHDL_IF_DEBUG") && getenv("PYHDL_IF_DEBUG")[0] == '1') {
+        prv_debug = 1;
+    }
 
     DEBUG("entry.c");
 
@@ -226,7 +236,7 @@ lib_h_t find_loaded_lib(const char *sym) {
                 // File doesn't exist. Read another line to complete the path
                 if (fgets(mapfile_path, sizeof(mapfile_path), map_fp)) {
                     char *tpath;
-                    DEBUG("malloc %d", (strlen(path) + strlen(mapfile_path)+2));
+                    DEBUG("malloc %lld", (strlen(path) + strlen(mapfile_path)+2));
                     tpath = (char *)malloc(strlen(path) + strlen(mapfile_path) + 2);
 
                     strcpy(tpath, path);

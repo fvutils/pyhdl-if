@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  *
- * Created on:
+ * Created on
  *     Author: 
  */
 package pyhdl_if;
@@ -23,7 +23,6 @@ package pyhdl_if;
     `include "pyhdl_dpi_imports.svh"
 
     import "DPI-C" context function int pyhdl_if_dpi_entry();
-    import "DPI-C" context function chandle svGetScope();
 
     // Cached handles to Python objects
     PyObject        None;

@@ -38,7 +38,7 @@ ctype_m = {
     "int*": "ctypes.POINTER(ctypes.c_int)",
     "size_t": "ctypes.c_uint",
     "size_t*": "ctypes.POINTER(ctypes.c_uint)",
-    "Py_ssize_t": "ctypes.c_uint",
+    "Py_ssize_t": "ctypes.c_uint64",
     "Py_ssize_t*": "ctypes.POINTER(ctypes.c_uint)",
     "char*": "ctypes.c_char_p",
     "char**": "ctypes.POINTER(ctypes.c_char_p)",
@@ -61,7 +61,7 @@ typew_m = {
     "int*": 64,
     "size_t": 32,
     "size_t*": 64,
-    "Py_ssize_t": 32,
+    "Py_ssize_t": 64,
     "Py_ssize_t*": None,
     "char*": None,
     "char**": None,
@@ -204,8 +204,8 @@ def gen_dpi_imports(fp, functions):
         "int*": ("int", Dir.Out),
         "size_t": ("int unsigned", Dir.In),
         "size_t*": ("int unsigned", Dir.Out),
-        "Py_ssize_t": ("int unsigned", Dir.In),
-        "Py_ssize_t*": ("int unsigned", Dir.Out),
+        "Py_ssize_t": ("longint unsigned", Dir.In),
+        "Py_ssize_t*": ("longint unsigned", Dir.Out),
         "char*": ("string", Dir.InOut),
         "char**": ("chandle", Dir.Out),
         "const char*": ("string", Dir.In),
@@ -291,7 +291,7 @@ def gen_py_if(fp, functions):
     fp.write("\n")
     fp.write("typedef struct PyObject_s *PyObject;\n")
     fp.write("typedef struct PyTypeObject_s *PyTypeObject;\n")
-    fp.write("typedef ssize_t Py_ssize_t;\n")
+    fp.write("typedef uintptr_t Py_ssize_t;\n")
     fp.write("typedef int PyGILState_STATE;\n")
     fp.write("\n")
     gen_py_api_struct(fp, functions)
@@ -310,7 +310,7 @@ def gen_dpi_if(fp, functions):
     fp.write("\n")
     fp.write("typedef struct PyObject_s *PyObject;\n")
     fp.write("typedef struct PyTypeObject_s *PyTypeObject;\n")
-    fp.write("typedef ssize_t Py_ssize_t;\n")
+    fp.write("typedef uintptr_t Py_ssize_t;\n")
     fp.write("typedef int PyGILState_STATE;\n")
     fp.write("\n")
     gen_py_dpi_trampoline(fp, functions)

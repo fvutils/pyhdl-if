@@ -8,9 +8,10 @@ module call_python();
 
         begin
             for (int i=0; i<256; i++) begin
-                PyObject res_o;
-                int res;
-                PyObject args = PyTuple_New(1);
+                automatic PyObject res_o, args;
+                automatic int res;
+	       
+                args = PyTuple_New(1);
                 void'(PyTuple_SetItem(args, 0, PyLong_FromLong(i)));
                 res_o = PyObject_Call(countones, args, null);
                 res = PyLong_AsLong(res_o);

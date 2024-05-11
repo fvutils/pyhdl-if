@@ -2,7 +2,7 @@
 function automatic bit __pyhdl_if_init();
     bit ret = 1;
     PyObject hdl_if_impl, hdl_if_impl_dpi, dpi_init, get_none, args, res;
-    PyGILState_STATE state = PyGILState_Ensure();
+    PyGILState_STATE state;
 
     if (pyhdl_if_dpi_entry() != 1) begin
         $display("Fatal: Failed to initialize pyhdl-pi-if DPI interface");
@@ -11,6 +11,8 @@ function automatic bit __pyhdl_if_init();
     end
 
     Py_Initialize();
+
+    state = PyGILState_Ensure();
 
     __hdl_pi_if = pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if"));
     if (__hdl_pi_if == null) begin
@@ -24,7 +26,8 @@ function automatic bit __pyhdl_if_init();
         $finish;
     end
 
-    if ((hdl_if_impl_dpi=pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if.impl.dpi"))) == null) begin
+    hdl_if_impl_dpi = pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if.impl.dpi"));
+    if (hdl_if_impl_dpi == null) begin
         $display("Fatal: failed to load hdl_if.impl.dpi");
         $finish;
     end
@@ -35,10 +38,10 @@ function automatic bit __pyhdl_if_init();
         $finish;
     end
 
-    args = PyTuple_New(1);
-    void'(PyTuple_SetItem(args, 0, PyLong_FromVoidPtr(svGetScope())));
+    args = PyTuple_New(0);
 
-    if ((__ep_h=pyhdl_pi_if_HandleErr(PyObject_Call(dpi_init, args, null))) == null) begin
+    __ep_h = pyhdl_pi_if_HandleErr(PyObject_Call(dpi_init, args, null));
+    if (__ep_h == null) begin
         $display("Fatal: failed to initialize hdl_pi_if package");
         $finish;
     end
