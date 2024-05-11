@@ -231,6 +231,25 @@ def gen_dpi_imports(fp, functions):
             fp.write("\n")
 
         fp.write("    import \"DPI-C\" context function ")
+        
+        if f.return_type is None or f.return_type.format() == "void":
+            fp.write("void ")
+        else:
+            fp.write("%s " % gen_dpi_rtype(type_m, f.return_type))
+
+        fp.write("_%s(" % f.name.segments[0].name)
+        for j,p in enumerate(f.parameters):
+            if j > 0:
+                fp.write(", ")
+            if p.name is not None:
+                pname = mangle_pname(p.name)
+            else:
+                pname = "p%d" % j
+            fp.write("%s %s" % (gen_dpi_ptype(type_m, p.type), pname))
+        fp.write(");\n")
+        fp.write("\n")
+
+        fp.write("    function ")
 
         if f.return_type is None or f.return_type.format() == "void":
             fp.write("void ")
@@ -246,6 +265,23 @@ def gen_dpi_imports(fp, functions):
                 pname = "p%d" % j
             fp.write("%s %s" % (gen_dpi_ptype(type_m, p.type), pname))
         fp.write(");\n")
+        fp.write("        ")
+        if f.return_type is not None and f.return_type.format() != "void":
+            fp.write("return ")
+        fp.write("_%s(" % f.name.segments[0].name)
+        for j,p in enumerate(f.parameters):
+            if j > 0:
+                fp.write(", ")
+            if p.name is not None:
+                pname = mangle_pname(p.name)
+            else:
+                pname = "p%d" % j
+            fp.write("%s" % pname)
+        fp.write(");\n")
+        fp.write("    endfunction\n")
+
+
+
 
 def gen_py_if(fp, functions):
 
@@ -265,6 +301,21 @@ def gen_py_if(fp, functions):
     gen_py_load_api_struct(fp, functions)
     fp.write("\n")
     fp.write("#endif /* INCLUDED_PY_API_IF_H */\n")
+    pass
+
+def gen_dpi_if(fp, functions):
+    fp.write(file_header_sv % "py_dpi_if.h")
+    fp.write("#ifndef INCLUDED_PY_DPI_IF_H\n")
+    fp.write("#define INCLUDED_PY_DPI_IF_H\n")
+    fp.write("\n")
+    fp.write("typedef struct PyObject_s *PyObject;\n")
+    fp.write("typedef struct PyTypeObject_s *PyTypeObject;\n")
+    fp.write("typedef ssize_t Py_ssize_t;\n")
+    fp.write("typedef int PyGILState_STATE;\n")
+    fp.write("\n")
+    gen_py_dpi_trampoline(fp, functions)
+    fp.write("\n")
+    fp.write("#endif /* INCLUDED_PY_DPI_IF_H */\n")
     pass
 
 def gen_vpi_tf(fp, functions):
@@ -446,6 +497,34 @@ def gen_py_api_struct(fp, functions):
         fp.write(");\n")
     fp.write("} py_api;\n")
 
+def gen_py_dpi_trampoline(fp, functions):
+
+    for i,f in enumerate(functions):
+        if i:
+            fp.write("\n")
+        fp.write("%s _%s(" % (
+            gen_c_rtype(f.return_type),
+            f.name.segments[0].name
+        ))
+        for i,p in enumerate(f.parameters):
+            if i:
+                fp.write(", ")
+            name = "p%0d" % i if p.name is None else p.name
+            fp.write("%s %s" % (p.type.format(), name))
+        fp.write(") {\n")
+        fp.write("    ")
+        fp.write('fprintf(stdout, "== %s\\n"); fflush(stdout);\n' % f.name.segments[0].name)
+        if gen_c_rtype(f.return_type) != "void":
+            fp.write("return ")
+        fp.write("prv_py_api.%s(" % f.name.segments[0].name)
+        for i,p in enumerate(f.parameters):
+            if i:
+                fp.write(", ")
+            fp.write("p%0d" % i if p.name is None else p.name)
+        fp.write(");\n")
+
+        fp.write("}\n")
+
 def gen_py_load_api_struct(fp, functions):
     fp.write("static int py_load_api_struct(void *lib_h) {\n")
     fp.write("    int ret = 1;\n")
@@ -599,7 +678,7 @@ def gen_vpi_py_impl(fp, functions):
     for i,f in enumerate(functions):
         if i:
             fp.write("\n")
-        fp.write("static int _%s(PLI_BYTE8 *ud) {\n" % f.name.segments[0].name)
+        fp.write("static int _%s_tf(PLI_BYTE8 *ud) {\n" % f.name.segments[0].name)
         if f.return_type is not None and f.return_type.format() != "void":
             fp.write("    %s __rval;\n" % gen_c_type(f.return_type))
         if len(f.parameters) > 0 or (f.return_type is not None and f.return_type.format() != "void"):
@@ -658,7 +737,7 @@ def gen_vpi_tf_reg(fp, functions):
             fp.write("    tf->type = vpiSysFunc;\n")
             fp.write("    tf->sysfunctype = %s;\n" % gen_vpi_functype(f.return_type))
 
-        fp.write("    tf->calltf = &_%s;\n" % f.name.segments[0].name)
+        fp.write("    tf->calltf = &_%s_tf;\n" % f.name.segments[0].name)
         fp.write("    tf->compiletf = 0;\n")
         if rsize is None or rsize <= 32:
             fp.write("    tf->sizetf = 0;\n")
@@ -915,6 +994,9 @@ def main():
     
     with open(os.path.join(build_dir, "py_vpi_if.h"), "w") as fp:
         gen_vpi_tf(fp, functions)
+
+    with open(os.path.join(build_dir, "py_dpi_if.h"), "w") as fp:
+        gen_dpi_if(fp, functions)
 
     pass
 

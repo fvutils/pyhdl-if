@@ -49,6 +49,7 @@ typedef void *lib_h_t;
 static lib_h_t find_loaded_lib(const char *sym);
 
 #include "py_api_if.h"
+#include "py_dpi_if.h"
 #include "py_vpi_if.h"
 
 #ifdef __cplusplus
@@ -67,11 +68,17 @@ static lib_h_t init_python();
  * Manages start-up tasks for DPI integration
  *******************************************************************/
 int pyhdl_if_dpi_entry() {
+    lib_h_t pylib;
     DEBUG("entry.c");
 
-    if (!init_python()) {
+    if (!(pylib=init_python())) {
         DEBUG("pyhdl-pi-if: Failed to initialize Python");
         return -1;
+    }
+
+    if (!py_load_api_struct(pylib)) {
+        DEBUG("pyhdl-if: Failed to load Python API");
+        return;
     }
 
     return 1;
