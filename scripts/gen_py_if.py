@@ -237,7 +237,7 @@ def gen_dpi_imports(fp, functions):
         else:
             fp.write("%s " % gen_dpi_rtype(type_m, f.return_type))
 
-        fp.write("_%s(" % f.name.segments[0].name)
+        fp.write("_pyhdl_if_%s(" % f.name.segments[0].name)
         for j,p in enumerate(f.parameters):
             if j > 0:
                 fp.write(", ")
@@ -268,7 +268,7 @@ def gen_dpi_imports(fp, functions):
         fp.write("        ")
         if f.return_type is not None and f.return_type.format() != "void":
             fp.write("return ")
-        fp.write("_%s(" % f.name.segments[0].name)
+        fp.write("_pyhdl_if_%s(" % f.name.segments[0].name)
         for j,p in enumerate(f.parameters):
             if j > 0:
                 fp.write(", ")
@@ -502,7 +502,7 @@ def gen_py_dpi_trampoline(fp, functions):
     for i,f in enumerate(functions):
         if i:
             fp.write("\n")
-        fp.write("%s _%s(" % (
+        fp.write("%s _pyhdl_if_%s(" % (
             gen_c_rtype(f.return_type),
             f.name.segments[0].name
         ))
