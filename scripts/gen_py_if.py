@@ -254,8 +254,8 @@ def gen_dpi_imports(fp, functions):
         if f.return_type is None or f.return_type.format() == "void":
             fp.write("void ")
         else:
-            fp.write("sv%s " % gen_dpi_rtype(type_m, f.return_type))
-        fp.write("%s(" % f.name.segments[0].name)
+            fp.write("%s " % gen_dpi_rtype(type_m, f.return_type))
+        fp.write("sv%s(" % f.name.segments[0].name)
         for j,p in enumerate(f.parameters):
             if j > 0:
                 fp.write(", ")
