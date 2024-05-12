@@ -126,7 +126,7 @@ if isSrcBuild:
         print("<-- gen_py_api")
 
     setup_args["ivpm_hooks"] = {
-        "build.pre" : [
+        "setup.pre" : [
             gen_py_api
         ]
     }
