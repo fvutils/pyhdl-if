@@ -513,7 +513,7 @@ def gen_py_dpi_trampoline(fp, functions):
             fp.write("%s %s" % (p.type.format(), name))
         fp.write(") {\n")
         fp.write("    ")
-        fp.write('fprintf(stdout, "== %s\\n"); fflush(stdout);\n' % f.name.segments[0].name)
+#        fp.write('fprintf(stdout, "== %s\\n"); fflush(stdout);\n' % f.name.segments[0].name)
         if gen_c_rtype(f.return_type) != "void":
             fp.write("return ")
         fp.write("prv_py_api.%s(" % f.name.segments[0].name)

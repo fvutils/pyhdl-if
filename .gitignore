@@ -167,3 +167,4 @@ packages/
 *.vvp
 *.vcd
 *.vstf
+src/hdl_if/share/dpi/pyhdl_dpi_imports.svh

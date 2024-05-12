@@ -42,7 +42,7 @@ jobs:
         IVPM_PYTHON: /opt/python/${{ matrix.spec }}/bin/python
         BUILD_NUM: ${{ github.run_id }}
       run: |
-        echo "BUILD_NUM=${BUILD_NUM}" >> python/hdl_if/__build_num__.py
+        echo "BUILD_NUM=${BUILD_NUM}" >> src/hdl_if/__build_num__.py
         ${IVPM_PYTHON} -m pip install ivpm cython
         ${IVPM_PYTHON} -m ivpm update -a
     - name: Build packages

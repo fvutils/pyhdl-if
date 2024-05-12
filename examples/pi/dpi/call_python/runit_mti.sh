@@ -6,7 +6,7 @@ pyhdl_if_dir=$(cd $script_dir/../../../.. ; pwd)
 export PYTHONPATH=$pyhdl_if_dir/src:${script_dir}:${PYTHONPATH}
 
 share=$(python3 -c 'import hdl_if; print(hdl_if.share())')
-libs=$(python3 -c 'import hdl_if; print(" ".join(hdl_if.libs()))')
+libs=$(python3 -c 'import hdl_if; print(" ".join(hdl_if.libs("vpi")))')
 
 echo "libs: ${libs}"
 
