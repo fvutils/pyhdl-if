@@ -312,8 +312,8 @@ class GenSVClass(object):
         if m.kind in [MethodKind.ImpFunc, MethodKind.ImpTask]:
             ind = self._ind
             self._ind = ""
-            self.println("// Note: as of 5.024, Verilator has issues with unimplemented methods")
-            self.println("`ifdef VERILATOR")
+#            self.println("// Note: as of 5.024, Verilator has issues with unimplemented methods")
+#            self.println("`ifdef VERILATOR")
             self._ind = ind
 
         task_rtype = m.rtype if m.kind in [MethodKind.ImpTask, MethodKind.ExpTask] else None
@@ -382,7 +382,7 @@ class GenSVClass(object):
         if m.kind in [MethodKind.ImpFunc, MethodKind.ImpTask]:
             ind = self._ind
             self._ind = ""
-            self.println("`endif /* VERILATOR */")
+#            self.println("`endif /* VERILATOR */")
             self._ind = ind
         self.println()
 

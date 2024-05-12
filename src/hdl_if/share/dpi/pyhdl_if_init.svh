@@ -21,7 +21,8 @@ function automatic bit __pyhdl_if_init();
         $finish;
     end
 
-    if ((hdl_if_impl=pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if.impl"))) == null) begin
+    hdl_if_impl = pyhdl_pi_if_HandleErr(PyImport_ImportModule("hdl_if.impl"));
+    if (hdl_if_impl == null) begin
         $display("Fatal: failed to load hdl_if.impl");
         $finish;
     end
