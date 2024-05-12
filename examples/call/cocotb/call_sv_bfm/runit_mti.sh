@@ -4,18 +4,28 @@ example_dir=$(dirname $(realpath $0))
 proj_dir=$(cd ${example_dir}/../../../.. ; pwd)
 rundir=`pwd`
 
-interp_bindir=${proj_dir}/packages/python/bin
-interp=$interp_bindir/python
-#export PYTHONPATH=${proj_dir}/src:${example_dir}:${PYTHONPATH}
-export PYTHONPATH=${proj_dir}/src:${example_dir}
+use_project_venv=0
 
-#interp_bindir=$rundir/example_venv/bin
-#if test ! -d $rundir/example_venv; then
-#    echo "Creating Python virtual environment"
-#    python3 -m venv $rundir/example_venv
-#    $interp -m pip install --upgrade pip
-#    $interp -m pip install -r $example_dir/requirements.txt
-#fi
+if test $use_project_venv -eq 1; then
+    interp_bindir=${proj_dir}/packages/python/bin
+    interp=$interp_bindir/python
+    export PYTHONPATH=${proj_dir}/src:${example_dir}
+else
+    interp_bindir=$rundir/example_venv/bin
+    interp=$interp_bindir/python
+    if test ! -d $rundir/example_venv; then
+        echo "Creating Python virtual environment"
+        python3 -m venv $rundir/example_venv
+        $interp -m pip install --upgrade pip
+        $interp -m pip install -r $example_dir/requirements.txt
+    fi
+    export PYTHONPATH=${example_dir}
+fi
+#export PYTHONPATH=${proj_dir}/src:${example_dir}:${PYTHONPATH}
+
+source ${interp_bindir}/activate
+
+
 
 cocotb_libdir=$(${interp_bindir}/cocotb-config --lib-dir)
 libpython=$(${interp_bindir}/cocotb-config --libpython)
@@ -43,7 +53,9 @@ vlog -sv \
     ${example_dir}/call_sv_bfm.sv 
 if test $? -ne 0; then exit 1; fi
 
-export PATH=${interp_bindir}:${PATH}
+#export PATH=${interp_bindir}:${PATH}
+
+# This appears to 
 export LD_LIBRARY_PATH=$(dirname ${libpython}):${LD_LIBRARY_PATH}
 export MODULE=call_sv_bfm
 

@@ -50,15 +50,12 @@ package pyhdl_if;
     bit                                 prv_run_q_running = 0;
     mailbox #(PyHdlPiRunnable)          prv_run_q = new();
     task automatic __pyhdl_pi_if_run();
-        $display("__pyhdl_pi_if_run");
         forever begin
             automatic PyHdlPiRunnable runnable;
             prv_run_q.get(runnable);
-            $display("runnable.have_runnable");
 
             fork
                 begin
-                    $display("runnable.run");
                     runnable.run();
                 end
             join_none
