@@ -44,7 +44,7 @@ module WishboneInitiatorBFM(
                 end
                 1'b1: begin
                     if (cyc && stb && ack) begin
-                        bfm_dat_r <= dat_r;
+                        bfm_dat_r = dat_r;
                         bfm_ack = 1;
                         state <= 1'b0;
                     end

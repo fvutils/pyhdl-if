@@ -31,7 +31,7 @@ done
 PYTHONPATH=`pwd` ${interp} -m hdl_if api-gen-sv -m call_sv_bfm
 if test $? -ne 0; then exit 1; fi
 
-verilator --binary \
+verilator --binary --vpi -Wno-fatal -LDFLAGS -export-dynamic \
     +incdir+${hdl_if_share}/dpi \
     ${hdl_if_share}/dpi/pyhdl_if.sv \
     $example_dir/call_sv_bfm.sv ${vlt_args}
@@ -42,10 +42,8 @@ export PYTHONPATH=$example_dir:${PYTHONPATH}
 export LD_LIBRARY_PATH=$(dirname ${libpython}):${LD_LIBRARY_PATH}
 export MODULE=call_sv_bfm
 
+./obj_dir/Vpyhdl_if
 
-#vsim -c -do "run -a; quit -f" call_sv_bfm \
-#	-valgrind --tool=memcheck \
-#    ${vsim_args}
 
 
 
