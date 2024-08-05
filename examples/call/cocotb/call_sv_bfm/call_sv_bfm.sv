@@ -75,7 +75,7 @@ module WishboneInitiatorBFM(
         bfm_adr = adr_v;
         bfm_we = 1'b0;
         bfm_sel = {4{1'b0}};
-        bfm_dat_w = {32{1'b0}};
+        //bfm_dat_w = {32{1'b0}}; // commented out to persist value
         bfm_req = 1'b1;
         while (bfm_ack === 1'b0) begin
             @(posedge clock);
@@ -92,11 +92,11 @@ module WishboneInitiatorBFM(
             $display("<-- write");
             #10ns;
         endtask
-        
+
         virtual task read(output int unsigned retval, input int unsigned addr);
             $display("--> read");
             bfm_read(retval, addr);
-            $display("<-- read");
+            $display("<-- read (addr,data): %0d,%0d ", addr, retval);
         endtask
 
     endclass
@@ -164,4 +164,3 @@ module call_sv_bfm;
     );
 
 endmodule
-

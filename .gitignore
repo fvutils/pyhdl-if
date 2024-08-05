@@ -168,3 +168,8 @@ packages/
 *.vcd
 *.vstf
 src/hdl_if/share/dpi/pyhdl_dpi_imports.svh
+example_venv/
+sim_build/
+hdl_call_if_api.svh
+results.xml
+*.bk
