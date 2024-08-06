@@ -3,20 +3,20 @@
 #*
 #* Copyright 2023 Matthew Ballance and Contributors
 #*
-#* Licensed under the Apache License, Version 2.0 (the "License"); you may 
-#* not use this file except in compliance with the License.  
+#* Licensed under the Apache License, Version 2.0 (the "License"); you may
+#* not use this file except in compliance with the License.
 #* You may obtain a copy of the License at:
 #*
 #*   http://www.apache.org/licenses/LICENSE-2.0
 #*
-#* Unless required by applicable law or agreed to in writing, software 
-#* distributed under the License is distributed on an "AS IS" BASIS, 
-#* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-#* See the License for the specific language governing permissions and 
+#* Unless required by applicable law or agreed to in writing, software
+#* distributed under the License is distributed on an "AS IS" BASIS,
+#* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#* See the License for the specific language governing permissions and
 #* limitations under the License.
 #*
 #* Created on:
-#*     Author: 
+#*     Author:
 #*
 #****************************************************************************
 from hdl_if.call.call_proxy import CallProxy
@@ -35,7 +35,7 @@ class CallProxyDPI(CallProxy):
             args : tuple):
         return self.ep.invoke_hdl_f(
             self.obj_id,
-            method_name, 
+            method_name,
             args)
         pass
 
@@ -48,8 +48,9 @@ class CallProxyDPI(CallProxy):
         evt = be.mkEvent()
 
         self.ep.invoke_hdl_t(self.obj_id, evt, method_name, args)
+        res = await evt.wait()
 
-        return await evt.wait()
+        return res.parent.data
 
     async def invoke_py_t_wrap(
             self,
@@ -71,10 +72,6 @@ class CallProxyDPI(CallProxy):
 
         if m is None:
             print("Error: failed to find method %s" % method_name, flush=True)
-        
+
         be.mkTask(self.invoke_py_t_wrap(sem_id, m, args))
         be.idle()
-        
-
-        
-

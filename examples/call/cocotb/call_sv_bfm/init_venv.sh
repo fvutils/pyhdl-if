@@ -13,7 +13,7 @@ if test ! -d $rundir/example_venv; then
     python3 -m venv $rundir/example_venv
     $interp -m pip install --upgrade pip
     $interp -m pip install pcpp cxxheaderparser ivpm
+    $interp ${pyhdl_if_dir}/scripts/gen_py_if.py # TODO: might be wrong place for this, but was needed after before install
     $interp -m pip install -e ${pyhdl_if_dir} cocotb
     $interp -m pip install -r $example_dir/requirements.txt
 fi
-

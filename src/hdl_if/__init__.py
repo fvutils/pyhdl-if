@@ -54,8 +54,12 @@ def get_entry():
     for f in os.listdir(hdl_pi_if_dir):
         if f.endswith(".so") and f.startswith("entry"):
             return os.path.join(hdl_pi_if_dir, f)
-    
+
     raise Exception("Failed to find entry .so")
+
+def root():
+    pkg_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(pkg_dir)
 
 def share():
     pkg_dir = os.path.dirname(os.path.abspath(__file__))
@@ -93,9 +97,5 @@ def libs(kind="dpi"):
 #        python_libdir = os.path.join(python_dir, 'lib')
 
         ret.append(os.path.join(python_libdir, sysconfig.get_config_var("LDLIBRARY")))
-    
+
     return ret
-
-
-
-
