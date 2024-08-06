@@ -1,5 +1,5 @@
 # Use the official Python image as the base
-FROM python
+FROM python@sha256:942374a9ed2353df11065502733c29c7f655a2b6bd03e0e2a3dd2086fdb1044c
 
 # Set the working directory inside the container
 WORKDIR /work/
