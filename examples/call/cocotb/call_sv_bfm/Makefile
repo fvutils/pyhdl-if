@@ -14,4 +14,11 @@ MODULE   := call_sv_bfm
 
 EXTRA_ARGS += --timing +incdir+${HDL_IF_SHARE}/dpi --vpi -Wno-fatal -LDFLAGS -export-dynamic  -LDFLAGS ${HDL_IF_ENTRY}
 
+CUSTOM_COMPILE_DEPS=hdl_call_if_api.svh
+
 include $(shell cocotb-config --makefiles)/Makefile.sim
+
+# needed for interface
+# TODO: should depend on call_sv_bfm.sv
+hdl_call_if_api.svh:
+	python -m hdl_if api-gen-sv -m call_sv_bfm
