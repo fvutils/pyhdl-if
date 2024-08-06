@@ -13,5 +13,6 @@ TOPLEVEL := call_sv_bfm
 MODULE   := call_sv_bfm
 
 EXTRA_ARGS += --timing +incdir+${HDL_IF_SHARE}/dpi --vpi -Wno-fatal -LDFLAGS -export-dynamic  -LDFLAGS ${HDL_IF_ENTRY}
+#EXTRA_ARGS += --trace --trace-structs
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

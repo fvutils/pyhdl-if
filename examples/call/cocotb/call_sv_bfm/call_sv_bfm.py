@@ -1,6 +1,7 @@
 
 import cocotb
 from cocotb.triggers import Timer, RisingEdge
+#from cocotb.sim_time_utils import get_sim_time
 import ctypes as ct
 import hdl_if as hif
 
@@ -26,11 +27,14 @@ async def entry(dut):
     # Wait for reset
     clk_ev = RisingEdge(dut.clk)
 
-    while (True):
+    for i in range(10):
         await clk_ev
         print("reset: %d" % dut.reset)
         if dut.reset == 0:
+            print("reset done!")
             break
+    if i == 9:
+        raise Exception("Failed to detect reset==0")
 
     for i in range(64):
         wr_val = (i+1)
