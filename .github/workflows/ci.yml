@@ -25,7 +25,6 @@ jobs:
         folder: doc/build/html # The folder the action should deploy.
   linux:
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64
     strategy:
       matrix:
         include:
