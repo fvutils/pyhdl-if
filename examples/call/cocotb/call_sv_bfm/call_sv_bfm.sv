@@ -68,7 +68,7 @@ module WishboneInitiatorBFM(
         bfm_ack = 1'b0;
     endtask
 
-    task bfm_read(output int unsigned dat_v, int unsigned adr_v);
+    task bfm_read(output int unsigned dat_v, input int unsigned adr_v);
         while (bfm_req === 1'b1) begin
             @(posedge clock);
         end
