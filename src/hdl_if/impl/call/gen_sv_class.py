@@ -359,9 +359,9 @@ class GenSVClass(object):
             pass
         else:
             self.println("pyhdl_if::PyObject __res;")
-            self.println("pyhdl_if::PyObject __args = PyTuple_New(%d);" % len(m.params))
+            self.println("pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(%d);" % len(m.params))
             for i,p in enumerate(m.params):
-                self.println("void'(PyTuple_SetItem(__args, %d, %s(%s)));" % (
+                self.println("void'(pyhdl_if::PyTuple_SetItem(__args, %d, %s(%s)));" % (
                     i,
                     self.sv2py_func(p[1]),
                     p[0]
