@@ -12,7 +12,17 @@ VERILOG_SOURCES += $(PWD)/call_sv_bfm.sv
 TOPLEVEL := call_sv_bfm
 MODULE   := call_sv_bfm
 
-EXTRA_ARGS += --timing +incdir+${HDL_IF_SHARE}/dpi --vpi -Wno-fatal -LDFLAGS -export-dynamic  -LDFLAGS ${HDL_IF_ENTRY}
+# Questa
+VLOG_ARGS += -sv +incdir+${HDL_IF_SHARE}/dpi
+VSIM_ARGS += -sv_lib $(basename $(HDL_IF_ENTRY))
+
+# Verilator
+EXTRA_ARGS_verilator=--timing +incdir+${HDL_IF_SHARE}/dpi --vpi -Wno-fatal -LDFLAGS -export-dynamic  -LDFLAGS ${HDL_IF_ENTRY}
+
+# Xcelium
+EXTRA_ARGS_xcelium=-sv_lib $(HDL_IF_ENTRY) -sv +incdir+${HDL_IF_SHARE}/dpi
+
+EXTRA_ARGS += $(EXTRA_ARGS_$(SIM))
 
 CUSTOM_COMPILE_DEPS=hdl_call_if_api.svh
 
