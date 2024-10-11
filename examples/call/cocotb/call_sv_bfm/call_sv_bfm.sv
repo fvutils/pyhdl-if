@@ -131,7 +131,7 @@ module call_sv_bfm;
         $dumpvars;
         #50ns;
         reset = 0;
-        #15us;
+        #30us;
         $finish;
     end
 
