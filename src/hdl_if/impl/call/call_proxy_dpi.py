@@ -50,7 +50,8 @@ class CallProxyDPI(CallProxy):
         self.ep.invoke_hdl_t(self.obj_id, evt, method_name, args)
         res = await evt.wait()
 
-        return res.parent.data
+        if res is not None:
+            return res.parent.data
 
     async def invoke_py_t_wrap(
             self,
