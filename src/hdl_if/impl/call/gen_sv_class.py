@@ -153,7 +153,7 @@ class GenSVClass(object):
                 api.name
             ))
         else:
-            self.println("function PyObject create_pyobj(")
+            self.println("function pyhdl_if::PyObject create_pyobj(")
             self.inc_ind()
             for i,p in enumerate(api.init_params):
                 self.println("%s %s," % (
@@ -182,10 +182,9 @@ class GenSVClass(object):
         self.println()
 
         for i,p in enumerate(api.init_params):
-            self.println("void'(PyTuple_SetItem(__args, %d, %s(%s)));" % (
+            self.println("void'(PyTuple_SetItem(__args, %d, %s));" % (
                 i,
-                self.sv2py_func(p[1]),
-                p[0]))
+                self.sv2py_func(p[1], p[0])))
         if len(api.init_params):
             self.println()
 
@@ -361,11 +360,9 @@ class GenSVClass(object):
             self.println("pyhdl_if::PyObject __res;")
             self.println("pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(%d);" % len(m.params))
             for i,p in enumerate(m.params):
-                self.println("void'(pyhdl_if::PyTuple_SetItem(__args, %d, %s(%s)));" % (
+                self.println("void'(pyhdl_if::PyTuple_SetItem(__args, %d, %s));" % (
                     i,
-                    self.sv2py_func(p[1]),
-                    p[0]
-                ))
+                    self.sv2py_func(p[1], p[0])))
             if m.kind == MethodKind.ExpTask:
                 self.println("pyhdl_if::pyhdl_if_invokePyTask(__res, m_obj, \"%s\", __args);" % (
                     m.name,))
@@ -432,7 +429,7 @@ class GenSVClass(object):
                         ))
                     self.dec_ind()
                 if m.rtype is not None:
-                    self.println("retval = %s(__retval);" % self.sv2py_func(m.rtype))
+                    self.println("retval = %s;" % self.sv2py_func(m.rtype, "__retval"))
                 self.dec_ind()
                 self.println("end")
         self.println("default: begin")
@@ -484,7 +481,7 @@ class GenSVClass(object):
                     self.dec_ind()
 
                 if m.rtype is not None:
-                    self.println("__ret = %s(__rval);" % self.sv2py_func(m.rtype))
+                    self.println("__ret = %s;" % self.sv2py_func(m.rtype, "__rval"))
                 self.dec_ind()
                 self.println("end")
         self.println("default: begin")
@@ -522,7 +519,7 @@ class GenSVClass(object):
             raise Exception("Unsupported type %s" % str(type))
         return "pyhdl_if::" + type_m[type]
 
-    def sv2py_func(self, type):
+    def sv2py_func(self, type, var):
         type_m = {
             ctypes.c_bool : "PyLong_FromLong",
             ctypes.c_byte : "PyLong_FromLong",
@@ -537,12 +534,14 @@ class GenSVClass(object):
             ctypes.c_uint16 : "PyLong_FromLong",
             ctypes.c_uint32 : "PyLong_FromLong",
             ctypes.c_uint64 : "PyLong_FromUnsignedLongLong",
-            str : "string",
-            ctypes.py_object : ""
+            str : "string"
         }
-        if type not in type_m.keys():
+        if type in type_m.keys():
+            return "pyhdl_if::%s(%s)" % (type_m[type], var)
+        elif type == ctypes.py_object:
+            return var
+        else:
             raise Exception("Unsupported type %s" % str(type))
-        return "pyhdl_if::" + type_m[type]
 
     def svtype(self, type):
         type_m = {
@@ -560,11 +559,12 @@ class GenSVClass(object):
             ctypes.c_uint32 : "int unsigned",
             ctypes.c_uint64 : "longint unsigned",
             str : "string",
-            ctypes.py_object : "PyObject"
+            ctypes.py_object : "pyhdl_if::PyObject"
         }
-        if type not in type_m.keys():
+        if type in type_m.keys():
+            return type_m[type]
+        else:
             raise Exception("Unsupported type %s" % str(type))
-        return type_m[type]
 
     def println(self, ln=None):
         if ln is None:

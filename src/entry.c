@@ -400,7 +400,7 @@ lib_h_t find_config_python_lib() {
     DEBUG("ldlibrary=%s libdest=%s", ldlibrary, libdest);
 
     if (ldlibrary && libdest) {
-        char *fullpath = (char *)malloc(strlen(ldlibrary)+strlen(libdest)+2);
+        char *fullpath = (char *)malloc(strlen(ldlibrary)+strlen(libdir)+strlen(libdest)+4);
         strcpy(fullpath, libdest);
         strcat(fullpath, "/");
         strcat(fullpath, ldlibrary);

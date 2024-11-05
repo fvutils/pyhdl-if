@@ -53,8 +53,16 @@ class CmdApiGenSV(object):
         with open(args.output, "w") as fp:
             gen = GenSVClass(fp, uvm=args.uvm)
 
+            if args.package is not None:
+                gen.println("package %s;" % args.package)
+                gen.inc_ind()
+
             for api in apis:
                 gen.gen(api)
+
+            if args.package is not None:
+                gen.dec_ind()
+                gen.println("endpackage")
 
         pass
 

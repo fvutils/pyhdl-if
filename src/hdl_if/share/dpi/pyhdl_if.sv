@@ -70,13 +70,18 @@ package pyhdl_if;
         void'(prv_run_q.try_put(runnable));
     endfunction
 
-    function void pyhdl_pi_if_start();
+    function void pyhdl_if_start();
         if (!prv_run_q_running) begin
             prv_run_q_running = 1;
             fork
                 __pyhdl_pi_if_run();
             join_none
         end
+    endfunction
+
+    // Deprecated
+    function void pyhdl_pi_if_start();
+        pyhdl_if_start();
     endfunction
 
     typedef class PyHdlDpiTimeCB;
