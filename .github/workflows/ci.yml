@@ -19,6 +19,7 @@ jobs:
     - name: Run tests
       run: |
         export PATH=$(pwd)/packages/verilator/bin:${PATH}
+        export PATH=$(pwd)/py/bin:${PATH}
         ./py/bin/pip install dist/*.whl
         ./py/bin/python3 -m pytest ./tests/unit
   doc:
