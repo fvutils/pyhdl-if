@@ -20,9 +20,11 @@ jobs:
       run: |
         rm ivpm.yaml
         export PATH=$(pwd)/packages/verilator/bin:${PATH}
+        export PATH=$(pwd)/packages/iverilog/bin:${PATH}
         export PATH=$(pwd)/py/bin:${PATH}
         ./py/bin/pip install dist/*.whl
-        ./py/bin/python3 -m pytest ./tests/unit
+        PYTEST_FV_HDLSIM=vlt ./py/bin/python3 -m pytest ./tests/unit
+        PYTEST_FV_HDLSIM=ivl ./py/bin/python3 -m pytest ./tests/unit
   doc:
     runs-on: ubuntu-latest
     needs: linux-pretest

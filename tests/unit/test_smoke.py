@@ -8,6 +8,8 @@ from .test_base import *
 
 import hdl_if
 
+SKIP_HDLSIM = ('ivl',)
+
 data_dir = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "data")
@@ -45,10 +47,13 @@ def test_smoke(dirconfig : pfv.DirConfig):
     run_args.prepend_pathenv("PYTHONPATH", test_smoke_data_dir)
     flow.addTaskToPhase("run.main", flow.sim.mkRunTask(run_args))
 
-    flow.run_all()
+    if dirconfig.config.getHdlSim() in SKIP_HDLSIM:
+        pytest.skip("Unsupported simulator %s" % dirconfig.config.getHdlSim())
+    else:
+        flow.run_all()
 
-    with open(os.path.join(dirconfig.rundir(), "status.txt"), "r") as fp:
-        status = fp.read().strip()
+        with open(os.path.join(dirconfig.rundir(), "status.txt"), "r") as fp:
+            status = fp.read().strip()
 
-    assert status.startswith("PASS:")
+        assert status.startswith("PASS:")
 

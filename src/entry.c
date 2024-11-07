@@ -38,9 +38,10 @@
 #include <unistd.h>
 
 #define DEBUG_INIT
+#define DEBUG_PREF "PyHDL-IF: "
 
 #ifdef DEBUG_INIT
-#define DEBUG(fmt, ...) if (prv_debug) {fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout); }
+#define DEBUG(fmt, ...) if (prv_debug) {fprintf(stdout, DEBUG_PREF fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout); }
 #else
 #define DEBUG(fmt, ...)
 #endif
@@ -119,6 +120,8 @@ void pyhdl_if_vpi_entry() {
     }
 
     if (!(vpilib=find_loaded_lib("vpi_iterate"))) {
+        fprintf(stdout, "PyHDL-IF Error: failed to load VPI symbols\n");
+        fflush(stdout);
         DEBUG("pyhdl-if: Failed to load VPI symbols");
         return;
     }
@@ -137,8 +140,22 @@ void pyhdl_if_vpi_entry() {
 
     hdl_pi_if_pkg = prv_py_api.PyImport_ImportModule("hdl_if.impl.vpi");
     DEBUG("hdl_pi_if_pkg=%p", hdl_pi_if_pkg);
+
+    if (!hdl_pi_if_pkg) {
+        fprintf(stdout, "PyHDL-IF Error: failed to import Python package hdl_if.impl.vpi\n");
+        prv_py_api.PyErr_Print();
+        fflush(stdout);
+        return;
+    }
+
     hdl_pi_if_init = prv_py_api.PyObject_GetAttrString(hdl_pi_if_pkg, "vpi_init");
     DEBUG("hdl_pi_if_init=%p", hdl_pi_if_init);
+    if (!hdl_pi_if_init) {
+        fprintf(stdout, "PyHDL-IF Error: failed to locate vpi_init in Python package hdl_if.impl.vpi\n");
+        prv_py_api.PyErr_Print();
+        fflush(stdout);
+        return;
+    }
     null_args = prv_py_api.PyTuple_New(0);
     res = prv_py_api.PyObject_Call(hdl_pi_if_init, null_args, 0);
     DEBUG("res=%p", res);
@@ -201,16 +218,17 @@ lib_h_t find_loaded_lib(const char *sym) {
 
     DEBUG("find_loaded_lib(linux) %s", sym);
 
-    // // First, try loading the executable
-    // {
-    //     ret = dlopen(0, RTLD_LAZY);
-    //     if (dlsym(ret, sym)) {
-    //         DEBUG("returning %p", ret);
-    //         return ret;
-    //     } else {
-    //         ret = 0;
-    //     }
-    // }
+    // First, try loading the executable
+    {
+        DEBUG("Try finding symbol \"%s\" in the executable\n", sym);
+        ret = dlopen(0, RTLD_LAZY);
+        if (dlsym(ret, sym)) {
+            DEBUG("returning %p", ret);
+            return ret;
+        } else {
+            ret = 0;
+        }
+    }
 
     sprintf(mapfile_path, "/proc/%d/maps", pid);
     map_fp = fopen(mapfile_path, "r");
