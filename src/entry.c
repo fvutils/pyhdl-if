@@ -41,7 +41,7 @@
 #define DEBUG_PREF "PyHDL-IF: "
 
 #ifdef DEBUG_INIT
-#define DEBUG(fmt, ...) if (prv_debug) {fprintf(stdout, DEBUG_PREF fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout); }
+#define DEBUG(fmt, ...) if (prv_debug) {fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout); }
 #else
 #define DEBUG(fmt, ...)
 #endif
