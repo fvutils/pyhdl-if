@@ -18,4 +18,4 @@ for whl in dist/*.whl; do
     ${PYTHON} -m auditwheel repair $whl
     if test $? -ne 0; then exit 1; fi
     rm $whl
-done/home/mballance/projects/fvutils/pyhdl-if/tests
+done
