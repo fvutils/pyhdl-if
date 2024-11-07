@@ -25,6 +25,7 @@ def test_smoke(dirconfig : pfv.DirConfig):
         env=[pfv.EnvAction.prepend_path("PYTHONPATH", test_smoke_data_dir)],
         cwd=dirconfig.builddir()
     ))
+    flow.fs.add_library(hdl_if.share())
     flow.sim.addFileset(pfv.FSVlnv("fvutils::pyhdl-if", "systemVerilogSource"))
 
     flow.sim.addFileset(pfv.FSPaths(
