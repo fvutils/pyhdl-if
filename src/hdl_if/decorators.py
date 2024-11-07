@@ -33,30 +33,42 @@ def api(*args, **kwargs):
         return ApiDecoratorImpl()(args[0])
     else:
         return ApiDecoratorImpl(args, kwargs)
-        
-def impfunc(*args, **kwargs):
+    
+def exp(*args, **kwargs):
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-        return MethodDecoratorImpl(MethodKind.ImpFunc)(args[0])
+        return MethodDecoratorImpl(MethodKind.Exp)(args[0])
     else:
-        return MethodDecoratorImpl(MethodKind.ImpFunc, args, kwargs)
+        return MethodDecoratorImpl(MethodKind.Exp, args, kwargs)
 
-def imptask(*args, **kwargs):
+def imp(*args, **kwargs):
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-        return MethodDecoratorImpl(MethodKind.ImpTask)(args[0])
+        return MethodDecoratorImpl(MethodKind.Imp)(args[0])
     else:
-        return MethodDecoratorImpl(MethodKind.ImpTask, args, kwargs)
+        return MethodDecoratorImpl(MethodKind.Imp, args, kwargs)
 
-def expfunc(*args, **kwargs):
-    if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-        return MethodDecoratorImpl(MethodKind.ExpFunc)(args[0])
-    else:
-        return MethodDecoratorImpl(MethodKind.ExpFunc, args, kwargs)
+# def impfunc(*args, **kwargs):
+#     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+#         return MethodDecoratorImpl(MethodKind.ImpFunc)(args[0])
+#     else:
+#         return MethodDecoratorImpl(MethodKind.ImpFunc, args, kwargs)
 
-def exptask(*args, **kwargs):
-    if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-        return MethodDecoratorImpl(MethodKind.ExpTask)(args[0])
-    else:
-        return MethodDecoratorImpl(MethodKind.ExpTask, args, kwargs)
+# def imptask(*args, **kwargs):
+#     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+#         return MethodDecoratorImpl(MethodKind.ImpTask)(args[0])
+#     else:
+#         return MethodDecoratorImpl(MethodKind.ImpTask, args, kwargs)
+
+# def expfunc(*args, **kwargs):
+#     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+#         return MethodDecoratorImpl(MethodKind.ExpFunc)(args[0])
+#     else:
+#         return MethodDecoratorImpl(MethodKind.ExpFunc, args, kwargs)
+
+# def exptask(*args, **kwargs):
+#     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+#         return MethodDecoratorImpl(MethodKind.ExpTask)(args[0])
+#     else:
+#         return MethodDecoratorImpl(MethodKind.ExpTask, args, kwargs)
 
 #********************************************************************
 #* Decorators for TLM interfaces

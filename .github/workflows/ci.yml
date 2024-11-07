@@ -5,6 +5,22 @@ on:
   - workflow_dispatch
 
 jobs:
+  linux-pretest:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: Test build
+      run: |
+        python3 -m venv py
+        ./py/bin/pip install ivpm pytest
+        ./py/bin/python3 -m ivpm update -a
+        ./packages/python/bin/python3 setup.py bdist_wheel
+    - name: Run tests
+      run: |
+        export PATH=$(pwd)/packages/verilator/bin:${PATH}
+        ./py/bin/pip install dist/*.whl
+        ./py/bin/python3 -m pytest ./tests/unit
   doc:
     runs-on: ubuntu-latest
     steps:

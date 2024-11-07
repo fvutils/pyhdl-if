@@ -31,6 +31,8 @@ package:
       url: https://github.com/vsc-tools/pyvsc-dataclasses.git
     - name: fusesoc
       url: https://github.com/olofk/fusesoc.git
+    - name: verilator
+      url: https://github.com/pss-hands-on/verilator-bin/releases/download/v5.030/verilator-ubuntu-x64-5.030.tar.gz
     - name: pcpp
       src: pypi
     - name: cxxheaderparser
@@ -47,4 +49,13 @@ package:
       src: pypi
     - name: cocotb
       src: pypi
+
+  env:
+    - name: PATH
+      path-prepend: ${IVPM_PACKAGES}/verilator/bin
+
+  paths:
+    project:
+      lib-dirs:
+      - src/hdl_if/share
 

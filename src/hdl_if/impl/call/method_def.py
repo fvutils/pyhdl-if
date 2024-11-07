@@ -27,6 +27,8 @@ class MethodKind(Enum):
     ExpTask = auto()
     ImpFunc = auto()
     ExpFunc = auto()
+    Imp = auto()
+    Exp = auto()
 
 class MethodDef(object):
 

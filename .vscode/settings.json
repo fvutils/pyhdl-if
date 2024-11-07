@@ -1,0 +1,13 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/packages/python/bin/python3",
+    "python.testing.pytestArgs": [
+        "-s",
+        "./tests/unit",
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+
+    "search.useIgnoreFiles": true,
+    "search.useGlobalIgnoreFiles": true
+}
+

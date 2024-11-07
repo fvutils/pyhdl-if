@@ -7,11 +7,11 @@ import hdl_if as hif
 @hif.api
 class WishboneInitiator(object):
 
-    @hif.imptask
+    @hif.imp
     async def write(self, addr : ct.c_uint32, data : ct.c_uint32):
         pass
 
-    @hif.imptask
+    @hif.imp
     async def read(self, addr : ct.c_uint32) -> ct.c_uint32:
         pass
 

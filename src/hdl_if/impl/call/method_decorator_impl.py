@@ -20,6 +20,7 @@
 #*
 #****************************************************************************
 import ctypes
+import inspect
 from .ctor import Ctor
 from .imp_func_impl import ImpFuncImpl
 from .imp_task_impl import ImpTaskImpl
@@ -51,6 +52,19 @@ class MethodDecoratorImpl(object):
                     T.__name__,
                     pname))
             params.append((pname, hints[pname]))
+
+        if self._kind in [MethodKind.Imp,MethodKind.Exp]:
+            # Need to probe type
+            if inspect.iscoroutinefunction(T):
+                if self._kind == MethodKind.Imp:
+                    self._kind = MethodKind.ImpTask
+                else:
+                    self._kind = MethodKind.ExpTask
+            else:
+                if self._kind == MethodKind.Imp:
+                    self._kind = MethodKind.ImpFunc
+                else:
+                    self._kind = MethodKind.ExpFunc
 
         md = MethodDef(self._kind, T, T.__name__, rtype, params)
         Ctor.inst().addMethodDef(md)

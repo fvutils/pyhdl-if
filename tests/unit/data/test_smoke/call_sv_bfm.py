@@ -16,8 +16,9 @@ class WishboneInitiator(object):
 @hif.api
 class Test(object):
 
-    @hif.exptask
+    @hif.exp
     async def run(self, bfm : ct.py_object):
+        errors = 0
         print("run")
 
         for i in range(64):
@@ -26,9 +27,9 @@ class Test(object):
             await bfm.write(0x8000_0000+(4*i), wr_val)
             rd = await bfm.read(0x8000_0000+(4*i))
             print(f'[Py] readback: {rd}')
-            assert wr_val == rd
+            if wr_val != rd:
+                errors += 1
 
-        for i in range(64):
-            await bfm.read(0x8000_0000+(4*i))
+        with open("status.txt", "w") as fp:
+            fp.write("%s: %d errors\n" % (("PASS" if errors==0 else "FAIL"), errors))
 
-    pass
