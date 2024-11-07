@@ -57,6 +57,8 @@ package:
       path-prepend: 
         - ${IVPM_PACKAGES}/verilator/bin
         - ${IVPM_PACKAGES}/iverilog/bin
+    - name: PYTHONPATH
+      path-prepend: ${IVPM_PROJECT}/src
 
   paths:
     project:

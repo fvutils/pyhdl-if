@@ -39,7 +39,7 @@ def test_smoke(dirconfig : pfv.DirConfig):
 
     global hdl_if_dir
     run_args = flow.sim.mkRunArgs(dirconfig.rundir())
-    run_args.prepend_pathenv("PYTHONPATH", hdl_if_dir)
+#    run_args.prepend_pathenv("PYTHONPATH", hdl_if_dir)
     flow.addTaskToPhase("run.main", flow.sim.mkRunTask(run_args))
 
     if dirconfig.config.getHdlSim() in SKIP_HDLSIM:
