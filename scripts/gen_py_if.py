@@ -959,6 +959,7 @@ def main():
     pp = Preprocessor()
     pp.add_path(py_incdir)
     pp.define("UCHAR_MAX 255")
+    pp.define("Py_LIMITED_API 3")
     with open(os.path.join(py_incdir, "Python.h"), "r") as fp:
         pp.parse(fp)
 
