@@ -36,6 +36,12 @@ package pyhdl_if;
     PyObject            stream_req_t;
     PyObject            stream_rsp_t;
 
+    `include "py_object.svh"
+    `include "py_dict.svh"
+    `include "py_list.svh"
+    `include "py_tuple.svh"
+    `include "py_utils.svh"
+
     typedef enum {
         StreamKind_Req,
         StreamKind_Rsp,

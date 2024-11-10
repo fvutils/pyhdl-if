@@ -6,7 +6,7 @@
 PyHDL-IF Documentation
 =========================
 PyHDL-IF implements a procedural interface between Python and
-various HDL simulator interfaces. The library focuses on simplifying 
+various HDL simulator APIs. The library focuses on simplifying 
 the task of implementing interactions between HDL and Python at a 
 variety of abstraction levels.
 
@@ -14,68 +14,11 @@ variety of abstraction levels.
    :maxdepth: 2
    :caption: Contents:
 
+   quickstart
    overview  
    sim_integ
    sv_api
 
-Status and Roadmap
-==================
-
-PyHDL-IF is still under active development. The information here attempts
-to capture the status of available features and a roadmap of planned 
-future features.
-
-.. list-table:: Platform Support
-    :header-rows: 1
-
-    * - Linux
-      - Windows (x86_64)
-      - MacOS (x86_64)
-      - MacOS (arm64)
-    * - Yes
-      - Planned
-      - Planned
-      - Planned
-
-The native-compiled portions of PyHDL-IF are compiled according
-to the relevant Python version-specific requirements. 
-If your favorite platform is not listed above and you would like 
-PyHDL-IF to support, please file a feature-request ticket and
-note the platform and the simulator you typically use on that 
-platform.
-
-.. list-table:: HDL Calling Python API
-    :header-rows: 1
-
-    * - DPI
-      - FLI
-      - VPI
-      - VHPI
-    * - Yes
-      - Planned
-      - Planned
-      - Planned
-
-Supporting HDL calls to the Python API allows HDL to interact with
-Python as if it was a Python extension by calling the Python C API.
-    
-.. list-table:: Python calling HDL API
-    :header-rows: 1
-
-    * - DPI
-      - FLI
-      - VPI
-      - VHPI
-    * - Yes
-      - Planned
-      - Yes
-      - Planned
-
-Support Python calls to an HDL API allows Python to interact with
-simulator APIs as if it were a shared library loaded by the 
-simulator. For example, support for VPI allows a Python module
-to walk through the design design hierachy and implement 
-system tasks that the HDL can call.
 
 Indices and tables
 ==================

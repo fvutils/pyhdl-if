@@ -1,0 +1,29 @@
+
+module a_plus_b;
+    import pyhdl_if::*;
+
+    initial begin
+        py_module a_plus_b;
+        py_object foo;
+        int ret;
+
+        a_plus_b = py_module::import_mod("a_plus_b");
+        foo = a_plus_b.get_attr("a_plus_b");
+
+        ret = foo.call(py_tuple::mk_init('{
+            py_from_int(5), py_from_int(13)})).to_int();
+//        ret = foo.call('{py_from_long(5), py_from_long(13)}).to_int();
+
+        begin
+            int fp = $fopen("status.txt", "w");
+            if (ret == 18) begin
+                $fwrite(fp, "PASS:\n");
+            end else begin
+                $fwrite(fp, "FAIL: %0d != 18\n", ret);
+            end
+            $fclose(fp);
+        end
+        $finish;
+    end
+
+endmodule

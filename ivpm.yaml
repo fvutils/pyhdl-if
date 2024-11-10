@@ -41,6 +41,8 @@ package:
       src: pypi
     - name: sphinx
       src: pypi
+    - name: breathe
+      src: pypi
     - name: sphinx-rtd-theme
       src: pypi
     - name: cairosvg
@@ -51,6 +53,8 @@ package:
       src: pypi
     - name: cocotb
       src: pypi
+    - name: doxygen-filter-sv
+      url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
 
   env:
     - name: PATH

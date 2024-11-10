@@ -185,7 +185,7 @@ def get_size_rtype(t):
             return None
         
 def mangle_pname(name):
-    reserved = {"string", "begin", "end", "module", "table"}
+    reserved = {"string", "begin", "end", "map", "module", "set", "table"}
 
     if name in reserved:
         return "_" + name
@@ -543,6 +543,7 @@ def gen_py_load_api_struct(fp, functions):
     fp.write("    for (i=0; i<sizeof(py_funcs)/sizeof(struct fp_entry_s); i++) {\n")
     fp.write("        void *sym = dlsym(lib_h, py_funcs[i].name);\n")
     fp.write("        if (!sym) {\n")
+    fp.write("        fprintf(stdout, \"pyhdl-if: Failed to find symbol %s\\n\", py_funcs[i].name);\n")
     fp.write("            ret = 0;\n")
     fp.write("        }\n")
     fp.write("        *(py_funcs[i].fp) = sym;\n")
@@ -685,12 +686,17 @@ def gen_vpi_py_impl(fp, functions):
             fp.write("    vpiHandle __tf_h = prv_vpi_api.vpi_handle(vpiSysTfCall, 0);\n")
         if len(f.parameters) > 0:
             fp.write("    vpiHandle __arg_h = prv_vpi_api.vpi_iterate(vpiArgument, __tf_h);\n")
-            for j,p in enumerate(f.parameters):
-                name = mangle_pname(p.name) if p.name is not None else "p%d" % j
-                fp.write("    %s __%s = %s;\n" % (
-                    gen_c_type(p.type),
-                    name,
-                    gen_vpi_get_param("__arg_h", p.type)))
+            try:
+                for j,p in enumerate(f.parameters):
+                    name = mangle_pname(p.name) if p.name is not None else "p%d" % j
+                    fp.write("    %s __%s = %s;\n" % (
+                        gen_c_type(p.type),
+                        name,
+                        gen_vpi_get_param("__arg_h", p.type)))
+            except Exception as e:
+                raise Exception("Parameter generation failed in %s (%s)" % (
+                    f.name.segments[0].name,
+                    str(e)))
 
             fp.write("    prv_vpi_api.vpi_free_object(__arg_h);\n")
         fp.write("    ")
@@ -849,7 +855,8 @@ def main():
 
     args = parser.parse_args()
 
-    include_pref = {"Py_", "PyEval_", "PyErr_", "PyImport_", "PyLong_", "PyObject_", 
+    include_pref = {"Py_", "PyDict_", "PyEval_", "PyErr_", "PyImport_", "PyList_", 
+                    "PyLong_", "PyObject_", "PySet_",
                     "PyTuple_", "PyUnicode_", "PyGILState_"}
     exclude_pref = {
         "_", "PyAsyncGen_", "PyBuffer_", "PyCapsule_", "PyCode_", "PyComplex_", 
@@ -866,6 +873,7 @@ def main():
         "PyDescr_" }
     exclude = {
         "Py_INCREF", "Py_DECREF", "Py_Exit", "PyInit__imp",
+        "PyDict_Merge", "PyDict_MergeFromSeq2", "PyDict_Next",
         "Py_SymtableString", "Py_SymtableStringObject",
         "PyModule_AddType",
         "PyFunction_SetVectorcall", "PyVectorcall_Function", 
@@ -959,7 +967,9 @@ def main():
     pp = Preprocessor()
     pp.add_path(py_incdir)
     pp.define("UCHAR_MAX 255")
-    pp.define("Py_LIMITED_API 3")
+    # Limit API to what was present in 3.8
+#    pp.define("Py_LIMITED_API 0x03080000")
+    pp.define("Py_LIMITED_API");
     with open(os.path.join(py_incdir, "Python.h"), "r") as fp:
         pp.parse(fp)
 
@@ -1003,4 +1013,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print("gen_py_if main")
     main()

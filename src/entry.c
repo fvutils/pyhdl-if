@@ -79,15 +79,16 @@ int pyhdl_if_dpi_entry() {
     DEBUG("entry.c");
 
     if (!(pylib=init_python())) {
-        DEBUG("pyhdl-pi-if: Failed to initialize Python");
+        DEBUG("pyhdl-if: Failed to initialize Python");
         return -1;
     }
 
     if (!py_load_api_struct(pylib)) {
         DEBUG("pyhdl-if: Failed to load Python API");
-        return;
+        return -1;
     }
 
+    DEBUG("pyhdl-if: Successfully initialized native portion of DPI");
     return 1;
 }
 
@@ -310,11 +311,17 @@ lib_h_t find_config_python_lib() {
     char *ldlibrary = 0;
     char *libdest = 0;
     char *libdir = 0;
+    extern char **environ;
 
     args[0] = "python3";
     args[1] = "-m";
     args[2] = "sysconfig";
     args[3] = 0;
+    
+    {
+        const char *ld_library_path = getenv("LD_LIBRARY_PATH");
+        DEBUG("LD_LIBRARY_PATH: %s", ld_library_path?ld_library_path:"null");
+    }
 
     pipe(cout_pipe);
     posix_spawn_file_actions_init(&action);
@@ -322,7 +329,7 @@ lib_h_t find_config_python_lib() {
     posix_spawn_file_actions_adddup2(&action, cout_pipe[1], 1);
     posix_spawn_file_actions_addclose(&action, cout_pipe[1]);
 
-    if (posix_spawnp(&pid, args[0], &action, 0, (char *const *)&args[0], 0) != 0) {
+    if (posix_spawnp(&pid, args[0], &action, 0, (char *const *)&args[0], environ) != 0) {
         fprintf(stderr, "Fatal Error: failed to run Python\n");
         return 0;
     }
