@@ -48,6 +48,15 @@
 <li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">SystemVerilog API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#class-based-api">Class-Based API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv49py_object"><code class="docutils literal notranslate"><span class="pre">py_object</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N9py_object7disposeEv"><code class="docutils literal notranslate"><span class="pre">py_object::dispose()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N9py_object8get_attrE6string"><code class="docutils literal notranslate"><span class="pre">py_object::get_attr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#_CPPv4N9py_object4callE8py_tuple9py_object"><code class="docutils literal notranslate"><span class="pre">py_object::call()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv47py_dict"><code class="docutils literal notranslate"><span class="pre">py_dict</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv47py_list"><code class="docutils literal notranslate"><span class="pre">py_list</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#_CPPv48py_tuple"><code class="docutils literal notranslate"><span class="pre">py_tuple</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#utility-methods">Utility Methods</a></li>
 </ul>
 </li>
@@ -89,22 +98,49 @@
 </ul>
 <section id="class-based-api">
 <h2>Class-Based API<a class="headerlink" href="#class-based-api" title="Link to this heading"></a></h2>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>doxygenclass: Cannot find class “py_object” in doxygen xml output for project “pyhdl_if” from directory: /home/runner/work/pyhdl-if/pyhdl-if/doc/pyhdl_if_doxy/xml</p>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv49py_object">
+<span id="_CPPv39py_object"></span><span id="_CPPv29py_object"></span><span id="py_object"></span><span class="target" id="classpy__object"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">py_object</span></span></span><a class="headerlink" href="#_CPPv49py_object" title="Link to this definition"></a><br /></dt>
+<dd><p>Convenience wrapper class for PyObject handles </p>
+<p>Subclassed by <a class="reference internal" href="#classpy__dict"><span class="std std-ref">py_dict</span></a>, <a class="reference internal" href="#classpy__list"><span class="std std-ref">py_list</span></a>, <a class="reference internal" href="#classpy__tuple"><span class="std std-ref">py_tuple</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N9py_object7disposeEv">
+<span id="_CPPv3N9py_object7disposeEv"></span><span id="_CPPv2N9py_object7disposeEv"></span><span id="py_object::dispose"></span><span class="target" id="classpy__object_1a4e99dc6d5f38accda01e31904fbd3c90"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dispose</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9py_object7disposeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Drops ownership of handle </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N9py_object8get_attrE6string">
+<span id="_CPPv3N9py_object8get_attrE6string"></span><span id="_CPPv2N9py_object8get_attrE6string"></span><span id="py_object::get_attr__string"></span><span class="target" id="classpy__object_1a26cb50fe739cc5a7bcbb3e980c8fd458"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv49py_object" title="py_object"><span class="n"><span class="pre">py_object</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">get_attr</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9py_object8get_attrE6string" title="Link to this definition"></a><br /></dt>
+<dd><p>Returns the named Python attribute as a <a class="reference internal" href="#classpy__object"><span class="std std-ref">py_object</span></a></p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N9py_object4callE8py_tuple9py_object">
+<span id="_CPPv3N9py_object4callE8py_tuple9py_object"></span><span id="_CPPv2N9py_object4callE8py_tuple9py_object"></span><span id="py_object::call__py_tuple.py_object"></span><span class="target" id="classpy__object_1ab9750f357755a66d9702e9e82d21cc2f"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv49py_object" title="py_object"><span class="n"><span class="pre">py_object</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">call</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv48py_tuple" title="py_tuple"><span class="n"><span class="pre">py_tuple</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">args</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">null</span></span>, <a class="reference internal" href="#_CPPv49py_object" title="py_object"><span class="n"><span class="pre">py_object</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">kwargs</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">null</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N9py_object4callE8py_tuple9py_object" title="Link to this definition"></a><br /></dt>
+<dd><p>Calls the object as a Python callable </p>
+</dd></dl>
+
 </div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>doxygenclass: Cannot find class “py_dict” in doxygen xml output for project “pyhdl_if” from directory: /home/runner/work/pyhdl-if/pyhdl-if/doc/pyhdl_if_doxy/xml</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>doxygenclass: Cannot find class “py_list” in doxygen xml output for project “pyhdl_if” from directory: /home/runner/work/pyhdl-if/pyhdl-if/doc/pyhdl_if_doxy/xml</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>doxygenclass: Cannot find class “py_tuple” in doxygen xml output for project “pyhdl_if” from directory: /home/runner/work/pyhdl-if/pyhdl-if/doc/pyhdl_if_doxy/xml</p>
-</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv47py_dict">
+<span id="_CPPv37py_dict"></span><span id="_CPPv27py_dict"></span><span id="py_dict"></span><span class="target" id="classpy__dict"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">py_dict</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv49py_object" title="py_object"><span class="n"><span class="pre">py_object</span></span></a><a class="headerlink" href="#_CPPv47py_dict" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv47py_list">
+<span id="_CPPv37py_list"></span><span id="_CPPv27py_list"></span><span id="py_list"></span><span class="target" id="classpy__list"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">py_list</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv49py_object" title="py_object"><span class="n"><span class="pre">py_object</span></span></a><a class="headerlink" href="#_CPPv47py_list" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv48py_tuple">
+<span id="_CPPv38py_tuple"></span><span id="_CPPv28py_tuple"></span><span id="py_tuple"></span><span class="target" id="classpy__tuple"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">py_tuple</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv49py_object" title="py_object"><span class="n"><span class="pre">py_object</span></span></a><a class="headerlink" href="#_CPPv48py_tuple" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
 <section id="utility-methods">
 <h3>Utility Methods<a class="headerlink" href="#utility-methods" title="Link to this heading"></a></h3>
 <div class="admonition warning">
