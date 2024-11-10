@@ -31,12 +31,15 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Build
+    - name: Setup
       run: |
+        git clone https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git packages/doxygen-filter-sv
         sudo apt-get install -y doxygen verilator
         python3 -m pip install packaging sphinx cairosvg sphinx-argparse
         python3 -m pip install sphinx-rtd-theme breathe
         python3 -m pip install ivpm cxxheaderparser pcpp
+    - name: Build
+      run: |
         python3 setup.py build_ext --inplace
         cd doc
         make html
