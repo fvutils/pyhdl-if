@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Simulator Integration" href="sim_integ.html" />
-    <link rel="prev" title="PyHDL-IF Documentation" href="index.html" /> 
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,10 +44,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#procedural-interface-api">Procedural-Interface API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#call-interface-api">Call-Interface API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tlm-api">TLM API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tlm-api">TLM API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#status-and-roadmap">Status and Roadmap</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
@@ -80,9 +84,11 @@
              
   <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
-<img alt="PyHDL-IF API Stack" src="_images/pyhdl_library_stack.png" />
-<p>PyHDL-IF enables interaction between HDL and Python at a
+<p>PyHDL-IF implements a procedural interface between Python and
+various HDL simulator APIs. The library focuses on simplifying
+the task of implementing interactions between HDL and Python at a
 variety of abstraction levels.</p>
+<img alt="PyHDL-IF API Stack" src="_images/pyhdl_library_stack.png" />
 <section id="procedural-interface-api">
 <h2>Procedural-Interface API<a class="headerlink" href="#procedural-interface-api" title="Link to this heading"></a></h2>
 <p>The procedural interface API is the lowest-level PyHDL-IF
@@ -101,6 +107,78 @@ objects, where one object lives in Python, the other lives in HDL.</p>
 </section>
 <section id="tlm-api">
 <h2>TLM API<a class="headerlink" href="#tlm-api" title="Link to this heading"></a></h2>
+<p>The TLM interface implements a FIFO-based interface between Python and
+Bus Functional Models (BFMs).</p>
+<section id="status-and-roadmap">
+<h3>Status and Roadmap<a class="headerlink" href="#status-and-roadmap" title="Link to this heading"></a></h3>
+<p>PyHDL-IF is still under active development. The information here attempts
+to capture the status of available features and a roadmap of planned
+future features.</p>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Platform Support</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Linux</p></th>
+<th class="head"><p>Windows (x86_64)</p></th>
+<th class="head"><p>MacOS (x86_64)</p></th>
+<th class="head"><p>MacOS (arm64)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Yes</p></td>
+<td><p>Planned</p></td>
+<td><p>Planned</p></td>
+<td><p>Planned</p></td>
+</tr>
+</tbody>
+</table>
+<p>The native-compiled portions of PyHDL-IF are compiled according
+to the relevant Python version-specific requirements.
+If your favorite platform is not listed above and you would like
+PyHDL-IF to support, please file a feature-request ticket and
+note the platform and the simulator you typically use on that
+platform.</p>
+<table class="docutils align-default" id="id2">
+<caption><span class="caption-text">HDL Calling Python API</span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>DPI</p></th>
+<th class="head"><p>FLI</p></th>
+<th class="head"><p>VPI</p></th>
+<th class="head"><p>VHPI</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Yes</p></td>
+<td><p>Planned</p></td>
+<td><p>Planned</p></td>
+<td><p>Planned</p></td>
+</tr>
+</tbody>
+</table>
+<p>Supporting HDL calls to the Python API allows HDL to interact with
+Python as if it was a Python extension by calling the Python C API.</p>
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-text">Python calling HDL API</span><a class="headerlink" href="#id3" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>DPI</p></th>
+<th class="head"><p>FLI</p></th>
+<th class="head"><p>VPI</p></th>
+<th class="head"><p>VHPI</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Yes</p></td>
+<td><p>Planned</p></td>
+<td><p>Planned</p></td>
+<td><p>Planned</p></td>
+</tr>
+</tbody>
+</table>
+<p>Support Python calls to an HDL API allows Python to interact with
+simulator APIs as if it were a shared library loaded by the
+simulator. For example, support for VPI allows a Python module
+to walk through the design design hierachy and implement
+system tasks that the HDL can call.</p>
+</section>
 </section>
 </section>
 
@@ -108,7 +186,7 @@ objects, where one object lives in Python, the other lives in HDL.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="PyHDL-IF Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="sim_integ.html" class="btn btn-neutral float-right" title="Simulator Integration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
