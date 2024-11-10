@@ -24,7 +24,7 @@ endfunction
 
 function automatic py_object py_import(string mod);
     py_object ret = null;
-    PyObject imp_o = PyImport_ImportModule(path);
+    PyObject imp_o = PyImport_ImportModule(mod);
     if (imp_o == null) begin
         PyErr_Print();
     end else begin

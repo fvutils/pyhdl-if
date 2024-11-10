@@ -3,7 +3,7 @@ module test_smoke;
     import pyhdl_if::*;
 
     initial begin
-        py_module smoke_test_m = py_module::mk_new("smoke_test");
+        py_object smoke_test_m = py_import("smoke_test");
         py_object foo = smoke_test_m.get_attr("foo");
         int ret = foo.call().to_long();
 

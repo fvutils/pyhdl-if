@@ -3,11 +3,10 @@ module a_plus_b;
     import pyhdl_if::*;
 
     initial begin
-        py_module a_plus_b;
-        py_object foo;
+        py_object a_plus_b, foo;
         int ret;
 
-        a_plus_b = py_module::import_mod("a_plus_b");
+        a_plus_b = py_import("a_plus_b");
         foo = a_plus_b.get_attr("a_plus_b");
 
         ret = foo.call(py_tuple::mk_init('{
