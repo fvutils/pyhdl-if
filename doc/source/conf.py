@@ -41,6 +41,7 @@ breathe_projects = {
     "pyhdl_if": os.path.join(doc_dir, "pyhdl_if_doxy", "xml")
 }
 breathe_default_project = "pyhdl_if"
+breathe_implementation_filename_extensions = []
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

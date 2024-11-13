@@ -173,3 +173,5 @@ sim_build/
 hdl_call_if_api.svh
 results.xml
 *.bk
+
+examples/call/dpi/call_sv_bfm/call_sv_bfm_pkg.sv

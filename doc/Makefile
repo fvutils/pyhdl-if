@@ -28,7 +28,6 @@ pyhdl_if_uvm_pp.sv : $(SV_DEPS)
 	verilator -E --pp-comments +incdir+$(PYHDL_IF_DIR)/src/hdl_if/share/dpi \
 		+incdir+$(pwd) \
 		$(PYHDL_IF_DIR)/src/hdl_if/share/dpi/pyhdl_if_uvm.sv > $@ || rm -f $@
-	sed -i -e 's/automatic//g' $@
 
 pyhdl_if.cpp : pyhdl_if_pp.sv pyhdl_if_uvm_pp.sv
 #	echo "namespace pyhdl_if {" > $@
@@ -39,6 +38,7 @@ pyhdl_if.cpp : pyhdl_if_pp.sv pyhdl_if_uvm_pp.sv
 #	perl $(PYHDL_IF_DIR)/packages/doxygen-filter-sv/filter/idv_doxyfilter_sv.pl \
 #		pyhdl_if_uvm_pp.sv >> $@ || rm -f $@
 #	echo "} // namespace pyhdl_if_uvm" >> $@
+	sed -i -e 's/automatic//g' $@ -e 's/\[\$$\]/[]/g' -e 's/longint unsigned/unsigned long long/g'
 
 pyhdl_if_doxy.d : pyhdl_if.cpp
 	rm -rf pyhdl_if_doxy

@@ -36,8 +36,11 @@ package pyhdl_if;
     PyObject            stream_req_t;
     PyObject            stream_rsp_t;
 
+    typedef class py_list;
+    typedef class py_iter;
     `include "py_object.svh"
     `include "py_dict.svh"
+    `include "py_iter.svh"
     `include "py_list.svh"
     `include "py_tuple.svh"
     `include "py_utils.svh"

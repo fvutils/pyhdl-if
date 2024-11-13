@@ -855,7 +855,8 @@ def main():
 
     args = parser.parse_args()
 
-    include_pref = {"Py_", "PyDict_", "PyEval_", "PyErr_", "PyImport_", "PyList_", 
+    include_pref = {"Py_", "PyDict_", "PyEval_", "PyErr_", "PyImport_", 
+                    "PyIter_", "PyList_", 
                     "PyLong_", "PyObject_", "PySet_",
                     "PyTuple_", "PyUnicode_", "PyGILState_"}
     exclude_pref = {
@@ -969,7 +970,7 @@ def main():
     pp.define("UCHAR_MAX 255")
     # Limit API to what was present in 3.8
 #    pp.define("Py_LIMITED_API 0x03080000")
-    pp.define("Py_LIMITED_API");
+#    pp.define("Py_LIMITED_API");
     with open(os.path.join(py_incdir, "Python.h"), "r") as fp:
         pp.parse(fp)
 

@@ -14,7 +14,7 @@ data_dir = os.path.join(
     "data")
 test_py_api_data_dir = os.path.join(data_dir, "py_api")
 
-def _test_file(dirconfig, name):
+def _test_file(dirconfig, name, plusargs=None):
     flow = pfv.FlowSim(dirconfig)
 
     flow.fs.add_library(hdl_if.share())
@@ -28,6 +28,8 @@ def _test_file(dirconfig, name):
 
     run_args = flow.sim.mkRunArgs(dirconfig.rundir())
     run_args.prepend_pathenv("PYTHONPATH", test_py_api_data_dir)
+    if plusargs is not None:
+        run_args.plusargs.extend(plusargs)
     flow.addTaskToPhase("run.main", flow.sim.mkRunTask(run_args))
 
     if dirconfig.config.getHdlSim() in SKIP_HDLSIM:
@@ -45,3 +47,7 @@ def test_smoke(dirconfig):
 
 def test_a_plus_b(dirconfig):
     _test_file(dirconfig, "a_plus_b")
+
+def test_data1(dirconfig):
+    _test_file(dirconfig, "data1", plusargs=[
+        'data=%s' % os.path.join(test_py_api_data_dir, "data1.json")])
