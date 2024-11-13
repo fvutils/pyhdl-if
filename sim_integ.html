@@ -94,18 +94,28 @@
 compilation of code that uses PyHDL-IF artifacts. If you use
 a FuseSoC-based build system, simply place a dependency on
 <cite>fvutils::pyhdl-if</cite>.</p>
-<p>If you directly specify sources:
-- Obtain the <cite>share</cite> directory by calling: <cite>python3 -c “import hdl_if; print(hdl_if.share())”</cite>
-- Specify <cite>${share}/dpi</cite> as an include directory
-- Specify <cite>${share}/dpi/pyhdl_if.sv</cite> as a source file</p>
+<p>If you directly specify sources:</p>
+<ul>
+<li><p>Obtain the <cite>share</cite> directory by calling:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import hdl_if; print(hdl_if.share())&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Specify <cite>${share}/dpi</cite> as an include directory</p></li>
+<li><p>Specify <cite>${share}/dpi/pyhdl_if.sv</cite> as a source file</p></li>
+</ul>
 </section>
 <section id="dpi-shared-library">
 <h3>DPI Shared Library<a class="headerlink" href="#dpi-shared-library" title="Link to this heading"></a></h3>
-<p>Two shared libraries must be specified as DPI libraries to the simulator:
-- PyHDL-IF entrypoint
-- Python</p>
-<p>Obtain the paths to these libraries by running:
-<cite>python3 -c ‘import hdl_if; print(” “.join(hdl_if.libs(“dpi”)))’</cite></p>
+<p>Two shared libraries must be specified as DPI libraries to the simulator:</p>
+<ul class="simple">
+<li><p>PyHDL-IF entrypoint</p></li>
+<li><p>Python</p></li>
+</ul>
+<p>Obtain the paths to these libraries by running:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import hdl_if; print(&quot; &quot;.join(hdl_if.libs(&quot;dpi&quot;)))&#39;</span>
+</pre></div>
+</div>
 <p>Specify these as DPI libraries to your simulator using its preferred mechanism.</p>
 </section>
 </section>
