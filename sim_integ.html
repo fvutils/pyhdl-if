@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="SystemVerilog API" href="sv_api.html" />
+    <link rel="next" title="Command Reference" href="cmdref.html" />
     <link rel="prev" title="Overview" href="overview.html" /> 
 </head>
 
@@ -57,6 +57,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#vhdl-fli">VHDL (FLI)</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_api.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sv_api.html">SystemVerilog API</a></li>
 </ul>
 
@@ -97,7 +99,9 @@ a FuseSoC-based build system, simply place a dependency on
 <p>If you directly specify sources:</p>
 <ul>
 <li><p>Obtain the <cite>share</cite> directory by calling:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import hdl_if; print(hdl_if.share())&#39;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import hdl_if; print(hdl_if.share())&#39;</span>
+<span class="c1"># OR</span>
+%<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>hdl_if<span class="w"> </span>share
 </pre></div>
 </div>
 </li>
@@ -113,7 +117,9 @@ a FuseSoC-based build system, simply place a dependency on
 <li><p>Python</p></li>
 </ul>
 <p>Obtain the paths to these libraries by running:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import hdl_if; print(&quot; &quot;.join(hdl_if.libs(&quot;dpi&quot;)))&#39;</span>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import hdl_if; print(&quot; &quot;.join(hdl_if.libs(&quot;dpi&quot;)))&#39;</span>
+<span class="c1"># OR</span>
+%<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>hdl_if<span class="w"> </span>libs<span class="w"> </span>--type<span class="w"> </span>dpi
 </pre></div>
 </div>
 <p>Specify these as DPI libraries to your simulator using its preferred mechanism.</p>
@@ -138,7 +144,7 @@ a FuseSoC-based build system, simply place a dependency on
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="overview.html" class="btn btn-neutral float-left" title="Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="sv_api.html" class="btn btn-neutral float-right" title="SystemVerilog API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="cmdref.html" class="btn btn-neutral float-right" title="Command Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
