@@ -79,7 +79,7 @@ setup_args = dict(
           'share/dpi/*',
           'share/vpi/*',
           'share/*',
-          "*pyhdl_if.*",
+#          "*pyhdl_if.*",
       ]
   },
   author = "Matthew Ballance",
