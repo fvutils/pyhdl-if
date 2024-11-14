@@ -1,6 +1,7 @@
 
 import ctypes
 import os
+import platform
 
 from .hdl_services import HdlServices
 from .backend import Backend
@@ -50,12 +51,20 @@ def vpi_init():
 
 def get_entry():
     hdl_pi_if_dir = os.path.dirname(os.path.abspath(__file__))
+    libpref = "lib"
+    dllext = ".so"
+    if platform.system() == "Windows":
+        libpref = ""
+        dllext = ".dll"
+    elif platform.system() == "Darwin":
+        libpref = "lib"
+        dllext = ".dylib"
 
-    for f in os.listdir(hdl_pi_if_dir):
-        if f.endswith(".so") and f.startswith("entry"):
-            return os.path.join(hdl_pi_if_dir, f)
-
-    raise Exception("Failed to find entry .so")
+    ext = os.path.join(hdl_pi_if_dir, "%spyhdl_if%s" % (libpref, dllext))
+    if os.path.isfile(ext):
+        return ext
+    else:
+        raise Exception("Library path %s doesn't exist" % ext)
 
 def root():
     pkg_dir = os.path.dirname(os.path.abspath(__file__))
@@ -66,36 +75,11 @@ def share():
     return os.path.join(pkg_dir, "share")
 
 def libs(kind="dpi"):
-    import platform
     import sys
     import sysconfig
-    pkg_dir = os.path.dirname(os.path.abspath(__file__))
 
-    if platform.system() == "Windows":
-        dllext = ".dll"
-    elif platform.system() == "Darwin":
-        dllext = ".dyld"
-    else:
-        dllext = ".so"
-
-    lib = None
-    for f in os.listdir(pkg_dir):
-        if f.endswith(dllext) and f.startswith("entry"):
-            lib = os.path.join(pkg_dir, f)
-            break
-
-    if lib is None:
-        raise Exception("Failed to find pyhdl-pi-if library")
-
-    lib_filename = lib
+    lib_filename = get_entry()
 
     ret = [ lib_filename ]
-    if kind != "vpi":
-        exe_dir = os.path.dirname(sys.executable)
-        python_dir = os.path.dirname(exe_dir)
-        python_libdir = sysconfig.get_config_var("LIBDIR")
-#        python_libdir = os.path.join(python_dir, 'lib')
-
-        ret.append(os.path.join(python_libdir, sysconfig.get_config_var("LDLIBRARY")))
 
     return ret

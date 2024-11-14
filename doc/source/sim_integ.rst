@@ -18,7 +18,9 @@ If you directly specify sources:
 
   .. code:: shell
 
-    python3 -c 'import hdl_if; print(hdl_if.share())'
+    % python3 -c 'import hdl_if; print(hdl_if.share())'
+    # OR
+    % python3 -m hdl_if share
 
 - Specify `${share}/dpi` as an include directory
 - Specify `${share}/dpi/pyhdl_if.sv` as a source file
@@ -34,7 +36,9 @@ Obtain the paths to these libraries by running:
 
 .. code:: shell
 
-    python3 -c 'import hdl_if; print(" ".join(hdl_if.libs("dpi")))'
+    % python3 -c 'import hdl_if; print(" ".join(hdl_if.libs("dpi")))'
+    # OR
+    % python3 -m hdl_if libs --type dpi
 
 Specify these as DPI libraries to your simulator using its preferred mechanism.
 

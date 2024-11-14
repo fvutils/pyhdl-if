@@ -130,6 +130,9 @@ if isSrcBuild:
             gen_py_api
         ]
     }
+    setup_args["ivpm_ext_name_m"] = {
+        "hdl_if.entry" : "{dllpref}pyhdl_if{dllext}"
+    }
 
 setup(**setup_args)
 

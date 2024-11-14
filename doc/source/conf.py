@@ -11,12 +11,14 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-# import sys
+import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
 source_dir = os.path.dirname(os.path.abspath(__file__))
 doc_dir = os.path.dirname(source_dir)
+pyhdl_if_dir = os.path.dirname(doc_dir)
 
+sys.path.insert(0, os.path.join(pyhdl_if_dir, "src"))
 
 # -- Project information -----------------------------------------------------
 
@@ -35,6 +37,7 @@ extensions = [
     'sphinx.ext.todo', 
     'breathe',
     'sphinx_rtd_theme',
+    'sphinxarg.ext'
 ]
 
 breathe_projects = {

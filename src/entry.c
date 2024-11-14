@@ -312,8 +312,13 @@ lib_h_t find_config_python_lib() {
     char *libdest = 0;
     char *libdir = 0;
     extern char **environ;
+    const char *python = "python3";
 
-    args[0] = "python3";
+    if (getenv("PYHDL_IF_PYTHON") && getenv("PYHDL_IF_PYTHON")[0]) {
+        python = getenv("PYHDL_IF_PYTHON");
+    }
+
+    args[0] = python;
     args[1] = "-m";
     args[2] = "sysconfig";
     args[3] = 0;
@@ -323,7 +328,7 @@ lib_h_t find_config_python_lib() {
         DEBUG("LD_LIBRARY_PATH: %s", ld_library_path?ld_library_path:"null");
     }
 
-    pipe(cout_pipe);
+    (void)pipe(cout_pipe);
     posix_spawn_file_actions_init(&action);
     posix_spawn_file_actions_addclose(&action, cout_pipe[0]);
     posix_spawn_file_actions_adddup2(&action, cout_pipe[1], 1);
