@@ -48,7 +48,7 @@ def test_smoke(dirconfig):
 def test_a_plus_b(dirconfig):
     _test_file(dirconfig, "a_plus_b")
 
-@pytest.skip("Needs more investigation")
+@pytest.mark.skip("Needs more investigation")
 def test_data1(dirconfig):
     _test_file(dirconfig, "data1", plusargs=[
         'data=%s' % os.path.join(test_py_api_data_dir, "data1.json")])
