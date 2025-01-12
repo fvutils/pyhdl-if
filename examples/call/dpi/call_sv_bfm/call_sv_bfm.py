@@ -16,7 +16,7 @@ class WishboneInitiator(object):
 @hif.api
 class Test(object):
 
-    @hif.exptask
+    @hif.exp
     async def run(self, bfm : ct.py_object):
         print("run")
 

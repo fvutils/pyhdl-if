@@ -1,5 +1,5 @@
 #****************************************************************************
-#* cmd_ifc_gen_sv.py
+#* cmd_ifc_gen_types.py
 #*
 #* Copyright 2023 Matthew Ballance and Contributors
 #*
@@ -22,10 +22,10 @@
 import importlib
 import os
 import traceback
-from hdl_if.impl.tlm.gen_ifc_sv import GenIfcSv
+from hdl_if.impl.tlm.gen_ifc_types import GenIfcTypes
 from hdl_if.tlm.tlm_ifc_rgy import TlmIfcRgy
 
-class CmdIfcGenSv(object):
+class CmdIfcGenTypes(object):
 
     def __init__(self):
         pass
@@ -55,7 +55,7 @@ class CmdIfcGenSv(object):
             os.makedirs(os.path.dirname(args.output))
 
         with open(args.output, "w") as fp:
-            gen = GenIfcSv(args.style in ("vl", "verilog"))
+            gen = GenIfcTypes()
 
             for ifc in rgy.getTlmIfcs():
                 gen.gen_ifc_module(ifc, fp)

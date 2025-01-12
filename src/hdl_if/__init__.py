@@ -83,3 +83,7 @@ def libs(kind="dpi"):
     ret = [ lib_filename ]
 
     return ret
+
+@property
+def backend() -> Backend:
+    return Backend.inst()

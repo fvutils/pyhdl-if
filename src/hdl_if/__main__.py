@@ -2,6 +2,7 @@
 import argparse
 from .cmd.cmd_api_gen_sv import CmdApiGenSV
 from .cmd.cmd_ifc_gen_sv import CmdIfcGenSv
+from .cmd.cmd_ifc_gen_types import CmdIfcGenTypes
 from .cmd.cmd_libs import CmdLibs
 from .cmd.cmd_share import CmdShare
 
@@ -42,20 +43,30 @@ def getparser():
         help="Specifies the output filename")
     api_gen_sv.set_defaults(func=CmdApiGenSV())
 
-    # ifc_gen_sv = subparsers.add_parser("ifc-gen-sv")
-    # ifc_gen_sv.add_argument("-m", "--module", action="append",
-    #     help="Specifies a Python module to load")
-    # ifc_gen_sv.add_argument("-t", "--types", action="store_true",
-    #     help="Generate a 'types' file containing packed struct definitions")
-    # ifc_gen_sv.add_argument("-s", "--style", choices=("vl", "verilog", "sv", "systemverilog"),
-    #     default="sv",
-    #     help="Specifies the style of output")
-    # ifc_gen_sv.add_argument("-o", "--output", 
-    #     help="Specifies the output file")
-    # ifc_gen_sv.add_argument("ifc",
-    #     help="Specifies the interface to generate")
+    ifc_gen_sv = subparsers.add_parser("ifc-gen-sv",
+        help="Generates ")
+    ifc_gen_sv.add_argument("-m", "--module", action="append",
+        help="Specifies a Python module to load")
+    ifc_gen_sv.add_argument("-t", "--types", action="store_true",
+        help="Generate a 'types' file containing packed struct definitions")
+    ifc_gen_sv.add_argument("-s", "--style", choices=("vl", "verilog", "sv", "systemverilog"),
+        default="sv",
+        help="Specifies the style of output")
+    ifc_gen_sv.add_argument("-o", "--output", 
+        help="Specifies the output file")
+    ifc_gen_sv.add_argument("ifc",
+        help="Specifies the interface to generate")
+    
+    ifc_gen_types = subparsers.add_parser("ifc-gen-types",
+        help="Generates struct types for use with the TLM interface")
+    ifc_gen_types.add_argument("-m", "--module", action="append",
+        help="Specifies a Python module to load")
+    ifc_gen_types.add_argument("-o", "--output", 
+        help="Specifies the output file")
+    ifc_gen_types.add_argument("ifc",
+        help="Specifies the interfaces for which to generate types")
 
-    # ifc_gen_sv.set_defaults(func=CmdIfcGenSv())
+    ifc_gen_sv.set_defaults(func=CmdIfcGenTypes())
 
 
     return parser

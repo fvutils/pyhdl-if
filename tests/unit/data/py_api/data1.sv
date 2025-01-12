@@ -42,7 +42,21 @@ module data1;
             automatic py_object it = i.next();
             $display("Key: %0s", it.to_str());
         end
+        
+        data = py_dict::mk(json.call_attr("loads", 
+            py_tuple::mk_init('{data_s})));
+        keys = data.keys();
 
+        // Iterate based on the list size
+        for (int i=0; i<keys.size(); i++) begin
+            $display("Key: %0d %0s", i, keys.get_item(i).to_str());
+        end
+
+        // Use an iterator
+        for (py_iter i=keys.iter(); i.valid(); ) begin
+            automatic py_object it = i.next();
+            $display("Key: %0s", it.to_str());
+        end
 
         begin
             int fp = $fopen("status.txt", "w");

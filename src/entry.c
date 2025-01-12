@@ -49,6 +49,8 @@
 static int prv_debug = 0;
 typedef void *lib_h_t;
 static lib_h_t find_loaded_lib(const char *sym);
+static lib_h_t find_python_lib();
+static lib_h_t check_lib(const char *path, const char *sym);
 
 #include "py_api_if.h"
 #include "py_dpi_if.h"
@@ -172,7 +174,6 @@ void (*vlog_startup_routines[])() = {
     0
 };
 
-static lib_h_t find_python_lib();
 
 /*******************************************************************
  * init_python()
@@ -192,8 +193,24 @@ static lib_h_t find_config_python_lib();
 lib_h_t find_python_lib() {
     lib_h_t lib = 0;
 
+    if (getenv("LIBPYTHON_LOC") && getenv("LIBPYTHON_LOC")[0]) {
+        const char *path = getenv("LIBPYTHON_LOC");
+        DEBUG("Trying to load Python from %s", path);
+        fprintf(stdout, "PyHDL-IF Note: Loading Python library from user-specified path: %s\n", path);
+        lib = check_lib(path, "Py_Initialize");
+
+        if (!lib) {
+            fprintf(stdout, "PyHDL-IF Error: failed to load Python library from user-secified path: %s\n", path);
+            fflush(stdout);
+        }
+    }
+
     // First, check to see if the library is already loaded
-    if (!(lib = find_loaded_lib("Py_Initialize"))) {
+    if (!lib) {
+        lib = find_loaded_lib("Py_Initialize");
+    }
+
+    if (!lib) {
         lib = find_config_python_lib();
     }
 
@@ -276,21 +293,27 @@ lib_h_t find_loaded_lib(const char *sym) {
 
             if (strstr(path, ".so")) {
                 // Check to see if this is a Python library
-                lib_h_t lib = dlopen(path, RTLD_LAZY);
-                if (lib) {
-                    void *sym_h = dlsym(lib, sym);
-                    if (sym_h) {
-                        DEBUG("Found ");
-                        // Re-open the library in global model
-                        lib = dlopen(path, RTLD_LAZY | RTLD_GLOBAL);
-                        ret = lib;
-                    }
-                }
+                ret = check_lib(path, sym);
             }
         }
         free(path_s);
     }
 
+    return ret;
+}
+
+lib_h_t check_lib(const char *path, const char *sym) {
+    lib_h_t ret = 0;
+    lib_h_t lib = dlopen(path, RTLD_LAZY);
+    if (lib) {
+        void *sym_h = dlsym(lib, sym);
+        if (sym_h) {
+            DEBUG("Found ");
+            // Re-open the library in global model
+            lib = dlopen(path, RTLD_LAZY | RTLD_GLOBAL);
+            ret = lib;
+        }
+    }
     return ret;
 }
 
@@ -316,6 +339,9 @@ lib_h_t find_config_python_lib() {
 
     if (getenv("PYHDL_IF_PYTHON") && getenv("PYHDL_IF_PYTHON")[0]) {
         python = getenv("PYHDL_IF_PYTHON");
+        fprintf(stdout, "PyHDL-IF Note: Using Python interpreter \"%s\", specified by $PYHDL_IF_PYTHON\n",
+            python);
+        fflush(stdout);
     }
 
     args[0] = python;
@@ -427,26 +453,38 @@ lib_h_t find_config_python_lib() {
         return 0;
     }
 
-    DEBUG("ldlibrary=%s libdest=%s", ldlibrary, libdest);
+    DEBUG("ldlibrary=%s libdest=%s libdir=%s", ldlibrary, libdest, libdir);
 
-    if (ldlibrary && libdest) {
+    if (ldlibrary && libdir) {
+        char *libname = (char *)malloc(strlen(ldlibrary)+16);
+        char *a_ptr;
         char *fullpath = (char *)malloc(strlen(ldlibrary)+strlen(libdir)+strlen(libdest)+4);
         strcpy(fullpath, libdest);
         strcat(fullpath, "/");
-        strcat(fullpath, ldlibrary);
+
+        strcpy(libname, ldlibrary);
+        if ((a_ptr=strstr(libname, ".a"))) {
+            // Sometimes Python is built statically, but still has a shared library
+            DEBUG("Python appears to be built statically (lib=%s)", ldlibrary);
+            strcpy(libname, ldlibrary);
+            strcpy(a_ptr, ".so");
+            DEBUG("Trying to load %s instead", libname);
+        }
+        strcat(fullpath, libname);
 
         // First, try full path
         if ((ret = dlopen(fullpath, RTLD_LAZY+RTLD_GLOBAL))) {
             DEBUG("Successfully loaded via fullpath(1) %s", fullpath);
-        } else if (strcpy(fullpath, libdir) && strcat(fullpath, "/") && strcat(fullpath, ldlibrary) &&
+        } else if (strcpy(fullpath, libdir) && strcat(fullpath, "/") && strcat(fullpath, libname) &&
             (ret=dlopen(fullpath, RTLD_LAZY+RTLD_GLOBAL))) {
             DEBUG("Successfully loaded via fullpath(2) %s", fullpath);
-        } else if ((ret=dlopen(ldlibrary, RTLD_LAZY+RTLD_GLOBAL))) {
-            DEBUG("Successfully loaded library via relative path %s", ldlibrary);
+        } else if ((ret=dlopen(libname, RTLD_LAZY+RTLD_GLOBAL))) {
+            DEBUG("Successfully loaded library via relative path %s", libname);
         } else {
             DEBUG("Faied to load library");
         }
         free(fullpath);
+        free(libname);
     }
     
     if (linebuf) {

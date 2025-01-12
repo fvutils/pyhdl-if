@@ -28,7 +28,7 @@ for lib in ${hdl_if_libs}; do
 done
 
 # Generate the Wrapper API
-PYTHONPATH=`pwd` ${interp} -m hdl_if api-gen-sv -m call_sv_bfm \
+PYTHONPATH=$(pwd):${PYTHONPATH} ${interp} -m hdl_if api-gen-sv -m call_sv_bfm \
   -p call_sv_bfm_pkg -o call_sv_bfm_pkg.sv
 if test $? -ne 0; then exit 1; fi
 
