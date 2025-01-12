@@ -54,7 +54,12 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#verilog-vpi">Verilog (VPI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#vhdl-vhpi">VHDL (VHPI)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#vhdl-fli">VHDL (FLI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vhdl-fli">VHDL (FLI)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#loading-the-python-library">Loading the Python Library</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#libpython-loc">LIBPYTHON_LOC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pyhdl-if-python">PYHDL_IF_PYTHON</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
@@ -136,6 +141,32 @@ a FuseSoC-based build system, simply place a dependency on
 <section id="vhdl-fli">
 <h2>VHDL (FLI)<a class="headerlink" href="#vhdl-fli" title="Link to this heading"></a></h2>
 <p>TBD</p>
+<section id="loading-the-python-library">
+<h3>Loading the Python Library<a class="headerlink" href="#loading-the-python-library" title="Link to this heading"></a></h3>
+<p>When the PyHDL-IF library is initialized, it will try to load the Python
+shared library and locate symbols for simulator-provided APIs.</p>
+<p>By default, the following process is followed:</p>
+<ul class="simple">
+<li><p>If ${LIBPYTHON_LOC} is set, this shared library is loaded and Python symbols
+are obtained from it.</p></li>
+<li><p>Python symbols will be obtained from the simulator’s global namespace
+if Python symbols are available in the simulator’s global namespace.</p></li>
+<li><p>Next, shared libraries loaded by the simulator process are checked to specified
+if they provide Python symbols.</p></li>
+<li><p>Next, the available Python interpreter is used to discover where its shared
+library is installed.</p></li>
+</ul>
+</section>
+</section>
+<section id="libpython-loc">
+<h2>LIBPYTHON_LOC<a class="headerlink" href="#libpython-loc" title="Link to this heading"></a></h2>
+<p>The environment variable <cite>LIBPYTHON_LOC</cite> can be set to specify the location of the
+Python shared library. Note that a full path must be specified.</p>
+</section>
+<section id="pyhdl-if-python">
+<h2>PYHDL_IF_PYTHON<a class="headerlink" href="#pyhdl-if-python" title="Link to this heading"></a></h2>
+<p>The environment variable <cite>PYHDL_IF_PYTHON</cite> can be set to specify the Python
+interpreter to probe for configuration information.</p>
 </section>
 </section>
 
