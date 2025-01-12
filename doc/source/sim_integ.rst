@@ -54,3 +54,29 @@ VHDL (FLI)
 ==========
 TBD
 
+Loading the Python Library
+**************************
+
+When the PyHDL-IF library is initialized, it will try to load the Python
+shared library and locate symbols for simulator-provided APIs.
+
+By default, the following process is followed:
+
+* If ${LIBPYTHON_LOC} is set, this shared library is loaded and Python symbols
+  are obtained from it.
+* Python symbols will be obtained from the simulator's global namespace 
+  if Python symbols are available in the simulator's global namespace.
+* Next, shared libraries loaded by the simulator process are checked to specified
+  if they provide Python symbols. 
+* Next, the available Python interpreter is used to discover where its shared 
+  library is installed.
+
+LIBPYTHON_LOC
+=============
+The environment variable `LIBPYTHON_LOC` can be set to specify the location of the
+Python shared library. Note that a full path must be specified.
+
+PYHDL_IF_PYTHON
+===============
+The environment variable `PYHDL_IF_PYTHON` can be set to specify the Python
+interpreter to probe for configuration information. 
