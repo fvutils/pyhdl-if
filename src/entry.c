@@ -483,6 +483,7 @@ lib_h_t find_config_python_lib() {
         } else {
             DEBUG("Faied to load library");
         }
+        DEBUG("PYTHONPATH: %s", getenv("PYTHONPATH")?getenv("PYTHONPATH"):"null");
         free(fullpath);
         free(libname);
     }

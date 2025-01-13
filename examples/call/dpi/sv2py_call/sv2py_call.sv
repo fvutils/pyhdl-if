@@ -12,7 +12,7 @@ module sv2py_call;
 	automatic MyC c = new();
 	
 	for (int i=0; i<256; i++) begin
-		int res = c.countones(i);
+		automatic int res = c.countones(i);
 		$display("res: %0d %0d", i, res);
 	end
     end

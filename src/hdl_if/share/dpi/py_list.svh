@@ -24,7 +24,7 @@ class py_list extends py_object;
      * Appends a new element to the list
      */
     function void append(py_object obj);
-        PyList_Append(this.obj, obj.obj);
+        void'(PyList_Append(this.obj, obj.obj));
     endfunction
 
     /**
@@ -41,7 +41,7 @@ class py_list extends py_object;
     static function py_list mk_init(py_object objs[$]);
         py_list ret = new(PyList_New(objs.size()));
         foreach (objs[i]) begin
-            PyList_Append(ret.obj, objs[i].obj);
+            void'(PyList_Append(ret.obj, objs[i].obj));
         end
         return ret;
     endfunction

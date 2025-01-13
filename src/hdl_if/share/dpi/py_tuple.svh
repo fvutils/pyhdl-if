@@ -9,7 +9,7 @@ class py_tuple extends py_object;
      * Sets the specified tuple element
      */
     function void set_item(int idx, py_object obj);
-        PyTuple_SetItem(this.obj, idx, obj.obj);
+        void'(PyTuple_SetItem(this.obj, idx, obj.obj));
     endfunction
 
     /**
@@ -44,7 +44,7 @@ class py_tuple extends py_object;
         PyObject tuple = PyTuple_New(elems.size());
         py_tuple ret = new(tuple);
         foreach (elems[i]) begin
-            PyTuple_SetItem(tuple, i, elems[i].obj);
+            void'(PyTuple_SetItem(tuple, i, elems[i].obj));
             Py_DecRef(elems[i].obj);
             elems[i].obj = null;
         end
