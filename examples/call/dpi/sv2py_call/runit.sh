@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 script_dir=$(dirname $(realpath $0))
 proj_dir=$(cd ${script_dir}/../../../../ ; pwd)
@@ -17,7 +17,7 @@ echo "share: '${share}'"
 echo "python_libdir: ${python_libdir}"
 echo "libs: ${libs}"
 
-verilator --binary \
+verilator --binary -Wno-fatal \
 	+incdir+${share}/dpi \
 	${share}/dpi/pyhdl_if.sv \
 	sv2py_call.sv -top sv2py_call \

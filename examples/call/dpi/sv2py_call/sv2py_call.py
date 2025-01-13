@@ -4,7 +4,7 @@ import hdl_if as hif
 @hif.api
 class MyC(object):
 
-    @hif.expfunc
+    @hif.exp
     def countones(self, v : ctypes.c_int) -> ctypes.c_int:
         ret = 0
         while v:
