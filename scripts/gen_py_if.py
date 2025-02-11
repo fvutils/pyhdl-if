@@ -945,6 +945,7 @@ def main():
         "Py_PreInitializeFromBytesArgs", "Py_PreInitializeFromArgs",
         "Py_InitializeFromConfig", "PyExitStatusException",
         "PyUnicode_Append", "PyUnicode_AppendAndDel", "PyUnicode_AsUCS4", "PyUnicode_AsUCS4Copy",
+        "PyUnicode_AsWideChar",
         "PyUnicode_Fill", "PyUnicode_FindChar", "PyUnicode_FromKindAndData", "PyUnicode_FromWideChar",
         "PyUnicode_FromFormatV", "PyUnicode_MAX_CHAR_VALUE", "PyUnicode_New", "PyUnicode_READ",
         "PyUnicode_READ_CHAR", "PyUnicode_ReadChar", "PyUnicode_WRITE", "PyUnicode_WriteChar",
