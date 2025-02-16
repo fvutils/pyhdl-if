@@ -1,5 +1,6 @@
 
 //typedef class py_str;
+typedef class py_dict;
 typedef class py_tuple;
 
 /**
@@ -40,8 +41,14 @@ class py_object;
      * Calls the object as a Python callable
      */
     virtual function py_object call(py_tuple args=null, py_object kwargs=null);
-        PyObject ret_o = PyObject_Call(obj, (args!=null)?args.obj:PyTuple_New(0), (kwargs!=null)?kwargs.obj:PyObject'(null));
+        PyObject ret_o, kwargs_o;
         py_object ret = null;
+
+        if (kwargs != null) begin
+            kwargs_o = kwargs.obj;
+        end
+
+        ret_o = PyObject_Call(obj, (args!=null)?args.obj:PyTuple_New(0), kwargs_o);
 
         if (args != null) begin
             args.dispose();
@@ -94,7 +101,15 @@ class py_object;
             args = new(PyTuple_New(0));
         end
 
-        ret_o = PyObject_Call(attr, args.obj, (kwargs!=null)?kwargs.obj:PyObject'(null));
+        if (kwargs == null) begin
+            kwargs = py_dict::mk_init('{});
+        end
+
+        $display("attr: %0p", attr);
+        $display("args: %0p", args.obj);
+        $display("kwargs: %0p", kwargs.obj);
+
+        ret_o = PyObject_Call(attr, args.obj, kwargs.obj);
 
         if (ret_o == null) begin
             PyErr_Print();
