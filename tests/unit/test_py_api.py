@@ -27,7 +27,9 @@ def _test_file(dirconfig, name, plusargs=None):
     flow.sim.top.add(name)
 
     run_args = flow.sim.mkRunArgs(dirconfig.rundir())
+    print("rundir: %s" % dirconfig.rundir())
     run_args.prepend_pathenv("PYTHONPATH", test_py_api_data_dir)
+    print("Adding PYTHONPATH=%s" % test_py_api_data_dir)
     if plusargs is not None:
         run_args.plusargs.extend(plusargs)
     flow.addTaskToPhase("run.main", flow.sim.mkRunTask(run_args))
@@ -48,7 +50,7 @@ def test_smoke(dirconfig):
 def test_a_plus_b(dirconfig):
     _test_file(dirconfig, "a_plus_b")
 
-@pytest.mark.skip("Needs more investigation")
+#@pytest.mark.skip("Needs more investigation")
 def test_data1(dirconfig):
     _test_file(dirconfig, "data1", plusargs=[
         'data=%s' % os.path.join(test_py_api_data_dir, "data1.json")])

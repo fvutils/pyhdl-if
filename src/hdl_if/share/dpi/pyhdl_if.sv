@@ -39,6 +39,7 @@ package pyhdl_if;
     typedef class py_list;
     typedef class py_iter;
     `include "py_object.svh"
+    `include "py_ctxt.svh"
     `include "py_dict.svh"
     `include "py_iter.svh"
     `include "py_list.svh"
@@ -158,10 +159,10 @@ package pyhdl_if;
 
         pkg = PyImport_ImportModule(pkg_name);
         cls_t = PyObject_GetAttrString(pkg, cls_name);
-        args_o = PyTuple_New(args.size());
+        args_o = PyTuple_New(longint'(args.size()));
 
         foreach (args[i]) begin
-            void'(PyTuple_SetItem(args_o, i, args[i]));
+            void'(PyTuple_SetItem(args_o, longint'(i), args[i]));
         end
 
         return PyObject_Call(cls_t, args_o, null);

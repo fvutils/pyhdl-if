@@ -9,14 +9,14 @@ class py_list extends py_object;
      * Returns the number of elements in the list
      */
     function int size();
-        return PyList_Size(obj);
+        return int'(PyList_Size(obj));
     endfunction
 
     /**
      * Gets the item at the specified list index
      */
     function py_object get_item(int idx);
-        py_object ret = new(PyList_GetItem(obj, idx));
+        py_object ret = new(PyList_GetItem(obj, longint'(idx)));
         return ret;
     endfunction
 
@@ -24,7 +24,7 @@ class py_list extends py_object;
      * Appends a new element to the list
      */
     function void append(py_object obj);
-        void'(PyList_Append(this.obj, obj.obj));
+        void'(PyList_Append(this.obj, obj.steal()));
     endfunction
 
     /**
@@ -39,9 +39,9 @@ class py_list extends py_object;
      * Creates a new list object from an initial list of items
      */
     static function py_list mk_init(py_object objs[$]);
-        py_list ret = new(PyList_New(objs.size()));
+        py_list ret = new(PyList_New(longint'(objs.size())));
         foreach (objs[i]) begin
-            void'(PyList_Append(ret.obj, objs[i].obj));
+            void'(PyList_Append(ret.obj, objs[i].steal()));
         end
         return ret;
     endfunction

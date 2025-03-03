@@ -9,14 +9,14 @@ class py_tuple extends py_object;
      * Sets the specified tuple element
      */
     function void set_item(int idx, py_object obj);
-        void'(PyTuple_SetItem(this.obj, idx, obj.obj));
+        void'(PyTuple_SetItem(this.obj, longint'(idx), obj.steal()));
     endfunction
 
     /**
      * Gets the specified tuple element
      */
     function py_object get_item(int idx);
-        py_object ret = new(PyTuple_GetItem(this.obj, idx));
+        py_object ret = new(PyTuple_GetItem(this.obj, longint'(idx)));
         return ret;
     endfunction
 
@@ -31,23 +31,31 @@ class py_tuple extends py_object;
     /**
      * Creates a new empty tuple of the specified size
      */
-    static function py_tuple mk_new_sz(int sz);
-        PyObject tuple = PyTuple_New(sz);
+    static function py_tuple mk_new_sz(int sz, py_ctxt ctxt=null);
+        PyObject tuple = PyTuple_New(longint'(sz));
         py_tuple ret = new(tuple);
+
+        if (ctxt != null) begin
+            void'(ctxt.add(ret));
+        end
+
         return ret;
     endfunction
 
     /**
      * Creates a new tuple from the specified elements
      */
-    static function py_tuple mk_init(py_object elems[$]);
-        PyObject tuple = PyTuple_New(elems.size());
+    static function py_tuple mk_init(py_object elems[$], py_ctxt ctxt=null);
+        PyObject tuple = PyTuple_New(longint'(elems.size()));
         py_tuple ret = new(tuple);
         foreach (elems[i]) begin
-            void'(PyTuple_SetItem(tuple, i, elems[i].obj));
-            Py_DecRef(elems[i].obj);
-            elems[i].obj = null;
+            void'(PyTuple_SetItem(tuple, longint'(i), elems[i].steal()));
         end
+
+        if (ctxt != null) begin
+            void'(ctxt.add(ret));
+        end
+
         return ret;
     endfunction
 

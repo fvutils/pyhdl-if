@@ -122,12 +122,28 @@ class py_object;
     endfunction
 
     /**
+     * Returns a borrowed reference to this object
+     * (ie just returns the object handle)
+     */
+    virtual function PyObject borrow();
+        return this.obj;
+    endfunction
+
+    /**
+     * Returns a stolen reference to this object. 
+     * Specifically, this method increments the ref count, such
+     * that stealing a reference doesn't invalidate this object
+     */
+    virtual function PyObject steal();
+        Py_IncRef(obj);
+        return obj;
+    endfunction
+
+    /**
      * Obtains the integer value of this object and releases ownership
     */
     virtual function int to_int();
-        int ret = PyLong_AsLong(obj);
-        Py_DecRef(obj);
-        obj = null;
+        int ret = int'(PyLong_AsLong(obj));
         return ret;
     endfunction
 
@@ -136,8 +152,6 @@ class py_object;
      */
     virtual function longint to_long();
         longint ret = PyLong_AsLongLong(obj);
-        Py_DecRef(obj);
-        obj = null;
         return ret;
     endfunction
 
@@ -154,7 +168,6 @@ class py_object;
      */
     virtual function string to_str();
         string ret = PyUnicode_AsUTF8(obj);
-        Py_DecRef(obj);
         return ret;
     endfunction
 
@@ -162,7 +175,7 @@ class py_object;
      * Obtains the integer value of the object
      */
     function int as_int();
-        return PyLong_AsLong(obj);
+        return int'(PyLong_AsLong(obj));
     endfunction
 
     /**

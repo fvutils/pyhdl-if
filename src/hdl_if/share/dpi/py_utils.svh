@@ -7,7 +7,7 @@
  * Create a Python integer-value object
  */
 function automatic py_object py_from_int(int val);
-    py_object ret = new(PyLong_FromLong(val));
+    py_object ret = new(PyLong_FromLong(longint'(val)));
     return ret;
 endfunction
 
@@ -15,7 +15,7 @@ endfunction
  * Create a Python unsigned integer-value object
  */
 function automatic py_object py_from_uint(int unsigned val);
-    py_object ret = new(PyLong_FromUnsignedLong(val));
+    py_object ret = new(PyLong_FromUnsignedLong(longint'(val)));
     return ret;
 endfunction
 
@@ -61,19 +61,50 @@ endfunction
  * Call a built-in function
  */
 function automatic py_object py_call_builtin(string name, py_tuple args, py_dict kwargs=null);
-    PyObject builtins = PyEval_GetBuiltins();
-    PyObject func = PyDict_GetItemString(builtins, name);
+    PyObject builtins;
+    PyObject func;
     PyObject ret_o;
-    py_object ret;
+    py_object ret = null;
+
+    Py_IncRef(args.obj);
+    builtins = PyEval_GetBuiltins();
+    Py_IncRef(builtins);
+
+    func = PyDict_GetItemString(builtins, name);
+    Py_IncRef(func);
 
     if (func == null) begin
         PyErr_Print();
         return null;
     end
 
-    ret_o = PyObject_Call(func, args.obj, null);
+    if (kwargs == null) begin
+        kwargs = py_dict::mk_init('{});
+    end
+
+    if (args == null) begin
+        $display("PyHDL-IF Fatal: args passed to call of %0s is null", name);
+        return null;
+    end else if (args.obj == null) begin
+        $display("PyHDL-IF Fatal: args.obj passed to call of %0s is null", name);
+        return null;
+    end
+
+
+    $display("--> PyObject_Call");
+    $display("func: %0p", func);
+    $display("args: %0p", args.obj);
+    $display("kwargs: %0p", kwargs.obj);
+    ret_o = PyObject_Call(
+        func, 
+        args.obj, 
+        kwargs.obj);
+    $display("<-- PyObject_Call");
+
+    $display("ret_o=%0p", ret_o);
 
     if (ret_o == null) begin
+        $display("ret_o is null");
         PyErr_Print();
     end else begin
         ret = new(ret_o);

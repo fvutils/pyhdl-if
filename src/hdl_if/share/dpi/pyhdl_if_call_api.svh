@@ -34,7 +34,7 @@
         invoke_py_t = PyObject_GetAttrString(proxy_h, "invoke_py_t");
         proxy_args = PyTuple_New(3);
 
-        void'(PyTuple_SetItem(proxy_args, 0, PyLong_FromLong(sem_id)));
+        void'(PyTuple_SetItem(proxy_args, 0, PyLong_FromLong(longint'(sem_id))));
         void'(PyTuple_SetItem(proxy_args, 1, PyUnicode_FromString(method)));
         void'(PyTuple_SetItem(proxy_args, 2, args));
         
@@ -145,7 +145,7 @@
         Py_IncRef(new_obj);
 
         void'(PyTuple_SetItem(args, 0, cls_t));
-        void'(PyTuple_SetItem(args, 1, PyLong_FromLong(obj_id)));
+        void'(PyTuple_SetItem(args, 1, PyLong_FromLong(longint'(obj_id))));
         void'(PyTuple_SetItem(args, 2, init_args));
 
         ret = pyhdl_pi_if_HandleErr(PyObject_Call(new_obj, args, null));
@@ -169,7 +169,7 @@
 
         void'(PyTuple_SetItem(args, 0, obj));
         void'(PyTuple_SetItem(args, 1, PyUnicode_FromString(inst_path)));
-        void'(PyTuple_SetItem(args, 2, PyLong_FromLong(trim_elems)));
+        void'(PyTuple_SetItem(args, 2, PyLong_FromLong(longint'(trim_elems))));
 
         ret = pyhdl_pi_if_HandleErr(PyObject_Call(reg_obj, args, null));
 
@@ -189,7 +189,7 @@
         args = PyTuple_New(2);
 
         void'(PyTuple_SetItem(args, 0, obj));
-        void'(PyTuple_SetItem(args, 1, PyLong_FromLong(obj_id)));
+        void'(PyTuple_SetItem(args, 1, PyLong_FromLong(longint'(obj_id))));
         ret = PyObject_Call(connect, args, null);
         PyGILState_Release(state);
     endfunction

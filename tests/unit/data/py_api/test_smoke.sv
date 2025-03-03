@@ -5,7 +5,7 @@ module test_smoke;
     initial begin
         py_object smoke_test_m = py_import("smoke_test");
         py_object foo = smoke_test_m.get_attr("foo");
-        int ret = foo.call().to_long();
+        int ret = int'(foo.call().to_long());
 
         begin
             int fp = $fopen("status.txt", "w");
