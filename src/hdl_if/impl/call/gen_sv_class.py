@@ -512,7 +512,7 @@ class GenSVClass(object):
             ctypes.c_uint16 : "PyLong_AsLong",
             ctypes.c_uint32 : "PyLong_AsLong",
             ctypes.c_uint64 : "PyLong_AsUnsignedLongLong",
-            str : "string",
+            str : "PyUnicode_AsUTF8",
             ctypes.py_object : ""
         }
         if type not in type_m.keys():
@@ -534,7 +534,7 @@ class GenSVClass(object):
             ctypes.c_uint16 : "PyLong_FromLong",
             ctypes.c_uint32 : "PyLong_FromLong",
             ctypes.c_uint64 : "PyLong_FromUnsignedLongLong",
-            str : "string"
+            str : "PyUnicode_FromString"
         }
         if type in type_m.keys():
             return "pyhdl_if::%s(%s)" % (type_m[type], var)
