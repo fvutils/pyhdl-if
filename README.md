@@ -11,7 +11,7 @@ Binary wheels are currently available for Linux x86_64 platforms.
 
 ## Setting up a Development Environment
 
-PyHDL-IF uses (IVPM)[https://fvutils.github.io/ivpm/] to manage dependencies. The
+PyHDL-IF uses [IVPM](https://fvutils.github.io/ivpm/) to manage dependencies. The
 `bootstrap.sh` creates a local Python virtual environment, installs IVPM, and
 required fetches packages.
 
