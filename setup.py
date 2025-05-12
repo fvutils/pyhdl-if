@@ -98,6 +98,9 @@ setup_args = dict(
   setup_requires=[
     'setuptools_scm',
     'cython',
+    'ivpm',
+    'pcpp',
+    'cxxheaderparser'
   ],
   entry_points={
       'console_scripts': [
