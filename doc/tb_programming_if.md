@@ -1,0 +1,24 @@
+
+- Standard entities
+  - component
+  - test
+  - sequencer
+
+- Standard set of data and operations on entities
+  - object
+    - type
+      - name
+      - fields
+      - create
+    - inst
+      - drop
+      - 
+  - component
+    - type
+      - name
+      - 
+    - inst
+      - name
+      - set_field_int
+      - set_field_
+    - sequencer

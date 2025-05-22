@@ -55,6 +55,8 @@ package:
       src: pypi
     - name: doxygen-filter-sv
       url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
+    - name: uvm
+      url: https://www.accellera.org/images/downloads/standards/uvm/uvm-1.2.tar.gz
 
   env:
     - name: PATH
