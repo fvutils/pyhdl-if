@@ -1,9 +1,6 @@
 import os
 import sys
 import pytest
-import pytest_fv as pfv
-from pytest_fv.fixtures import *
-
 from .test_base import *
 
 print("path: %s" % str(sys.path))
@@ -18,7 +15,7 @@ test_vpi_py_if_data_dir = os.path.join(data_dir, "vpi_py_if")
 SKIP_HDLSIM = ('xsm', 'vlt')
 
 
-def test_smoke(dirconfig : pfv.DirConfig):
+def test_smoke(dirconfig):
     flow = pfv.FlowSim(dirconfig)
 
 #    flow.fs.add_library(hdl_if.share())

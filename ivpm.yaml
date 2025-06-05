@@ -23,14 +23,18 @@ package:
     deps:
     - name: pytest
       src: pypi
-    - name: pytest-fv
-      url: https://github.com/fvutils/pytest-fv.git
+    - name: cython
+      src: pypi
+    - name: setuptools_scm
+      src: pypi
+    - name: pytest-dfm
+      url: https://github.com/dv-flow/pytest-dfm.git
+    - name: dv-flow-libhdlsim
+      url: https://github.com/dv-flow/dv-flow-libhdlsim.git
     - name: pytypeworks
       url: https://github.com/mballance-utils/pytypeworks.git
     - name: pyvsc-dataclasses
       url: https://github.com/vsc-tools/pyvsc-dataclasses.git
-    - name: fusesoc
-      url: https://github.com/olofk/fusesoc.git
     - name: iverilog
       url: https://github.com/pss-hands-on/iverilog-bin/releases/download/v12.0/iverilog-maylinux2014-12.0.tar.gz
     - name: verilator

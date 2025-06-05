@@ -105,7 +105,10 @@ setup_args = dict(
       ],
       'ivpm.pkginfo': [
         'pyhdl-if = hdl_if.pkginfo:PkgInfo'
-      ]
+      ],
+      'dv_flow.mgr': [
+        'pyhdl-if = hdl_if.dfm.__ext__'
+      ],
   },
   ext_modules=[ ext ]
 )
