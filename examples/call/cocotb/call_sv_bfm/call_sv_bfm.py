@@ -38,7 +38,7 @@ async def entry(dut):
         await init_bfm.write(0x8000_0000+(4*i), wr_val)
         rd = await init_bfm.read(0x8000_0000+(4*i))
         print(f'[Py] readback: {rd}')
-        assert wr_val == rd
+        assert wr_val == rd.parent.data
 
     for i in range(64):
         await init_bfm.read(0x8000_0000+(4*i))
