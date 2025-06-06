@@ -2,6 +2,8 @@ import os
 import sys
 import pytest
 from .test_base import *
+from dv_flow.libhdlsim.pytest import hdlsim_dvflow, HdlSimDvFlow
+from . import hdl_if_env, available_sims_vpi
 
 print("path: %s" % str(sys.path))
 
@@ -15,31 +17,26 @@ test_vpi_py_if_data_dir = os.path.join(data_dir, "vpi_py_if")
 SKIP_HDLSIM = ('xsm', 'vlt')
 
 
-def test_smoke(dirconfig):
-    flow = pfv.FlowSim(dirconfig)
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_vpi(), indirect=True)
+def test_smoke(hdlsim_dvflow : HdlSimDvFlow, hdl_if_env):
+    hdlsim_dvflow.setEnv(hdl_if_env)
 
-#    flow.fs.add_library(hdl_if.share())
-#    flow.sim.addFileset(pfv.FSVlnv("fvutils::pyhdl-if", "systemVerilogSource"))
-
-#    flow.sim.addFileset(pfv.FSPaths(
-#        dirconfig.builddir(),
-#        ["call_sv_bfm_pkg.sv"],
-#        "systemVerilogSource"))
-
-    flow.sim.addFileset(pfv.FSPaths(
-        test_vpi_py_if_data_dir,
-        ["vpi_py_if_smoke.v"],
-        "verilogSource"))
+    vpi_py_if_smoke = hdlsim_dvflow.mkTask("std.FileSet",
+        base=test_vpi_py_if_data_dir,
+        include=["vpi_py_if_smoke.v"],
+        type="verilogSource")
     
-    flow.sim.pli_libs.append(hdl_if.get_entry())
-    flow.sim.top.add("vpi_py_if_smoke")
+    vpi_lib = hdlsim_dvflow.mkTask("pyhdl-if.VpiLib")
 
-    global hdl_if_dir
-    run_args = flow.sim.mkRunArgs(dirconfig.rundir())
-#    run_args.prepend_pathenv("PYTHONPATH", hdl_if_dir)
-    flow.addTaskToPhase("run.main", flow.sim.mkRunTask(run_args))
+    sim_img = hdlsim_dvflow.mkTask(
+        "hdlsim.%s.SimImage" % hdlsim_dvflow.sim,
+        needs=[vpi_py_if_smoke, vpi_lib],
+        top=["vpi_py_if_smoke"])
+    
+    sim_run = hdlsim_dvflow.mkTask(
+        "hdlsim.%s.SimRun" % hdlsim_dvflow.sim,
+        needs=[sim_img])
+    
+    status, out = hdlsim_dvflow.runTask(sim_run)
 
-    if dirconfig.config.getHdlSim() in SKIP_HDLSIM:
-        pytest.skip("Unsupported simulator %s" % dirconfig.config.getHdlSim())
-    else:
-        flow.run_all()
+    assert status == 0

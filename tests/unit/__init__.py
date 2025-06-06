@@ -1,5 +1,19 @@
 import os
 import pytest
+from dv_flow.libhdlsim.pytest import HdlSimDvFlow, hdlsim_available_sims
+
+def available_sims_dpi(incl=None, excl=None):
+    if excl is None:
+        # TODO: control via env var?
+        excl = ["xsm"]
+    return hdlsim_available_sims(incl, excl)
+
+def available_sims_vpi(incl=None, excl=None):
+    if excl is None:
+        # TODO: control via env var?
+        excl = ["vlt", "xsm"]
+    return hdlsim_available_sims(incl, excl)
+
 
 @pytest.fixture(scope="session")
 def hdl_if_env():

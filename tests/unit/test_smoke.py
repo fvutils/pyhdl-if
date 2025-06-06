@@ -4,7 +4,7 @@ import sys
 import pytest
 from .test_base import *
 from dv_flow.libhdlsim.pytest import hdlsim_dvflow, HdlSimDvFlow
-from . import hdl_if_env
+from . import hdl_if_env, available_sims_dpi
 
 
 data_dir = os.path.join(
@@ -13,6 +13,7 @@ data_dir = os.path.join(
 test_smoke_data_dir = os.path.join(data_dir, "test_smoke")
 test_smoke_str_data_dir = os.path.join(data_dir, "test_smoke_str")
 
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
 def test_smoke(hdlsim_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = test_smoke_data_dir + os.pathsep + env["PYTHONPATH"]
