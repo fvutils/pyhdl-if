@@ -79,6 +79,7 @@ setup_args = dict(
           'share/dpi/*',
           'share/vpi/*',
           'share/*',
+          'dfm/flow.dv'
 #          "*pyhdl_if.*",
       ]
   },
