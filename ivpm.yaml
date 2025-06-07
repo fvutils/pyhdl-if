@@ -25,6 +25,8 @@ package:
       src: pypi
     - name: cython
       src: pypi
+    - name: build
+      src: pypi
     - name: setuptools_scm
       src: pypi
     - name: pytest-dfm

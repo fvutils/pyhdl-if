@@ -61,8 +61,28 @@ extern "C" {
 #endif
 
 static lib_h_t _python_lib = 0;
-
 static lib_h_t init_python();
+
+/**
+ * The following ensures that this DPI library has a dependency
+ * on DPI-exported symbols. This ensures that Python is able
+ * to find the exports
+ */
+int pyhdl_pi_if_RegisterTimeCB();
+int pyhdl_call_if_invoke_hdl_f(void);
+int pyhdl_call_if_invoke_hdl_t(void);
+int pyhdl_call_if_response_py_t(void);
+
+void *funcs[] = {
+    &pyhdl_pi_if_RegisterTimeCB,
+    &pyhdl_call_if_invoke_hdl_f,
+    &pyhdl_call_if_invoke_hdl_t,
+    &pyhdl_call_if_response_py_t,
+};
+
+void *get_dpiexport_funcs() {
+    return funcs;
+}
 
 //typedef void *PyObject;
 
@@ -234,7 +254,7 @@ lib_h_t find_loaded_lib(const char *sym) {
     char mapfile_path[256];
     FILE *map_fp;
 
-    DEBUG("find_loaded_lib(linux) %s", sym);
+    DEBUG("--> find_loaded_lib(linux) %s", sym);
 
     // First, try loading the executable
     {
@@ -244,6 +264,7 @@ lib_h_t find_loaded_lib(const char *sym) {
             DEBUG("returning %p", ret);
             return ret;
         } else {
+            DEBUG("didn't find symbol \"%s\" in the executable\n", sym);
             ret = 0;
         }
     }
@@ -299,11 +320,14 @@ lib_h_t find_loaded_lib(const char *sym) {
         free(path_s);
     }
 
+    DEBUG("<-- find_loaded_lib(linux) %s %p", sym, ret);
+
     return ret;
 }
 
 lib_h_t check_lib(const char *path, const char *sym) {
     lib_h_t ret = 0;
+    DEBUG("--> check_lib(%s, %s)", path, sym);
     lib_h_t lib = dlopen(path, RTLD_LAZY);
     if (lib) {
         void *sym_h = dlsym(lib, sym);
@@ -314,10 +338,52 @@ lib_h_t check_lib(const char *path, const char *sym) {
             ret = lib;
         }
     }
+    DEBUG("<-- check_lib(%s, %s) %p", path, sym, ret);
     return ret;
 }
 
 #endif
+
+char *clean_env(const char *name, const char *omit) {
+    const char *value = getenv(name);
+    char *new_value;
+    const char *cp, *cpn;
+    int first_entry = 1;
+
+    if (!value || !value[0]) {
+        return 0;
+    }
+
+    cp = value;
+
+    new_value = (char *)malloc(strlen(name)+strlen(value)+2);
+    strcpy(new_value, name);
+    strcat(new_value, "=");
+
+    while (cp && *cp) {
+        cpn = strchr(cp, ':');
+        if (!cpn) {
+            cpn = cp + strlen(cp);
+       }
+                    
+       // Check if this path starts with pythonhome
+       if (strncmp(cp, omit, strlen(omit)) != 0) {
+            if (!first_entry) {
+                strcat(new_value, ":");
+            }
+            strncat(new_value, cp, cpn - cp);
+            first_entry = 0;
+        }
+                    
+        if (*cpn == ':') {
+            cp = cpn + 1;
+        } else {
+            cp = NULL;
+        }
+    }
+
+    return new_value;
+}
 
 #ifdef _WIN32
 #else
@@ -342,6 +408,62 @@ lib_h_t find_config_python_lib() {
         fprintf(stdout, "PyHDL-IF Note: Using Python interpreter \"%s\", specified by $PYHDL_IF_PYTHON\n",
             python);
         fflush(stdout);
+        const char *pythonhome = getenv("PYTHONHOME");
+        if (pythonhome && pythonhome[0]) {
+            const char *pythonpath = getenv("PYTHONPATH");
+            const char *ldlibrarypath = getenv("LD_LIBRARY_PATH");
+            const char *path = getenv("PATH");
+
+            fprintf(stdout, "PyHDL-IF Note: Clearing PYTHONHOME and cleaning PYTHONPATH\n");
+            fflush(stdout);
+
+            {
+                char *new_pythonpath = clean_env("PYTHONPATH", pythonhome);
+                if (new_pythonpath) {
+                    fprintf(stdout, "PyHDL-IF Note: Setting PYTHONPATH to \"%s\"\n", new_pythonpath);
+                    putenv(new_pythonpath);
+                }
+            }
+            {
+                char *new_ldlibrarypath = clean_env("LD_LIBRARY_PATH", pythonhome);
+                if (new_ldlibrarypath) {
+                    fprintf(stdout, "PyHDL-IF Note: Setting LD_LIBRARY_PATH to \"%s\"\n", new_ldlibrarypath);
+                    putenv(new_ldlibrarypath);
+                }
+            }
+
+            {
+                char *new_path = clean_env("PATH", pythonhome);
+                if (new_path) {
+                    fprintf(stdout, "PyHDL-IF Note: Setting PATH to \"%s\"\n", new_path);
+                    putenv(new_path);
+                }
+            }
+
+            putenv(strdup("PYTHON="));
+            putenv(strdup("PYTHONHOME="));
+        }
+
+        // Now, add the new Python interpreter to the PATH
+        {
+            char *python_dir = strdup(python);
+            char *slash = strrchr(python_dir, '/');
+            char *new_path;
+            if (slash) {
+                *slash = 0; // Remove the filename
+            }
+
+            DEBUG("Python directory: %s", python_dir);
+            new_path = (char *)malloc(strlen(python_dir)+strlen(getenv("PATH"))+16);
+            strcpy(new_path, "PATH=");
+            strcat(new_path, python_dir);
+            strcat(new_path, ":");
+            strcat(new_path, getenv("PATH"));
+            DEBUG("New PATH: %s", new_path);
+            putenv(new_path);
+            free(python_dir);
+        }
+
     }
 
     args[0] = python;
@@ -350,8 +472,15 @@ lib_h_t find_config_python_lib() {
     args[3] = 0;
     
     {
+        int i;
+        extern char **environ;
         const char *ld_library_path = getenv("LD_LIBRARY_PATH");
         DEBUG("LD_LIBRARY_PATH: %s", ld_library_path?ld_library_path:"null");
+
+        for (i=0; environ[i]; i++) {
+            DEBUG("environ[%d]: %s", i, environ[i]);
+        }
+
     }
 
     (void)pipe(cout_pipe);

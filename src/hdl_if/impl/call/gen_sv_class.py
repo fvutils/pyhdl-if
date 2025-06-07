@@ -392,6 +392,7 @@ class GenSVClass(object):
         self.dec_ind()
         self.println()
         self.inc_ind()
+        self.println('`PYHDL_IF_ENTER(("invokeTask"));');
         self.println("retval = pyhdl_if::None;");
         self.println()
         self.println("case (method)")
@@ -440,6 +441,7 @@ class GenSVClass(object):
 
         self.dec_ind()
         self.println("endcase")
+        self.println('`PYHDL_IF_LEAVE(("invokeTask"));');
         self.dec_ind()
         self.println("endtask")
 

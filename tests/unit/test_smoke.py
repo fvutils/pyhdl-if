@@ -66,6 +66,7 @@ def test_smoke(hdlsim_dvflow, hdl_if_env):
     
     sim_run = hdlsim_dvflow.mkTask(
         "hdlsim.%s.SimRun" % hdlsim_dvflow.sim,
+        plusargs=["pyhdl_if_debug=1"],
         needs=[sim_img])
 
     status, out = hdlsim_dvflow.runTask(sim_run)

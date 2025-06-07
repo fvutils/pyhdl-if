@@ -30,16 +30,24 @@ class HdlCallEndpointDPI(HdlCallEndpoint):
         self.scope = scope
 
         exe_l = ctypes.cdll.LoadLibrary(None)
-        if not hasattr(exe_l, "pyhdl_call_if_invoke_hdl_f"):
-            print("TODO: Try DPIExportLib")
-            exe_l = self._findDPIExportLib()
+        pyhdl_call_if_invoke_hdl_f = None
+        try:
+            pyhdl_call_if_invoke_hdl_f = getattr(exe_l, "pyhdl_call_if_invoke_hdl_f")
+            pyhdl_call_if_invoke_hdl_f.restype = ctypes.c_int
+        except Exception as e:
+            print("Exception(__init__): %s" % str(e), flush=True)
+#            pyhdl_call_if_invoke_f = None
+#        if not hasattr(exe_l, "pyhdl_call_if_invoke_hdl_f"):
+#            print("TODO: Try DPIExportLib")
+#            exe_l = self._findDPIExportLib()
+
         try:
             # self.svSetScope = exe_l.svSetScope
             # self.svSetScope.restype = None
             # self.svSetScope.argtypes = (
             #     ctypes.c_void_p,
             # )
-            self.pyhdl_call_if_invoke_hdl_f = exe_l.pyhdl_call_if_invoke_hdl_f
+            self.pyhdl_call_if_invoke_hdl_f = pyhdl_call_if_invoke_hdl_f
             self.pyhdl_call_if_invoke_hdl_f.restype = ctypes.py_object
             self.pyhdl_call_if_invoke_hdl_f.argtypes = (
                 ctypes.c_int,
@@ -50,7 +58,8 @@ class HdlCallEndpointDPI(HdlCallEndpoint):
             self.pyhdl_call_if_invoke_hdl_t.argtypes = (
                 ctypes.c_int,
                 ctypes.py_object,
-                ctypes.c_char_p,
+#                ctypes.c_char_p,
+                ctypes.py_object,
                 ctypes.py_object)
             self.pyhdl_call_if_response_py_t = exe_l.pyhdl_call_if_response_py_t
             self.pyhdl_call_if_response_py_t.restype = None
@@ -80,7 +89,7 @@ class HdlCallEndpointDPI(HdlCallEndpoint):
         self.pyhdl_call_if_invoke_hdl_t(
             obj_id,
             evt_obj,
-            method_name.encode(),
+            method_name,
             args)
     
     def response_py_t(self, sem_id, res):

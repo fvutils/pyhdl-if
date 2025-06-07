@@ -1,11 +1,14 @@
 import os
 import pytest
+import sys
+
 from dv_flow.libhdlsim.pytest import HdlSimDvFlow, hdlsim_available_sims
 
 def available_sims_dpi(incl=None, excl=None):
     if excl is None:
         # TODO: control via env var?
-        excl = ["xsm"]
+#        excl = ["xsm"]
+        pass
     return hdlsim_available_sims(incl, excl)
 
 def available_sims_vpi(incl=None, excl=None):
@@ -26,6 +29,8 @@ def hdl_if_env():
         env["PYTHONPATH"] = hdl_if_dir
     else:
         env["PYTHONPATH"] += os.pathsep + hdl_if_dir
+
+    env["PYHDL_IF_PYTHON"] = sys.executable
 
     return env
 
