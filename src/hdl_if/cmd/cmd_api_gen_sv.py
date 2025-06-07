@@ -54,6 +54,7 @@ class CmdApiGenSV(object):
             gen = GenSVClass(fp, uvm=args.uvm)
 
             if args.package is not None:
+                gen.println('`include "pyhdl_if_macros.svh"')
                 gen.println("package %s;" % args.package)
                 gen.inc_ind()
 

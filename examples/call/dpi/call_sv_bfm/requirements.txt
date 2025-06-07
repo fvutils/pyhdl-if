@@ -1,3 +1,5 @@
 
 pyhdl-if
-cocotb
+dv-flow-mgr
+dv-flow-libhdlsim
+

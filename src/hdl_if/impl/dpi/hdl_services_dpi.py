@@ -20,6 +20,7 @@
 #*
 #****************************************************************************
 import ctypes
+import os
 from hdl_if.hdl_services import HdlServices
 
 class HdlServicesDpi(HdlServices):

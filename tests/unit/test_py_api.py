@@ -1,56 +1,56 @@
 import os
 import sys
 import pytest
-import pytest_fv as pfv
-from pytest_fv.fixtures import *
 from .test_base import *
-
-import hdl_if
-
-SKIP_HDLSIM = ('ivl',)
+from dv_flow.libhdlsim.pytest import hdlsim_dvflow, HdlSimDvFlow
+from . import hdl_if_env, available_sims_dpi
 
 data_dir = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "data")
 test_py_api_data_dir = os.path.join(data_dir, "py_api")
 
-def _test_file(dirconfig, name, plusargs=None):
-    flow = pfv.FlowSim(dirconfig)
+def _test_file(hdlsim_dvflow : HdlSimDvFlow, name, env, plusargs=None):
+    env["PYTHONPATH"] = test_py_api_data_dir + os.pathsep + env["PYTHONPATH"]
+    hdlsim_dvflow.setEnv(env)
 
-    flow.fs.add_library(hdl_if.share())
-    flow.sim.addFileset(pfv.FSVlnv("fvutils::pyhdl-if", "systemVerilogSource"))
+    sim_img = hdlsim_dvflow.mkTask("hdlsim.%s.SimImage" % hdlsim_dvflow.sim)
 
-    flow.sim.addFileset(pfv.FSPaths(
-        test_py_api_data_dir, ["%s.sv" % name], "systemVerilogSource"))
+    sv_src = hdlsim_dvflow.mkTask("std.FileSet",
+                                  base=test_py_api_data_dir,
+                                  include="%s.sv" % name,
+                                  type="systemVerilogSource")
 
-    flow.sim.dpi_libs.append(hdl_if.get_entry())
-    flow.sim.top.add(name)
+    dpi_lib = hdlsim_dvflow.mkTask("pyhdl-if.DpiLib")
+    sv_pkg = hdlsim_dvflow.mkTask("pyhdl-if.SvPkg")
 
-    run_args = flow.sim.mkRunArgs(dirconfig.rundir())
-    print("rundir: %s" % dirconfig.rundir())
-    run_args.prepend_pathenv("PYTHONPATH", test_py_api_data_dir)
-    print("Adding PYTHONPATH=%s" % test_py_api_data_dir)
-    if plusargs is not None:
-        run_args.plusargs.extend(plusargs)
-    flow.addTaskToPhase("run.main", flow.sim.mkRunTask(run_args))
+    sim_img = hdlsim_dvflow.mkTask("hdlsim.%s.SimImage" % hdlsim_dvflow.sim,
+                                   top=[name],
+                                   needs=[sv_pkg, sv_src, dpi_lib])
+    
+    sim_run = hdlsim_dvflow.mkTask("hdlsim.%s.SimRun" % hdlsim_dvflow.sim,
+                                   plusargs=plusargs if plusargs is not None else [],
+                                   needs=[sim_img])
+    
+    status, out = hdlsim_dvflow.runTask(sim_run)
 
-    if dirconfig.config.getHdlSim() in SKIP_HDLSIM:
-        pytest.skip("Unsupported simulator %s" % dirconfig.config.getHdlSim())
-    else:
-        flow.run_all()
+    assert status == 0
 
-        with open(os.path.join(dirconfig.rundir(), "status.txt"), "r") as fp:
-            status = fp.read().strip()
+    with open(os.path.join(sim_run.rundir, "status.txt"), "r") as fp:
+        status = fp.read().strip()
 
-        assert status.startswith("PASS:")
+    assert status.startswith("PASS:")
 
-def test_smoke(dirconfig):
-    _test_file(dirconfig, "test_smoke")
 
-def test_a_plus_b(dirconfig):
-    _test_file(dirconfig, "a_plus_b")
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
+def test_smoke(hdlsim_dvflow, hdl_if_env):
+    _test_file(hdlsim_dvflow, "test_smoke", env=hdl_if_env)
 
-#@pytest.mark.skip("Needs more investigation")
-def test_data1(dirconfig):
-    _test_file(dirconfig, "data1", plusargs=[
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
+def test_a_plus_b(hdlsim_dvflow, hdl_if_env):
+    _test_file(hdlsim_dvflow, "a_plus_b", env=hdl_if_env)
+
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
+def test_data1(hdlsim_dvflow, hdl_if_env):
+    _test_file(hdlsim_dvflow, "data1", env=hdl_if_env, plusargs=[
         'data=%s' % os.path.join(test_py_api_data_dir, "data1.json")])

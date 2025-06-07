@@ -46,8 +46,9 @@ class CallProxyDPI(CallProxy):
         from hdl_if.backend import Backend
         be = Backend.inst();
         evt = be.mkEvent()
+        param = method_name
 
-        self.ep.invoke_hdl_t(self.obj_id, evt, method_name, args)
+        self.ep.invoke_hdl_t(self.obj_id, evt, param, args)
         res = await evt.wait()
 
         return res

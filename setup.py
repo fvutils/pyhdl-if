@@ -6,7 +6,7 @@ import sys
 import sysconfig
 from setuptools import Extension, setup, find_namespace_packages
 
-version="0.0.2"
+version="0.0.3"
 
 proj_dir = os.path.dirname(os.path.abspath(__file__))
 pythondir = os.path.join(proj_dir, "src")
@@ -79,6 +79,7 @@ setup_args = dict(
           'share/dpi/*',
           'share/vpi/*',
           'share/*',
+          'dfm/flow.dv'
 #          "*pyhdl_if.*",
       ]
   },
@@ -98,6 +99,9 @@ setup_args = dict(
   setup_requires=[
     'setuptools_scm',
     'cython',
+    'ivpm',
+    'pcpp',
+    'cxxheaderparser'
   ],
   entry_points={
       'console_scripts': [
@@ -105,7 +109,10 @@ setup_args = dict(
       ],
       'ivpm.pkginfo': [
         'pyhdl-if = hdl_if.pkginfo:PkgInfo'
-      ]
+      ],
+      'dv_flow.mgr': [
+        'pyhdl-if = hdl_if.dfm.__ext__'
+      ],
   },
   ext_modules=[ ext ]
 )

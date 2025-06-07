@@ -175,3 +175,4 @@ results.xml
 *.bk
 
 examples/call/dpi/call_sv_bfm/call_sv_bfm_pkg.sv
+rundir/

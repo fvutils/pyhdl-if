@@ -25,8 +25,9 @@ interface class ICallApi;
         PyObject            args);
 
     pure virtual task invokeTask(
-        output PyObject     retval,
-        input string        method,
-        input PyObject      args);
+        output PyObject         retval,
+        inout PyGILState_STATE  state,
+        input string            method,
+        input PyObject          args);
 
 endclass

@@ -13,7 +13,7 @@ jobs:
     - name: Test build
       run: |
         python3 -m venv py
-        ./py/bin/pip install ivpm pytest pytest-fv
+        ./py/bin/pip install -U ivpm pytest pytest-dfm dv-flow-libhdlsim
         ./py/bin/python3 -m ivpm update -a
         ./packages/python/bin/python3 setup.py bdist_wheel
     - name: Run tests

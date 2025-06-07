@@ -1,0 +1,43 @@
+package:
+  name: pyhdl-if
+
+  tasks:
+  - name: DpiLib
+    desc: PyHDL-IF DPI Library
+    shell: pytask
+    run: hdl_if.dfm.dpi_lib.DpiLib
+
+  - name: VpiLib
+    desc: PyHDL-IF VPI Library
+    shell: pytask
+    run: hdl_if.dfm.vpi_lib.VpiLib
+  
+  - name: SvPkg
+    desc: PyHDL-IF SystemVerilog Package
+    shell: pytask
+    run: hdl_if.dfm.sv_pkg.SvPkg
+
+  - name: APIGenSV
+    desc: Generates a SystemVerilog API from the Python API
+    with:
+      inline:
+        desc: Run the generator in-line 
+        type: bool
+        value: False
+      filename:
+        desc: name of the output file
+        type: str
+        value: api.sv
+      pkgname:
+        desc: Of the package
+        type: str
+        value: ""
+      pythonpath:
+        desc: Extra PYTHONPATH to use 
+        type: list
+      modules:
+        desc: List of Python modules to load
+        type: list
+
+    shell: pytask
+    run: hdl_if.dfm.api_gen_sv.APIGenSV

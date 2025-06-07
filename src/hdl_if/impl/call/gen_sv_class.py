@@ -386,12 +386,14 @@ class GenSVClass(object):
     def gen_task_dispatch(self, api):
         self.println("virtual task invokeTask(")
         self.inc_ind()
-        self.println("output pyhdl_if::PyObject retval,")
-        self.println("input string method,")
-        self.println("input pyhdl_if::PyObject args);")
+        self.println("output pyhdl_if::PyObject        retval,")
+        self.println("inout pyhdl_if::PyGILState_STATE state,")
+        self.println("input string                     method,")
+        self.println("input pyhdl_if::PyObject         args);")
         self.dec_ind()
         self.println()
         self.inc_ind()
+        self.println('`PYHDL_IF_ENTER(("invokeTask"));');
         self.println("retval = pyhdl_if::None;");
         self.println()
         self.println("case (method)")
@@ -409,6 +411,7 @@ class GenSVClass(object):
                         self.py2sv_func(p[1]),
                         i
                     ))
+                self.println("pyhdl_if::PyGILState_Release(state); // Release the GIL before invoking the task")
                 self.write("%s" % self._ind)
                 self.write("%s" % m.name)
                 if len(m.params) == 0:
@@ -428,6 +431,9 @@ class GenSVClass(object):
                             "," if (i+1 < len(m.params)) else ");"
                         ))
                     self.dec_ind()
+
+                self.println("state = pyhdl_if::PyGILState_Ensure(); // Reacquire the GIL after invoking the task")
+
                 if m.rtype is not None:
                     self.println("retval = %s;" % self.sv2py_func(m.rtype, "__retval"))
                 self.dec_ind()
@@ -440,6 +446,7 @@ class GenSVClass(object):
 
         self.dec_ind()
         self.println("endcase")
+        self.println('`PYHDL_IF_LEAVE(("invokeTask"));');
         self.dec_ind()
         self.println("endtask")
 
