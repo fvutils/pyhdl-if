@@ -1,0 +1,37 @@
+
+package:
+  name: uvm
+
+  imports:
+  - "../../packages/via/flow.dv"
+  - "../../src/hdl_if/dfm/flow.dv"
+
+  tasks:
+  - name: src
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [top_pkg.sv, top.sv]
+
+  - name: sim-img
+    desc: Builds the simulation image
+    uses: hdlsim.xsm.SimImage
+    needs: 
+    - hdlsim.xsm.SimLibUVM
+    - via.UVMPkg
+    - pyhdl-if.VIAPkg
+    - pyhdl-if.DpiLib
+    - src
+    with:
+      top: [top]
+  - name: sim-run
+    uses: hdlsim.xsm.SimRun
+    needs: [sim-img]
+    with:
+      plusargs: 
+      - UVM_TESTNAME=base_test
+      - pyhdl.via.class=entry.Entry
+      - pyhdl.python=${{ rootdir }}/../../packages/python/bin/python
+      - pyhdl.debug=0
+
+

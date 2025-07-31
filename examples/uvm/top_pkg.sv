@@ -2,7 +2,9 @@
 
 package top_pkg;
     import uvm_pkg::*;
-    import pyuvm_if::*;
+//    import pyhdl_if::*;
+    import pyhdl_if_via::*;
+    import via_uvm::*;
 
     // First transaction type (memory-like)
     class trans_a extends uvm_sequence_item;
@@ -191,46 +193,46 @@ package top_pkg;
         endfunction
     endclass
 
-    class hook extends uvm_component;
-        `uvm_component_utils(hook)
+//     class hook extends uvm_component;
+//         `uvm_component_utils(hook)
 
-        function new(string name = "hook", uvm_component parent);
-            super.new(name, parent);
-        endfunction
+//         function new(string name = "hook", uvm_component parent);
+//             super.new(name, parent);
+//         endfunction
 
-        function void build_phase(uvm_phase phase);
-            $display("--> build_phase");
-            super.build_phase(phase);
-            $display("<-- build_phase");
-        endfunction
+//         function void build_phase(uvm_phase phase);
+//             $display("--> build_phase");
+//             super.build_phase(phase);
+//             $display("<-- build_phase");
+//         endfunction
 
-        function void connect_phase(uvm_phase phase);
-            $display("--> connect_phase");
-            super.connect_phase(phase);
-            $display("<-- connect_phase");
-        endfunction
+//         function void connect_phase(uvm_phase phase);
+//             $display("--> connect_phase");
+//             super.connect_phase(phase);
+//             $display("<-- connect_phase");
+//         endfunction
 
-        virtual task run_phase(uvm_phase phase);
-            uvm_component children[$];
-            $display("--> run_phase");
-            uvm_root::get().get_children(children);
-            $display("  %0d children", children.size());
-            phase.raise_objection(this);
-            #100ns;
-            phase.drop_objection(this);
-            $display("<-- run_phase");
-        endtask
+//         virtual task run_phase(uvm_phase phase);
+//             uvm_component children[$];
+//             $display("--> run_phase");
+//             uvm_root::get().get_children(children);
+//             $display("  %0d children", children.size());
+//             phase.raise_objection(this);
+//             #100ns;
+//             phase.drop_objection(this);
+//             $display("<-- run_phase");
+//         endtask
 
-    endclass
+//     endclass
 
-    bit __initialized = hook_uvm();
+//     bit __initialized = hook_uvm();
 
-    function automatic bit hook_uvm();
-        hook h = new("__pyhdl_uvm_if", uvm_root::get());
-//        phase_listener pl = phase_listener::type_id::create("pl");
-//        uvm_callbacks #(uvm_component, uvm_phase_cb)::add(uvm_top.get(), pl);
-//        uvm_phase_cb::add(null, pl); // Register with uvm_top (null means global registration)
-        return 1;
-    endfunction
+//     function automatic bit hook_uvm();
+//         hook h = new("__pyhdl_uvm_if", uvm_root::get());
+// //        phase_listener pl = phase_listener::type_id::create("pl");
+// //        uvm_callbacks #(uvm_component, uvm_phase_cb)::add(uvm_top.get(), pl);
+// //        uvm_phase_cb::add(null, pl); // Register with uvm_top (null means global registration)
+//         return 1;
+//     endfunction
 
 endpackage

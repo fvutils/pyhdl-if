@@ -3,8 +3,10 @@ function automatic bit __pyhdl_if_init();
     bit ret = 1;
     PyObject hdl_if_impl, hdl_if_impl_dpi, dpi_init, get_none, args, res;
     PyGILState_STATE state;
+    string python;
 
-    if ($value$plusargs("pyhdl_if_debug=%d", pyhdl_if_debug)) begin
+    if ($value$plusargs("pyhdl_if_debug=%d", pyhdl_if_debug) ||
+        $value$plusargs("pyhdl.debug=%d", pyhdl_if_debug)) begin
         if (pyhdl_if_debug > 0) begin
             $display("PYHDL-IF: Debug mode enabled (%d)", pyhdl_if_debug);
         end else begin
@@ -12,9 +14,13 @@ function automatic bit __pyhdl_if_init();
         end
     end
 
+    if ($value$plusargs("pyhdl.python=%s", python)) begin
+        `PYHDL_IF_DEBUG(("Python interpreter specified as %0s", python));
+    end
+
     `PYHDL_IF_ENTER(("pyhdl_if_init"));
 
-    if (pyhdl_if_dpi_entry() != 1) begin
+    if (pyhdl_if_dpi_entry(pyhdl_if_debug, python) != 1) begin
         $display("Fatal: Failed to initialize pyhdl-pi-if DPI interface");
         $finish;
         `PYHDL_IF_LEAVE(("pyhdl_if_init"));

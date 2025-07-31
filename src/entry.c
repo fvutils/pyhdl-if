@@ -42,14 +42,16 @@
 
 #ifdef DEBUG_INIT
 #define DEBUG(fmt, ...) if (prv_debug) {fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout); }
+#define DEBUG_LEVEL(level, fmt, ...) if (prv_debug >= level) {fprintf(stdout, fmt, ##__VA_ARGS__) ; fputs("\n", stdout); fflush(stdout); }
 #else
 #define DEBUG(fmt, ...)
+#define DEBUG_LEVEL(level, fmt, ...)
 #endif
 
 static int prv_debug = 0;
 typedef void *lib_h_t;
 static lib_h_t find_loaded_lib(const char *sym);
-static lib_h_t find_python_lib();
+static lib_h_t find_python_lib(const char *python);
 static lib_h_t check_lib(const char *path, const char *sym);
 
 #include "py_api_if.h"
@@ -61,7 +63,7 @@ extern "C" {
 #endif
 
 static lib_h_t _python_lib = 0;
-static lib_h_t init_python();
+static lib_h_t init_python(const char *python);
 
 /**
  * The following ensures that this DPI library has a dependency
@@ -91,8 +93,10 @@ void *get_dpiexport_funcs() {
  * 
  * Manages start-up tasks for DPI integration
  *******************************************************************/
-int pyhdl_if_dpi_entry() {
+int pyhdl_if_dpi_entry(int debug, const char *python) {
     lib_h_t pylib;
+
+    prv_debug = debug;
 
     if (getenv("PYHDL_IF_DEBUG") && getenv("PYHDL_IF_DEBUG")[0] == '1') {
         prv_debug = 1;
@@ -100,7 +104,7 @@ int pyhdl_if_dpi_entry() {
 
     DEBUG("entry.c");
 
-    if (!(pylib=init_python())) {
+    if (!(pylib=init_python(python))) {
         DEBUG("pyhdl-if: Failed to initialize Python");
         return -1;
     }
@@ -132,7 +136,7 @@ void pyhdl_if_vpi_entry() {
 
     DEBUG("entry.c");
 
-    if (!(pylib=init_python())) {
+    if (!(pylib=init_python(""))) {
         DEBUG("pyhdl-pi-if: Failed to initialize Python");
         return;
     }
@@ -201,16 +205,16 @@ void (*vlog_startup_routines[])() = {
  * - Discover which library implements Python
  * - On Linux, ensure this library is reloaded with global visibility
  *******************************************************************/
-lib_h_t init_python() {
+lib_h_t init_python(const char *python) {
     if (!_python_lib) {
-        _python_lib = find_python_lib();
+        _python_lib = find_python_lib(python);
     }
 
     return _python_lib;
 }
 
-static lib_h_t find_config_python_lib();
-lib_h_t find_python_lib() {
+static lib_h_t find_config_python_lib(const char *python);
+lib_h_t find_python_lib(const char *python) {
     lib_h_t lib = 0;
 
     if (getenv("LIBPYTHON_LOC") && getenv("LIBPYTHON_LOC")[0]) {
@@ -231,7 +235,7 @@ lib_h_t find_python_lib() {
     }
 
     if (!lib) {
-        lib = find_config_python_lib();
+        lib = find_config_python_lib(python);
     }
 
     return lib;
@@ -293,7 +297,7 @@ lib_h_t find_loaded_lib(const char *sym) {
                 // File doesn't exist. Read another line to complete the path
                 if (fgets(mapfile_path, sizeof(mapfile_path), map_fp)) {
                     char *tpath;
-                    DEBUG("malloc %lld", (strlen(path) + strlen(mapfile_path)+2));
+                    DEBUG("malloc %lld", (unsigned long long)(strlen(path) + strlen(mapfile_path)+2));
                     tpath = (char *)malloc(strlen(path) + strlen(mapfile_path) + 2);
 
                     strcpy(tpath, path);
@@ -387,7 +391,7 @@ char *clean_env(const char *name, const char *omit) {
 
 #ifdef _WIN32
 #else
-lib_h_t find_config_python_lib() {
+lib_h_t find_config_python_lib(const char *python) {
     lib_h_t ret = 0;
     int cout_pipe[2];
     posix_spawn_file_actions_t action;
@@ -401,18 +405,20 @@ lib_h_t find_config_python_lib() {
     char *libdest = 0;
     char *libdir = 0;
     extern char **environ;
-    const char *python = "python3";
 
     if (getenv("PYHDL_IF_PYTHON") && getenv("PYHDL_IF_PYTHON")[0]) {
         python = getenv("PYHDL_IF_PYTHON");
         fprintf(stdout, "PyHDL-IF Note: Using Python interpreter \"%s\", specified by $PYHDL_IF_PYTHON\n",
             python);
         fflush(stdout);
+    }
+
+    if (python && python[0]) {
         const char *pythonhome = getenv("PYTHONHOME");
         if (pythonhome && pythonhome[0]) {
-            const char *pythonpath = getenv("PYTHONPATH");
-            const char *ldlibrarypath = getenv("LD_LIBRARY_PATH");
-            const char *path = getenv("PATH");
+//            const char *pythonpath = getenv("PYTHONPATH");
+//            const char *ldlibrarypath = getenv("LD_LIBRARY_PATH");
+//            const char *path = getenv("PATH");
 
             fprintf(stdout, "PyHDL-IF Note: Clearing PYTHONHOME and cleaning PYTHONPATH\n");
             fflush(stdout);
@@ -442,6 +448,9 @@ lib_h_t find_config_python_lib() {
 
             putenv(strdup("PYTHON="));
             putenv(strdup("PYTHONHOME="));
+        } else {
+            // Default to whatever is in the path
+            python = "python3";
         }
 
         // Now, add the new Python interpreter to the PATH
@@ -509,7 +518,7 @@ lib_h_t find_config_python_lib() {
                 newlen = (eol-bp); // exclude the '\n'
             } else {
                 newlen = (&buf[sz]-bp);
-                DEBUG("no eol: newlen=%d (%s)", &buf[sz]-bp, bp);
+                DEBUG("no eol: newlen=%d (%s)", (int)(&buf[sz]-bp), bp);
             }
 
             // Append to buffer

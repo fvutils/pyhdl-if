@@ -29,6 +29,8 @@ package:
       src: pypi
     - name: setuptools_scm
       src: pypi
+    - name: via
+      url: https://github.com/fvutils/via.git
     - name: pytest-dfm
       url: https://github.com/dv-flow/pytest-dfm.git
     - name: dv-flow-libhdlsim

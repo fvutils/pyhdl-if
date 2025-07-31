@@ -2,7 +2,7 @@ import os
 import pytest
 import sys
 
-from dv_flow.libhdlsim.pytest import HdlSimDvFlow, hdlsim_available_sims
+from dv_flow.libhdlsim.pytest import hdlsim_dvflow, hdlsim_available_sims, HdlSimDvFlow
 
 def available_sims_dpi(incl=None, excl=None):
     if excl is None:
@@ -33,5 +33,18 @@ def hdl_if_env():
     env["PYHDL_IF_PYTHON"] = sys.executable
 
     return env
+
+@pytest.fixture
+def pyhdl_dvflow(request, tmpdir):
+    unit_tests_dir = os.path.dirname(os.path.abspath(__file__))
+    pyhdl_if_dir = os.path.abspath(os.path.join(unit_tests_dir, "../../"))
+
+    ret = HdlSimDvFlow(
+        request=request, 
+        srcdir=os.path.dirname(request.fspath),
+        tmpdir=tmpdir)
+    ret.addPackage("via", os.path.join(pyhdl_if_dir, "packages/via/flow.dv"))
+
+    return ret
 
 

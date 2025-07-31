@@ -25,7 +25,10 @@ package pyhdl_if;
 
     `include "pyhdl_dpi_imports.svh"
 
-    import "DPI-C" context function int pyhdl_if_dpi_entry();
+    import "DPI-C" context function int pyhdl_if_dpi_entry(
+        int         debug,
+        string      python
+    );
 
     int pyhdl_if_debug = 0;
 

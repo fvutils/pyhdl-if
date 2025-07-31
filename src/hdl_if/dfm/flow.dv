@@ -5,17 +5,24 @@ package:
   - name: DpiLib
     desc: PyHDL-IF DPI Library
     shell: pytask
-    run: hdl_if.dfm.dpi_lib.DpiLib
+    run: dpi_lib.py::DpiLib
 
   - name: VpiLib
     desc: PyHDL-IF VPI Library
     shell: pytask
-    run: hdl_if.dfm.vpi_lib.VpiLib
+    run: vpi_lib.py::VpiLib
   
   - name: SvPkg
     desc: PyHDL-IF SystemVerilog Package
     shell: pytask
-    run: hdl_if.dfm.sv_pkg.SvPkg
+    run: sv_pkg.py::SvPkg
+
+  - name: VIAPkg
+    desc: PyHDL-IF Verification Environment Introspection Service Package
+    shell: pytask
+    run: via_pkg.py::VIAPkg
+    consumes: none
+    needs: [SvPkg]
 
   - name: APIGenSV
     desc: Generates a SystemVerilog API from the Python API
@@ -40,4 +47,4 @@ package:
         type: list
 
     shell: pytask
-    run: hdl_if.dfm.api_gen_sv.APIGenSV
+    run: api_gen_sv.py::APIGenSV

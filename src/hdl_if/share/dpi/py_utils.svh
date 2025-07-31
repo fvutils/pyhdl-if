@@ -136,3 +136,13 @@ function automatic void py_gil_leave();
     end
 endfunction
 
+function automatic py_object py_check(py_object obj);
+    if (obj == null) begin
+        $display("Error:");
+        PyErr_Print();
+        return null; 
+    end else begin
+        return obj;
+    end
+endfunction
+
