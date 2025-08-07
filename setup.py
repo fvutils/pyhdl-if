@@ -133,6 +133,17 @@ if isSrcBuild:
 
         print("<-- gen_py_api")
 
+        print("--> gen_via_if")
+        cmd = [sys.executable, 
+               os.path.join(proj_dir, "scripts", "gen_via_if.py")]
+        
+        res = subprocess.run(cmd, stderr=subprocess.STDOUT)
+
+        if res.returncode != 0:
+            raise Exception("Failed to run cmd %s" % str(cmd))
+
+        print("<-- gen_via_if")
+
     setup_args["ivpm_hooks"] = {
         "setup.pre" : [
             gen_py_api

@@ -15,9 +15,9 @@ package:
 
   - name: sim-img
     desc: Builds the simulation image
-    uses: hdlsim.xsm.SimImage
+    uses: hdlsim.mti.SimImage
     needs: 
-    - hdlsim.xsm.SimLibUVM
+    - hdlsim.mti.SimLibUVM
     - via.UVMPkg
     - pyhdl-if.VIAPkg
     - pyhdl-if.DpiLib
@@ -25,13 +25,15 @@ package:
     with:
       top: [top]
   - name: sim-run
-    uses: hdlsim.xsm.SimRun
-    needs: [sim-img]
+    uses: hdlsim.mti.SimRun
+    needs: [sim-img, pyhdl-if.DpiLib]
     with:
+      #      args: 
+      #- "-valgrind --tool=memcheck"
       plusargs: 
       - UVM_TESTNAME=base_test
       - pyhdl.via.class=entry.Entry
       - pyhdl.python=${{ rootdir }}/../../packages/python/bin/python
-      - pyhdl.debug=0
+      - pyhdl.debug=1
 
 

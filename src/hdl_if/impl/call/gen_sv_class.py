@@ -369,7 +369,10 @@ class GenSVClass(object):
             else:
                 self.println("__res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, \"%s\", __args);" % (
                     m.name,))
-                self.println("return %s(__res);" % self.py2sv_func(m.rtype))
+                if m.rtype is not None:
+                    self.println("return %s(__res);" % self.py2sv_func(m.rtype))
+                else:
+                    self.println("pyhdl_if::Py_DecRef(__res);")
 
         self.dec_ind()
 
@@ -393,7 +396,7 @@ class GenSVClass(object):
         self.dec_ind()
         self.println()
         self.inc_ind()
-        self.println('`PYHDL_IF_ENTER(("invokeTask"));');
+#        self.println('`PYHDL_IF_ENTER(("invokeTask"));');
         self.println("retval = pyhdl_if::None;");
         self.println()
         self.println("case (method)")
@@ -446,7 +449,7 @@ class GenSVClass(object):
 
         self.dec_ind()
         self.println("endcase")
-        self.println('`PYHDL_IF_LEAVE(("invokeTask"));');
+#        self.println('`PYHDL_IF_LEAVE(("invokeTask"));');
         self.dec_ind()
         self.println("endtask")
 
@@ -526,7 +529,7 @@ class GenSVClass(object):
             raise Exception("Unsupported type %s" % str(type))
         return "pyhdl_if::" + type_m[type]
 
-    def sv2py_func(self, type, var):
+    def sv2py_func(self, t, var):
         type_m = {
             ctypes.c_bool : "PyLong_FromLong",
             ctypes.c_byte : "PyLong_FromLong",
@@ -543,14 +546,14 @@ class GenSVClass(object):
             ctypes.c_uint64 : "PyLong_FromUnsignedLongLong",
             str : "PyUnicode_FromString"
         }
-        if type in type_m.keys():
-            return "pyhdl_if::%s(%s)" % (type_m[type], var)
-        elif type == ctypes.py_object:
+        if t in type_m.keys():
+            return "pyhdl_if::%s(%s)" % (type_m[t], var)
+        elif t == ctypes.py_object or type(t) == type:
             return var
         else:
             raise Exception("Unsupported type %s" % str(type))
 
-    def svtype(self, type):
+    def svtype(self, t):
         type_m = {
             ctypes.c_bool : "bit",
             ctypes.c_byte : "byte",
@@ -568,8 +571,10 @@ class GenSVClass(object):
             str : "string",
             ctypes.py_object : "pyhdl_if::PyObject"
         }
-        if type in type_m.keys():
-            return type_m[type]
+        if t in type_m.keys():
+            return type_m[t]
+        elif type(t) == type:
+            return "pyhdl_if::PyObject"
         else:
             raise Exception("Unsupported type %s" % str(type))
 

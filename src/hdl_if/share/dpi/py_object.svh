@@ -13,6 +13,11 @@ class py_object;
         this.obj = obj;
     endfunction
 
+    static function py_object mk(PyObject obj);
+        py_object ret = new(obj);
+        return ret;
+    endfunction
+
     /**
      * Drops ownership of handle
      */

@@ -175,23 +175,23 @@ package top_pkg;
         endtask
     endclass
 
-    // Phase listener class
-    class phase_listener extends uvm_phase_cb;
-        `uvm_object_utils(phase_listener)
+    // // Phase listener class
+    // class phase_listener extends uvm_phase_cb;
+    //     `uvm_object_utils(phase_listener)
 
-        function new(string name="phase_listener");
-            super.new(name);
-        endfunction
+    //     function new(string name="phase_listener");
+    //         super.new(name);
+    //     endfunction
 
-        // Example callbacks for different phases
-        virtual function void phase_started(uvm_phase phase);
-            `uvm_info("PHASE_CB", $sformatf("Phase %s started", phase.get_name()), UVM_LOW)
-        endfunction
+    //     // Example callbacks for different phases
+    //     virtual function void phase_started(uvm_phase phase);
+    //         `uvm_info("PHASE_CB", $sformatf("Phase %s started", phase.get_name()), UVM_LOW)
+    //     endfunction
 
-        virtual function void phase_ended(uvm_phase phase);
-            `uvm_info("PHASE_CB", $sformatf("Phase %s ended", phase.get_name()), UVM_LOW)
-        endfunction
-    endclass
+    //     virtual function void phase_ended(uvm_phase phase);
+    //         `uvm_info("PHASE_CB", $sformatf("Phase %s ended", phase.get_name()), UVM_LOW)
+    //     endfunction
+    // endclass
 
 //     class hook extends uvm_component;
 //         `uvm_component_utils(hook)

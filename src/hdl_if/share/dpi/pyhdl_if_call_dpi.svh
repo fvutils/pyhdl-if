@@ -5,7 +5,15 @@ function PyObject pyhdl_call_if_invoke_hdl_f(
     PyObject        args);
     PyObject ret;
     `PYHDL_IF_ENTER(("pyhdl_call_if_invoke_hdl_f(obj_id=%0d, method_name=%s, args=%p)", obj_id, method_name, args));
-    ret = __objects[obj_id].invokeFunc(method_name, args);
+    if (__objects.size() > obj_id && __objects[obj_id] != null) begin
+        ret = __objects[obj_id].invokeFunc(method_name, args);
+    end else begin
+        $display("Fatal: obj_id %0d doesn't exist", obj_id);
+    end
+    if (ret == null) begin
+        ret = pyhdl_if::None;
+//        ret = pyhdl_if::PyUnicode_FromString("abc");
+    end
     `PYHDL_IF_LEAVE(("pyhdl_call_if_invoke_hdl_f"));
     return ret;
 endfunction

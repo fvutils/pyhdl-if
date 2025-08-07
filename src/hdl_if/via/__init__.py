@@ -2,6 +2,11 @@
 import importlib
 import sys
 
+from .component_if import ComponentIF
+from .object_if import ObjectIF
+from .object_type_if import ObjectTypeIF
+from .root import Root
+
 print("load(0)", flush=True)
 
 def load(clsname):
