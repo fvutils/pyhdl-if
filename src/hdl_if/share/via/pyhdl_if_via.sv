@@ -6,6 +6,7 @@ package pyhdl_if_via;
 
     `include "pyhdl_via_component.svh"
     `include "pyhdl_via_object.svh"
+    `include "pyhdl_via_root_if.svh"
     `include "pyhdl_via_root_listener.svh"
     `include "via_if.svh"
 

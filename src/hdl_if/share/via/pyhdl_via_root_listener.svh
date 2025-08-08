@@ -5,14 +5,27 @@
  ****************************************************************************/
 
 typedef interface class IRoot;
+typedef interface class via_root_if;
 typedef class Root_wrap;
+typedef class pyhdl_via_root_if;
 
 class pyhdl_via_root_listener extends via_root_listener_if;
-    IRoot           roots[string];
-    py_object       pyhdl_via;
+    IRoot                       roots[string];
+    py_object                   pyhdl_via;
+    static pyhdl_via_root_if    pyhdl_root_if;
+    static py_object            pyhdl_root_obj;
 
     function new();
         pyhdl_via = py_import("hdl_if.via");
+    endfunction
+
+    static function py_object get_root_if();
+        if (pyhdl_root_if == null) begin
+            via_root root_if = via_root::get();
+            pyhdl_root_if = new(root_if);
+            pyhdl_root_obj = new(pyhdl_root_if.m_obj);
+        end
+        return pyhdl_root_obj;
     endfunction
 
     virtual function void post_build(via_component_if root);
@@ -24,6 +37,7 @@ class pyhdl_via_root_listener extends via_root_listener_if;
         pyhdl_via_component root_obj;
         py_object root_obj_h;
         Root_wrap root_h;
+
 
         $display("post_build %0s", root.get_name());
         if ($value$plusargs(option, clsname)) begin
@@ -44,7 +58,11 @@ class pyhdl_via_root_listener extends via_root_listener_if;
 
             $display("--> Python class: %0s", clsname);
             py_gil_enter();
-            cls = py_check(load.call(py_tuple::mk_init({py_from_str(clsname)})));
+            cls = py_check(load.call(py_tuple::mk_init('{
+                py_from_str(clsname),
+                get_root_if()
+                // Handle to root_if proxy
+            })));
             root_h = new(cls.borrow());
             roots[root.get_full_name()] = root_h;
             py_gil_leave();

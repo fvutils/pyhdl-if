@@ -1,4 +1,4 @@
-from hdl_if.via import Root
+from hdl_if.via import Root, error, info
 
 class Entry(Root):
 
@@ -12,6 +12,7 @@ class Entry(Root):
             print("Exception: %s" % str(e), flush=True)
 
     def post_connect(self, root):
+        info(1, "Hello World!")
         for i in range(100):
             print("post_connect", flush=True)
         pass
