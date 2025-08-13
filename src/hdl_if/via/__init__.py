@@ -3,6 +3,7 @@ import importlib
 import sys
 
 from .component_if import ComponentIF
+from .field_if import FieldIF
 from .object_if import ObjectIF
 from .object_type_if import ObjectTypeIF
 from .root import Root

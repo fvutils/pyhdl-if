@@ -40,18 +40,96 @@ package top_pkg;
         endfunction
     endclass
 
+    // Sequence: send a single trans_a (transaction is a field)
+    class trans_a_single_seq extends uvm_sequence #(trans_a);
+        rand trans_a t;
+        `uvm_object_utils_begin(trans_a_single_seq)
+            `uvm_field_object(t, UVM_ALL_ON)
+        `uvm_object_utils_end
+        function new(string name = "trans_a_single_seq");
+            super.new(name);
+            t = trans_a::type_id::create("t");
+        endfunction
+        virtual task body();
+            start_item(t);
+            finish_item(t);
+        endtask
+    endclass
+
+    // Sequence: send N randomized trans_a (N is configurable)
+    class trans_a_multi_seq extends uvm_sequence #(trans_a);
+        rand int unsigned num_txn;
+        `uvm_object_utils_begin(trans_a_multi_seq)
+            `uvm_field_int(num_txn, UVM_ALL_ON)
+        `uvm_object_utils_end
+        function new(string name = "trans_a_multi_seq");
+            super.new(name);
+            num_txn = 1;
+        endfunction
+        virtual task body();
+            trans_a t;
+            for (int i = 0; i < num_txn; i++) begin
+                t = trans_a::type_id::create($sformatf("t_%0d", i));
+                start_item(t);
+                assert(t.randomize());
+                finish_item(t);
+            end
+        endtask
+    endclass
+
+    // Sequence: send a single trans_b (transaction is a field)
+    class trans_b_single_seq extends uvm_sequence #(trans_b);
+        rand trans_b t;
+        `uvm_object_utils_begin(trans_b_single_seq)
+            `uvm_field_object(t, UVM_ALL_ON)
+        `uvm_object_utils_end
+        function new(string name = "trans_b_single_seq");
+            super.new(name);
+            t = trans_b::type_id::create("t");
+        endfunction
+        virtual task body();
+            start_item(t);
+            finish_item(t);
+        endtask
+    endclass
+
+    // Sequence: send N randomized trans_b (N is configurable)
+    class trans_b_multi_seq extends uvm_sequence #(trans_b);
+        rand int unsigned num_txn;
+        `uvm_object_utils_begin(trans_b_multi_seq)
+            `uvm_field_int(num_txn, UVM_ALL_ON)
+        `uvm_object_utils_end
+        function new(string name = "trans_b_multi_seq");
+            super.new(name);
+            num_txn = 1;
+        endfunction
+        virtual task body();
+            trans_b t;
+            for (int i = 0; i < num_txn; i++) begin
+                t = trans_b::type_id::create($sformatf("t_%0d", i));
+                start_item(t);
+                assert(t.randomize());
+                finish_item(t);
+            end
+        endtask
+    endclass
+ 
     // Agent A Driver
     class driver_a extends uvm_driver #(trans_a);
         `uvm_component_utils(driver_a)
 
+        uvm_analysis_port #(trans_a) ap;
+
         function new(string name, uvm_component parent);
             super.new(name, parent);
+            ap = new("ap", this);
         endfunction
 
         task run_phase(uvm_phase phase);
 `ifdef UNDEFINED
             forever begin
                 seq_item_port.get_next_item(req);
+                ap.write(req);
                 // Drive transaction
                 @(posedge vif.clk);
                 vif.addr <= req.addr;
@@ -67,14 +145,18 @@ package top_pkg;
     class driver_b extends uvm_driver #(trans_b);
         `uvm_component_utils(driver_b)
 
+        uvm_analysis_port #(trans_b) ap;
+
         function new(string name, uvm_component parent);
             super.new(name, parent);
+            ap = new("ap", this);
         endfunction
 
         task run_phase(uvm_phase phase);
 `ifdef UNDEFINED
             forever begin
                 seq_item_port.get_next_item(req);
+                ap.write(req);
                 // Drive transaction
                 @(posedge vif.clk);
                 vif.data <= req.data;
@@ -174,65 +256,5 @@ package top_pkg;
             $display("<-- test run_phase");
         endtask
     endclass
-
-    // // Phase listener class
-    // class phase_listener extends uvm_phase_cb;
-    //     `uvm_object_utils(phase_listener)
-
-    //     function new(string name="phase_listener");
-    //         super.new(name);
-    //     endfunction
-
-    //     // Example callbacks for different phases
-    //     virtual function void phase_started(uvm_phase phase);
-    //         `uvm_info("PHASE_CB", $sformatf("Phase %s started", phase.get_name()), UVM_LOW)
-    //     endfunction
-
-    //     virtual function void phase_ended(uvm_phase phase);
-    //         `uvm_info("PHASE_CB", $sformatf("Phase %s ended", phase.get_name()), UVM_LOW)
-    //     endfunction
-    // endclass
-
-//     class hook extends uvm_component;
-//         `uvm_component_utils(hook)
-
-//         function new(string name = "hook", uvm_component parent);
-//             super.new(name, parent);
-//         endfunction
-
-//         function void build_phase(uvm_phase phase);
-//             $display("--> build_phase");
-//             super.build_phase(phase);
-//             $display("<-- build_phase");
-//         endfunction
-
-//         function void connect_phase(uvm_phase phase);
-//             $display("--> connect_phase");
-//             super.connect_phase(phase);
-//             $display("<-- connect_phase");
-//         endfunction
-
-//         virtual task run_phase(uvm_phase phase);
-//             uvm_component children[$];
-//             $display("--> run_phase");
-//             uvm_root::get().get_children(children);
-//             $display("  %0d children", children.size());
-//             phase.raise_objection(this);
-//             #100ns;
-//             phase.drop_objection(this);
-//             $display("<-- run_phase");
-//         endtask
-
-//     endclass
-
-//     bit __initialized = hook_uvm();
-
-//     function automatic bit hook_uvm();
-//         hook h = new("__pyhdl_uvm_if", uvm_root::get());
-// //        phase_listener pl = phase_listener::type_id::create("pl");
-// //        uvm_callbacks #(uvm_component, uvm_phase_cb)::add(uvm_top.get(), pl);
-// //        uvm_phase_cb::add(null, pl); // Register with uvm_top (null means global registration)
-//         return 1;
-//     endfunction
 
 endpackage

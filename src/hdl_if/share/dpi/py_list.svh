@@ -1,8 +1,11 @@
 
 class py_list extends py_object;
 
-    function new(PyObject obj);
+    function new(PyObject obj=null);
         super.new(obj);
+        if (obj == null) begin
+            this.obj = PyList_New(longint'(0));
+        end
     endfunction
 
     /**
@@ -25,6 +28,10 @@ class py_list extends py_object;
      */
     function void append(py_object obj);
         void'(PyList_Append(this.obj, obj.steal()));
+    endfunction
+
+    function void append_obj(PyObject obj);
+        void'(PyList_Append(this.obj, obj));
     endfunction
 
     /**

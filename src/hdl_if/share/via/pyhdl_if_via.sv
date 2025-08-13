@@ -5,7 +5,9 @@ package pyhdl_if_via;
     import via::*;
 
     `include "pyhdl_via_component.svh"
+    `include "pyhdl_via_field.svh"
     `include "pyhdl_via_object.svh"
+    `include "pyhdl_via_object_type.svh"
     `include "pyhdl_via_root_if.svh"
     `include "pyhdl_via_root_listener.svh"
     `include "via_if.svh"

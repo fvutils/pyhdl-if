@@ -1,6 +1,5 @@
 
 typedef class RootIF;
-typedef interface class via_root_if;
 
 class pyhdl_via_root_if extends RootIF;
     via_root_if           m_root;

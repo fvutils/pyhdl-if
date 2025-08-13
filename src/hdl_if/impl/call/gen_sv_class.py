@@ -20,6 +20,7 @@
 #*
 #****************************************************************************
 import ctypes
+import typing
 from .api_def import ApiDef
 from .method_def import MethodDef, MethodKind
 
@@ -550,7 +551,7 @@ class GenSVClass(object):
         }
         if t in type_m.keys():
             return "pyhdl_if::%s(%s)" % (type_m[t], var)
-        elif t == ctypes.py_object or type(t) == type:
+        elif t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__"):
             return var
         else:
             raise Exception("Unsupported type %s" % str(type))
@@ -572,14 +573,19 @@ class GenSVClass(object):
             ctypes.c_uint32 : "int unsigned",
             ctypes.c_uint64 : "longint unsigned",
             str : "string",
-            ctypes.py_object : "pyhdl_if::PyObject"
+            ctypes.py_object : "pyhdl_if::PyObject",
+            typing.List: "pyhdl_if::PyObject",
+            typing.Dict: "pyhdl_if::PyObject"
         }
+        print("t: %s" % str(t), flush=True)
         if t in type_m.keys():
             return type_m[t]
         elif type(t) == type:
             return "pyhdl_if::PyObject"
+        elif hasattr(t, "__origin__"):
+            return "pyhdl_if::PyObject"
         else:
-            raise Exception("Unsupported type %s" % str(type))
+            raise Exception("Unsupported type %s" % str(t))
 
     def println(self, ln=None):
         if ln is None:

@@ -1,6 +1,392 @@
+interface class IFieldIF extends pyhdl_if::ICallApi;
+
+    pure virtual function string get_name();
+
+endclass
+
+virtual class FieldIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IFieldIF;
+
+    pyhdl_if::PyObject       m_obj;
+
+    function new();
+        m_obj = create_pyobj();
+        pyhdl_if::pyhdl_if_connectObject(m_obj, this);
+    endfunction
+
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.field_if", string clsname="FieldIF");
+        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        __args = pyhdl_if::PyTuple_New(0);
+        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
+
+        if (__cls_m == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find module %%s", modname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
+        if (__cls_t == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find class %%s", clsname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
+        if (__obj == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to construct class FieldIF");
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        pyhdl_if::PyGILState_Release(state);
+
+        return __obj;
+    endfunction
+
+
+    function void init(pyhdl_if::PyObject obj);
+        pyhdl_if::pyhdl_if_connectObject(obj, this);
+        m_obj = obj;
+    endfunction
+
+    virtual function string get_name();
+    endfunction
+
+
+    virtual task invokeTask(
+        output pyhdl_if::PyObject        retval,
+        inout pyhdl_if::PyGILState_STATE state,
+        input string                     method,
+        input pyhdl_if::PyObject         args);
+
+        retval = pyhdl_if::None;
+
+        case (method)
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+    endtask
+
+    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
+        pyhdl_if::PyObject __ret = pyhdl_if::None;
+        case (method)
+            "get_name": begin
+                string __rval;
+                __rval = get_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+
+        return __ret;
+    endfunction
+
+endclass
+
+virtual class FieldIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IFieldIF;
+
+    pyhdl_if::PyObject       m_obj;
+
+    function new(pyhdl_if::PyObject obj=null);
+        if (obj != null) begin
+            init(obj);
+        end
+    endfunction
+
+    function void init(pyhdl_if::PyObject obj);
+        pyhdl_if::pyhdl_if_connectObject(obj, this);
+        m_obj = obj;
+    endfunction
+
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.field_if", string clsname="FieldIF");
+        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        __args = pyhdl_if::PyTuple_New(0);
+        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
+
+        if (__cls_m == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find module %%s", modname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
+        if (__cls_t == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find class %%s", clsname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
+        if (__obj == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to construct class FieldIF");
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        pyhdl_if::PyGILState_Release(state);
+
+        return __obj;
+    endfunction
+
+
+    virtual function string get_name();
+    endfunction
+
+
+    virtual task invokeTask(
+        output pyhdl_if::PyObject        retval,
+        inout pyhdl_if::PyGILState_STATE state,
+        input string                     method,
+        input pyhdl_if::PyObject         args);
+
+        retval = pyhdl_if::None;
+
+        case (method)
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+    endtask
+
+    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
+        pyhdl_if::PyObject __ret = pyhdl_if::None;
+        case (method)
+            "get_name": begin
+                string __rval;
+                __rval = get_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+
+        return __ret;
+    endfunction
+
+endclass
+interface class IObjectTypeIF extends pyhdl_if::ICallApi;
+
+    pure virtual function string get_name();
+    pure virtual function pyhdl_if::PyObject get_fields();
+
+endclass
+
+virtual class ObjectTypeIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IObjectTypeIF;
+
+    pyhdl_if::PyObject       m_obj;
+
+    function new();
+        m_obj = create_pyobj();
+        pyhdl_if::pyhdl_if_connectObject(m_obj, this);
+    endfunction
+
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.object_type_if", string clsname="ObjectTypeIF");
+        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        __args = pyhdl_if::PyTuple_New(0);
+        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
+
+        if (__cls_m == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find module %%s", modname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
+        if (__cls_t == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find class %%s", clsname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
+        if (__obj == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to construct class ObjectTypeIF");
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        pyhdl_if::PyGILState_Release(state);
+
+        return __obj;
+    endfunction
+
+
+    function void init(pyhdl_if::PyObject obj);
+        pyhdl_if::pyhdl_if_connectObject(obj, this);
+        m_obj = obj;
+    endfunction
+
+    virtual function string get_name();
+    endfunction
+
+    virtual function pyhdl_if::PyObject get_fields();
+    endfunction
+
+
+    virtual task invokeTask(
+        output pyhdl_if::PyObject        retval,
+        inout pyhdl_if::PyGILState_STATE state,
+        input string                     method,
+        input pyhdl_if::PyObject         args);
+
+        retval = pyhdl_if::None;
+
+        case (method)
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+    endtask
+
+    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
+        pyhdl_if::PyObject __ret = pyhdl_if::None;
+        case (method)
+            "get_name": begin
+                string __rval;
+                __rval = get_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "get_fields": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_fields();
+                __ret = __rval;
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+
+        return __ret;
+    endfunction
+
+endclass
+
+virtual class ObjectTypeIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IObjectTypeIF;
+
+    pyhdl_if::PyObject       m_obj;
+
+    function new(pyhdl_if::PyObject obj=null);
+        if (obj != null) begin
+            init(obj);
+        end
+    endfunction
+
+    function void init(pyhdl_if::PyObject obj);
+        pyhdl_if::pyhdl_if_connectObject(obj, this);
+        m_obj = obj;
+    endfunction
+
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.object_type_if", string clsname="ObjectTypeIF");
+        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        __args = pyhdl_if::PyTuple_New(0);
+        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
+
+        if (__cls_m == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find module %%s", modname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
+        if (__cls_t == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find class %%s", clsname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
+        if (__obj == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to construct class ObjectTypeIF");
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        pyhdl_if::PyGILState_Release(state);
+
+        return __obj;
+    endfunction
+
+
+    virtual function string get_name();
+    endfunction
+
+    virtual function pyhdl_if::PyObject get_fields();
+    endfunction
+
+
+    virtual task invokeTask(
+        output pyhdl_if::PyObject        retval,
+        inout pyhdl_if::PyGILState_STATE state,
+        input string                     method,
+        input pyhdl_if::PyObject         args);
+
+        retval = pyhdl_if::None;
+
+        case (method)
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+    endtask
+
+    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
+        pyhdl_if::PyObject __ret = pyhdl_if::None;
+        case (method)
+            "get_name": begin
+                string __rval;
+                __rval = get_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "get_fields": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_fields();
+                __ret = __rval;
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+
+        return __ret;
+    endfunction
+
+endclass
 interface class IObjectIF extends pyhdl_if::ICallApi;
 
     pure virtual function string get_name();
+    pure virtual function pyhdl_if::PyObject get_object_type();
 
 endclass
 
@@ -59,6 +445,9 @@ virtual class ObjectIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T imp
     virtual function string get_name();
     endfunction
 
+    virtual function pyhdl_if::PyObject get_object_type();
+    endfunction
+
 
     virtual task invokeTask(
         output pyhdl_if::PyObject        retval,
@@ -82,6 +471,11 @@ virtual class ObjectIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T imp
                 string __rval;
                 __rval = get_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "get_object_type": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_object_type();
+                __ret = __rval;
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
@@ -149,6 +543,9 @@ virtual class ObjectIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_
     virtual function string get_name();
     endfunction
 
+    virtual function pyhdl_if::PyObject get_object_type();
+    endfunction
+
 
     virtual task invokeTask(
         output pyhdl_if::PyObject        retval,
@@ -172,6 +569,11 @@ virtual class ObjectIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_
                 string __rval;
                 __rval = get_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "get_object_type": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_object_type();
+                __ret = __rval;
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
@@ -410,190 +812,6 @@ virtual class ComponentIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BA
                     __typename,
                     __name);
                 __ret = __rval;
-            end
-            default: begin
-                $display("Fatal: unsupported method call %0s", method);
-            end
-        endcase
-
-        return __ret;
-    endfunction
-
-endclass
-interface class IObjectTypeIF extends pyhdl_if::ICallApi;
-
-    pure virtual function string get_name();
-
-endclass
-
-virtual class ObjectTypeIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IObjectTypeIF;
-
-    pyhdl_if::PyObject       m_obj;
-
-    function new();
-        m_obj = create_pyobj();
-        pyhdl_if::pyhdl_if_connectObject(m_obj, this);
-    endfunction
-
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.object_type_if", string clsname="ObjectTypeIF");
-        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
-        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
-        __args = pyhdl_if::PyTuple_New(0);
-        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
-
-        if (__cls_m == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
-        if (__cls_t == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
-        if (__obj == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class ObjectTypeIF");
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        pyhdl_if::PyGILState_Release(state);
-
-        return __obj;
-    endfunction
-
-
-    function void init(pyhdl_if::PyObject obj);
-        pyhdl_if::pyhdl_if_connectObject(obj, this);
-        m_obj = obj;
-    endfunction
-
-    virtual function string get_name();
-    endfunction
-
-
-    virtual task invokeTask(
-        output pyhdl_if::PyObject        retval,
-        inout pyhdl_if::PyGILState_STATE state,
-        input string                     method,
-        input pyhdl_if::PyObject         args);
-
-        retval = pyhdl_if::None;
-
-        case (method)
-            default: begin
-                $display("Fatal: unsupported method call %0s", method);
-            end
-        endcase
-    endtask
-
-    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
-        pyhdl_if::PyObject __ret = pyhdl_if::None;
-        case (method)
-            "get_name": begin
-                string __rval;
-                __rval = get_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
-            default: begin
-                $display("Fatal: unsupported method call %0s", method);
-            end
-        endcase
-
-        return __ret;
-    endfunction
-
-endclass
-
-virtual class ObjectTypeIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IObjectTypeIF;
-
-    pyhdl_if::PyObject       m_obj;
-
-    function new(pyhdl_if::PyObject obj=null);
-        if (obj != null) begin
-            init(obj);
-        end
-    endfunction
-
-    function void init(pyhdl_if::PyObject obj);
-        pyhdl_if::pyhdl_if_connectObject(obj, this);
-        m_obj = obj;
-    endfunction
-
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.object_type_if", string clsname="ObjectTypeIF");
-        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
-        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
-        __args = pyhdl_if::PyTuple_New(0);
-        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
-
-        if (__cls_m == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
-        if (__cls_t == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
-        if (__obj == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class ObjectTypeIF");
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        pyhdl_if::PyGILState_Release(state);
-
-        return __obj;
-    endfunction
-
-
-    virtual function string get_name();
-    endfunction
-
-
-    virtual task invokeTask(
-        output pyhdl_if::PyObject        retval,
-        inout pyhdl_if::PyGILState_STATE state,
-        input string                     method,
-        input pyhdl_if::PyObject         args);
-
-        retval = pyhdl_if::None;
-
-        case (method)
-            default: begin
-                $display("Fatal: unsupported method call %0s", method);
-            end
-        endcase
-    endtask
-
-    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
-        pyhdl_if::PyObject __ret = pyhdl_if::None;
-        case (method)
-            "get_name": begin
-                string __rval;
-                __rval = get_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
