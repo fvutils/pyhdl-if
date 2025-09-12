@@ -857,7 +857,7 @@ def main():
 
     include_pref = {"Py_", "PyDict_", "PyEval_", "PyErr_", "PyImport_", 
                     "PyIter_", "PyList_", 
-                    "PyLong_", "PyObject_", "PySet_",
+                    "PyLong_", "PyFloat_", "PyObject_", "PySet_",
                     "PyTuple_", "PyUnicode_", "PyGILState_"}
     exclude_pref = {
         "_", "PyAsyncGen_", "PyBuffer_", "PyCapsule_", "PyCode_", "PyComplex_", 
