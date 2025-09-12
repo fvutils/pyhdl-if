@@ -26,7 +26,7 @@ import sysconfig
 from .api import t_vpi_systf_data, t_vpi_value, t_vpi_vecval
 from .api import vpi_free_object, vpi_handle, vpi_iterate, vpi_scan
 from .api import vpi_get_value, vpi_put_value
-from .api import vpiArgument, vpiIntVal, vpiStringVal, vpiVectorVal, vpiSysFuncSized, vpiSysTfCall, vpiNoDelay
+from .api import vpiArgument, vpiIntVal, vpiRealVal, vpiStringVal, vpiVectorVal, vpiSysFuncSized, vpiSysTfCall, vpiNoDelay
 
 sizetf_f = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.POINTER(ctypes.c_byte))
 
@@ -70,6 +70,12 @@ def vpi_set_val_int(val_h, val):
     val_s = t_vpi_value()
     val_s.format = vpiIntVal
     val_s.value.integer = val
+    vpi_put_value(val_h, ctypes.byref(val_s), None, vpiNoDelay)
+
+def vpi_set_val_float(val_h, val):
+    val_s = t_vpi_value()
+    val_s.format = vpiRealVal
+    val_s.value.double = val
     vpi_put_value(val_h, ctypes.byref(val_s), None, vpiNoDelay)
 
 def vpi_set_val_ptr(val_h, val):
@@ -854,6 +860,18 @@ def __PyLong_AsLong(ud):
     vpi_set_val_int(__tf_h, __rval)
     return 0
 
+__PyFloat_AsDouble_fp = None
+__PyFloat_AsDouble_f = None
+__PyFloat_AsDouble_tf = t_vpi_systf_data()
+def __PyFloat_AsDouble(ud):
+    __tf_h = vpi_handle(vpiSysTfCall, None)
+    __arg_h = vpi_iterate(vpiArgument, __tf_h)
+    __p0 = ctypes.cast(vpi_get_pval_ptr(__arg_h), ctypes.py_object)
+    vpi_free_object(__arg_h)
+    __rval = float(__p0)
+    vpi_set_val_float(__tf_h, __rval)
+    return 0
+
 __PyLong_AsLongAndOverflow_fp = None
 __PyLong_AsLongAndOverflow_f = None
 __PyLong_AsLongAndOverflow_tf = t_vpi_systf_data()
@@ -995,6 +1013,18 @@ def __PyLong_FromLong(ud):
     __tf_h = vpi_handle(vpiSysTfCall, None)
     __arg_h = vpi_iterate(vpiArgument, __tf_h)
     __p0 = vpi_get_pval_int(__arg_h)
+    vpi_free_object(__arg_h)
+    __rval = __p0
+    vpi_set_val_ptr(__tf_h, ctypes.py_object(__rval))
+    return 0
+
+__PyFloat_FromDouble_fp = None
+__PyFloat_FromDouble_f = None
+__PyFloat_FromDouble_tf = t_vpi_systf_data()
+def __PyFloat_FromDouble(ud):
+    __tf_h = vpi_handle(vpiSysTfCall, None)
+    __arg_h = vpi_iterate(vpiArgument, __tf_h)
+    __p0 = vpi_get_pval_double(__arg_h)
     vpi_free_object(__arg_h)
     __rval = __p0
     vpi_set_val_ptr(__tf_h, ctypes.py_object(__rval))
@@ -3789,6 +3819,18 @@ def register_tf():
     name = __PyLong_AsLong_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyLong_AsLong_tf))
 
+    global __PyFloat_AsDouble_fp, __PyFloat_AsDouble_f, __PyFloat_AsDouble_tf
+    __PyFloat_AsDouble_f = getattr(libpy, "PyFloat_AsDouble")
+    __PyFloat_AsDouble_f.restype = ctypes.c_double
+    __PyFloat_AsDouble_f.argtypes = [ctypes.c_void_p]
+    __PyFloat_AsDouble_tf.tfname = "$PyFloat_AsDouble".encode()
+    __PyFloat_AsDouble_tf.type = vpiSysFunc
+    __PyFloat_AsDouble_fp = tf_func_t(__PyFloat_AsDouble)
+    __PyFloat_AsDouble_tf.calltf = __PyFloat_AsDouble_fp
+    __PyFloat_AsDouble_tf.userdata = None
+    name = __PyFloat_AsDouble_tf.tfname.decode()
+    ret = vpi_register_systf(ctypes.pointer(__PyFloat_AsDouble_tf))
+
     global __PyLong_AsLongAndOverflow_fp, __PyLong_AsLongAndOverflow_f, __PyLong_AsLongAndOverflow_tf
     __PyLong_AsLongAndOverflow_f = getattr(libpy, "PyLong_AsLongAndOverflow")
     __PyLong_AsLongAndOverflow_f.restype = ctypes.c_int
@@ -3939,6 +3981,20 @@ def register_tf():
     __PyLong_FromLong_tf.userdata = None
     name = __PyLong_FromLong_tf.tfname.decode()
     ret = vpi_register_systf(ctypes.pointer(__PyLong_FromLong_tf))
+
+
+    global __PyFloat_FromDouble_fp, __PyFloat_FromDouble_f, __PyFloat_FromDouble_tf
+    __PyFloat_FromDouble_f = getattr(libpy, "PyFloat_FromDouble")
+    __PyFloat_FromDouble_f.restype = ctypes.c_void_p
+    __PyFloat_FromDouble_f.argtypes = [ctypes.c_double]
+    __PyFloat_FromDouble_tf.tfname = "$PyFloat_FromDouble".encode()
+    __PyFloat_FromDouble_tf.type = vpiSysFunc
+    __PyFloat_FromDouble_fp = tf_func_t(__PyFloat_FromDouble)
+    __PyFloat_FromDouble_tf.calltf = __PyFloat_FromDouble_fp
+    __PyFloat_FromDouble_tf.sizetf = sizetf64_fp
+    __PyFloat_FromDouble_tf.userdata = None
+    name = __PyFloat_FromDouble_tf.tfname.decode()
+    ret = vpi_register_systf(ctypes.pointer(__PyFloat_FromDouble_tf))
 
     global __PyLong_FromLongLong_fp, __PyLong_FromLongLong_f, __PyLong_FromLongLong_tf
     __PyLong_FromLongLong_f = getattr(libpy, "PyLong_FromLongLong")

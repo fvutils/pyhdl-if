@@ -172,6 +172,15 @@ class py_object;
     endfunction
 
     /**
+     * Obtains the float value of the object and disposes of the object
+     */
+    virtual function real to_double();
+        real ret = PyFloat_AsDouble(obj);
+        return ret;
+    endfunction
+
+
+    /**
      * Obtains the integer value of the object
      */
     function int as_int();
@@ -190,6 +199,13 @@ class py_object;
      */
     virtual function string as_str();
         return PyUnicode_AsUTF8(obj);
+    endfunction
+
+    /**
+     * Obtains the float value of the object
+     */
+    virtual function real as_double();
+        return PyFloat_AsDouble(obj);
     endfunction
 
 endclass
