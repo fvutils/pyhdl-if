@@ -1,7 +1,5 @@
 
 
-print("__ext__")
-
 def dfm_packages():
     """Returns the DFM packages"""
     import os
