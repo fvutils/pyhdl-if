@@ -33,6 +33,7 @@ class CallProxyDPI(CallProxy):
             self,
             method_name : str,
             args : tuple):
+        
         return self.ep.invoke_hdl_f(
             self.obj_id,
             method_name,

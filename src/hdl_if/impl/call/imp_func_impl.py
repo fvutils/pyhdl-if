@@ -36,7 +36,6 @@ class ImpFuncImpl(object):
 
         proxy : CallProxy = getattr(api_self, "_proxy") 
 
-        print("args: %s" % str(args), flush=True)
         return proxy.invoke_hdl_f(
             self._md.name,
             args
