@@ -13,7 +13,6 @@ module top;
         automatic real result;
         automatic int status = 0, fp;
 
-        $display("Hello World!");
         for (i=0; i<10; i++) begin
             for (j=0; j<10; j++) begin
                 result = real_exp.add(real'(i), real'(j));

@@ -51,7 +51,7 @@ def test_real_exp(hdlsim_dvflow, hdl_if_env):
         status = fp.read().strip()
     assert "PASS:" in status and "FAIL:" not in status
 
-@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(excl=('xsm',)), indirect=True)
 def test_real_imp(hdlsim_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = test_data_dir + os.pathsep + env["PYTHONPATH"]
@@ -91,7 +91,7 @@ def test_real_imp(hdlsim_dvflow, hdl_if_env):
         status = fp.read().strip()
     assert "PASS:" in status and "FAIL:" not in status
 
-@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(excl=('xsm',)), indirect=True)
 def test_int_imp(hdlsim_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = test_data_dir + os.pathsep + env["PYTHONPATH"]

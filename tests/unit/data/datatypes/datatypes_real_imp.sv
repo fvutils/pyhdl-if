@@ -4,7 +4,6 @@ package datatypes_real_imp;
 
     class RealImpImpl extends RealImp;
         function real add(real a, real b);
-            $display("Hello from add");
             return a+b;
         endfunction
     endclass

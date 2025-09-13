@@ -3,7 +3,6 @@ package datatypes_int_imp;
 
     class IntImpImpl extends IntImp;
         function int add(int a, int b);
-            $display("add(%0d, %0d)", a, b);
             return a+b;
         endfunction
     endclass

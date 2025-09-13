@@ -358,6 +358,9 @@ class GenSVClass(object):
             pass
         else:
             self.println("pyhdl_if::PyObject __res;")
+            if m.rtype is not None:
+                self.println("%s __ret;" % self.svtype(m.rtype))
+            self.println("pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();")
             self.println("pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(%d);" % len(m.params))
             for i,p in enumerate(m.params):
                 self.println("void'(pyhdl_if::PyTuple_SetItem(__args, %d, %s));" % (
@@ -366,10 +369,17 @@ class GenSVClass(object):
             if m.kind == MethodKind.ExpTask:
                 self.println("pyhdl_if::pyhdl_if_invokePyTask(__res, m_obj, \"%s\", __args);" % (
                     m.name,))
+                self.println("pyhdl_if::PyGILState_Release(state);")
             else:
                 self.println("__res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, \"%s\", __args);" % (
                     m.name,))
-                self.println("return %s(__res);" % self.py2sv_func(m.rtype))
+                if m.rtype is not None:
+                    self.println("__ret = %s(__res);" % self.py2sv_func(m.rtype))
+
+                self.println("pyhdl_if::PyGILState_Release(state);")
+
+                if m.rtype is not None:
+                    self.println("return __ret;")
 
         self.dec_ind()
 
@@ -454,6 +464,7 @@ class GenSVClass(object):
         self.println("virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);")
         self.inc_ind()
         self.println("pyhdl_if::PyObject __ret = pyhdl_if::None;")
+        self.println("pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();")
         self.println("case (method)")
         self.inc_ind()
         for m in api.methods:
@@ -500,21 +511,24 @@ class GenSVClass(object):
         self.dec_ind()
         self.println("endcase")
         self.println()
+        self.println("pyhdl_if::PyGILState_Release(state);")
         self.println("return __ret;")
         self.dec_ind()
         self.println("endfunction")
 
     def py2sv_func(self, type):
         type_m = {
-            ctypes.c_bool : "PyLong_AsLong",
+            ctypes.c_bool : "py_as_bool",
             ctypes.c_byte : "PyLong_AsLong",
             ctypes.c_char : "PyLong_AsLong",
-            ctypes.c_double : "PyFloat_AsDouble",
+            ctypes.c_double : "py_as_double",
+            float : "py_as_double",
             ctypes.c_int : "PyLong_AsLong",
             ctypes.c_int8 : "PyLong_AsLong",
             ctypes.c_int16 : "PyLong_AsLong",
             ctypes.c_int32 : "PyLong_AsLong",
             ctypes.c_int64 : "PyLong_AsLongLong",
+            int : "PyLong_AsLongLong",
             ctypes.c_uint8 : "PyLong_AsLong",
             ctypes.c_uint16 : "PyLong_AsLong",
             ctypes.c_uint32 : "PyLong_AsLong",
@@ -532,11 +546,13 @@ class GenSVClass(object):
             ctypes.c_byte : "PyLong_FromLong",
             ctypes.c_char : "PyLong_FromLong",
             ctypes.c_double : "PyFloat_FromDouble",
+            float : "PyFloat_FromDouble",
             ctypes.c_int : "PyLong_FromLong",
             ctypes.c_int8 : "PyLong_FromLong",
             ctypes.c_int16 : "PyLong_FromLong",
             ctypes.c_int32 : "PyLong_FromLong",
             ctypes.c_int64 : "PyLong_FromLongLong",
+            int : "PyLong_FromLongLong",
             ctypes.c_uint8 : "PyLong_FromLong",
             ctypes.c_uint16 : "PyLong_FromLong",
             ctypes.c_uint32 : "PyLong_FromLong",
@@ -556,11 +572,13 @@ class GenSVClass(object):
             ctypes.c_byte : "byte",
             ctypes.c_char : "byte",
             ctypes.c_double : "real",
+            float : "real",
             ctypes.c_int : "int",
             ctypes.c_int8 : "byte",
             ctypes.c_int16 : "shortint",
             ctypes.c_int32 : "int",
             ctypes.c_int64 : "longint",
+            int : "longint",
             ctypes.c_uint8 : "byte unsigned",
             ctypes.c_uint16 : "shortint unsigned",
             ctypes.c_uint32 : "int unsigned",

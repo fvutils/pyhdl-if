@@ -36,24 +36,7 @@ class ImpFuncImpl(object):
 
         proxy : CallProxy = getattr(api_self, "_proxy") 
 
-        args_l = []
-
-        # Perform type conversion on arguments and fail 
-        # on this side if there are issues
-        try:
-            for i in range(len(args)):
-                pd = self._md.params[i]
-                val = pd[1](args[i])
-                if hasattr(val, "value"):
-                    args_l.append(val.value)
-                else:
-                    args_l.append(val)
-        except Exception as e:
-            print("Exception: %s" % str(e), flush=True)
-        print("args_l: %s" % str(args_l), flush=True)
-
-
         return proxy.invoke_hdl_f(
             self._md.name,
-            tuple(args_l)
+            args
         )
