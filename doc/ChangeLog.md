@@ -1,3 +1,5 @@
+## 0.0.4
+- (#31) - Fix issues with double/real datatypes
 
 ## 0.0.3
 - (#29) - Resolve issues with tasks and Python GIL
