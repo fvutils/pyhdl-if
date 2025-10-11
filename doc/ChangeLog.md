@@ -1,3 +1,8 @@
+
+## 0.0.5
+- (#34) - Explicitly import pyhdl_if package in generated code and alter the way that
+          some library types are referenced to workaround an issue with Verilator (#6549).
+
 ## 0.0.4
 - (#31) - Fix issues with double/real datatypes
 

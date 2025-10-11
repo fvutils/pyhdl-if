@@ -67,7 +67,7 @@ class GenSVClass(object):
         self.println("%sclass %s #(type BASE_T=%s%s) extends BASE_T implements I%s;" % (
             "virtual " if self._have_imp else "",
             api.name,
-            "uvm_object" if self._uvm else "pyhdl_if::CallEmptyBase",
+            "uvm_object" if self._uvm else "CallEmptyBase",
             ", bit CREATE=1" if self._uvm else "",
             api.name))
         self.inc_ind()
@@ -219,7 +219,7 @@ class GenSVClass(object):
         self.println()
 
     def gen_class_wrapper(self, api : ApiDef):
-        self.println("%sclass %s_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements I%s;" % (
+        self.println("%sclass %s_wrap #(type BASE_T=CallEmptyBase) extends BASE_T implements I%s;" % (
             "virtual " if self._have_imp else "",
             api.name,
             api.name))

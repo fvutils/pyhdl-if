@@ -57,6 +57,7 @@ class CmdApiGenSV(object):
                 gen.println('`include "pyhdl_if_macros.svh"')
                 gen.println("package %s;" % args.package)
                 gen.inc_ind()
+                gen.println("import pyhdl_if::*;")
 
             for api in apis:
                 gen.gen(api)
