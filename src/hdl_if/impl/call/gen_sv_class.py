@@ -20,6 +20,7 @@
 #*
 #****************************************************************************
 import ctypes
+import enum
 import typing
 from .api_def import ApiDef
 from .method_def import MethodDef, MethodKind
@@ -514,6 +515,7 @@ class GenSVClass(object):
             ctypes.c_byte : "PyLong_AsLong",
             ctypes.c_char : "PyLong_AsLong",
             ctypes.c_double : "real",
+            bool : "PyLong_AsLong",
             int : "PyLong_AsLong",
             ctypes.c_int : "PyLong_AsLong",
             ctypes.c_int8 : "PyLong_AsLong",
@@ -527,9 +529,11 @@ class GenSVClass(object):
             str : "PyUnicode_AsUTF8",
             ctypes.py_object : ""
         }
-        if type not in type_m.keys():
-            raise Exception("Unsupported type %s" % str(type))
-        return "pyhdl_if::" + type_m[type]
+        if type in type_m.keys():
+            return "pyhdl_if::" + type_m[type]
+        else:
+            # Object
+            return ""
 
     def sv2py_func(self, t, var):
         type_m = {
@@ -537,6 +541,7 @@ class GenSVClass(object):
             ctypes.c_byte : "PyLong_FromLong",
             ctypes.c_char : "PyLong_FromLong",
             ctypes.c_double : "real",
+            bool : "PyLong_FromLong",
             int : "PyLong_FromLong",
             ctypes.c_int : "PyLong_FromLong",
             ctypes.c_int8 : "PyLong_FromLong",
@@ -551,6 +556,8 @@ class GenSVClass(object):
         }
         if t in type_m.keys():
             return "pyhdl_if::%s(%s)" % (type_m[t], var)
+        elif isinstance(t, type) and issubclass(t, enum.IntEnum):
+            return "PyLong_FromLong"
         elif t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__"):
             return var
         else:
@@ -562,6 +569,7 @@ class GenSVClass(object):
             ctypes.c_byte : "byte",
             ctypes.c_char : "byte",
             ctypes.c_double : "real",
+            bool : "bit",
             int : "int",
             ctypes.c_int : "int",
             ctypes.c_int8 : "byte",
@@ -577,11 +585,13 @@ class GenSVClass(object):
             typing.List: "pyhdl_if::PyObject",
             typing.Dict: "pyhdl_if::PyObject"
         }
-        print("t: %s" % str(t), flush=True)
         if t in type_m.keys():
             return type_m[t]
-        elif type(t) == type:
-            return "pyhdl_if::PyObject"
+        elif isinstance(t, type):
+            if issubclass(t, enum.IntEnum):
+                return "int"
+            else:
+                return "pyhdl_if::PyObject"
         elif hasattr(t, "__origin__"):
             return "pyhdl_if::PyObject"
         else:
