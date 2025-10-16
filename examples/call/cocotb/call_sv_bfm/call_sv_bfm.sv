@@ -12,6 +12,7 @@ module WishboneInitiatorBFM(
     input                   ack,
     output reg              we
 );
+    import pyhdl_if::*;
     `include "hdl_call_if_api.svh"
 
     reg [31:0]      bfm_dat_w, bfm_dat_r, bfm_adr;
@@ -150,6 +151,8 @@ module call_sv_bfm;
     end
 
     assign dat_r = dat_w;
+    wire err = 1'b0;
+    wire[3:0] sel;
 
     WishboneInitiatorBFM    init_bfm(
         .clock(clk),
@@ -160,7 +163,9 @@ module call_sv_bfm;
         .stb(stb),
         .cyc(cyc),
         .ack(ack),
-        .we(we)
+        .we(we),
+	.err(err),
+	.sel(sel)
     );
 
 endmodule

@@ -43,6 +43,44 @@ function automatic py_object py_from_str(string str);
     return ret;
 endfunction
 
+function automatic string py_as_str(PyObject hndl);
+    string ret = PyUnicode_AsUTF8(hndl);
+    return ret;
+endfunction
+
+function automatic bit py_as_bool(PyObject hndl);
+    longint ret = PyLong_AsLong(hndl);
+
+    if (ret == -1 && PyErr_Occurred() != null) begin
+        PyErr_Print();
+    end
+
+    return (ret != 0);
+endfunction
+
+function automatic longint py_as_long(PyObject hndl);
+    longint ret = PyLong_AsLong(hndl);
+
+    if (ret == -1 && PyErr_Occurred() != null) begin
+        PyErr_Print();
+    end
+
+    return ret;
+endfunction
+
+function automatic real py_as_double(PyObject hndl);
+    real ret = 0.0;
+
+    ret = PyFloat_AsDouble(hndl);
+    if (ret == -1 && PyErr_Occurred() != null) begin
+        $display("Error occurred");
+        PyErr_Print();
+    end
+
+    return ret;
+endfunction
+
+
 /**
  * Import a module
  */
@@ -65,6 +103,8 @@ function automatic py_object py_call_builtin(string name, py_tuple args, py_dict
     PyObject func;
     PyObject ret_o;
     py_object ret = null;
+
+    `PYHDL_IF_ENTER(("py_call_builtin %0s", name));
 
     Py_IncRef(args.obj);
     builtins = PyEval_GetBuiltins();
@@ -90,25 +130,18 @@ function automatic py_object py_call_builtin(string name, py_tuple args, py_dict
         return null;
     end
 
-
-    $display("--> PyObject_Call");
-    $display("func: %0p", func);
-    $display("args: %0p", args.obj);
-    $display("kwargs: %0p", kwargs.obj);
     ret_o = PyObject_Call(
-        func, 
-        args.obj, 
+        func,
+        args.obj,
         kwargs.obj);
-    $display("<-- PyObject_Call");
-
-    $display("ret_o=%0p", ret_o);
 
     if (ret_o == null) begin
-        $display("ret_o is null");
         PyErr_Print();
     end else begin
         ret = new(ret_o);
     end
+
+    `PYHDL_IF_LEAVE(("py_call_builtin %0s", name));
 
     return ret;
 endfunction
