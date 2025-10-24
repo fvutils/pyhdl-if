@@ -1,14 +1,10 @@
-interface class IFieldIF extends pyhdl_if::ICallApi;
+interface class IUvmCmdlineProcessor extends pyhdl_if::ICallApi;
 
-    pure virtual function string get_name();
-    pure virtual function int _get_kind();
-    pure virtual function int get_size();
-    pure virtual function bit get_signed();
-    pure virtual function pyhdl_if::PyObject get_obj_type();
+    pure virtual function pyhdl_if::PyObject _get_plusargs();
 
 endclass
 
-virtual class FieldIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IFieldIF;
+virtual class UvmCmdlineProcessor #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmCmdlineProcessor;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -17,7 +13,7 @@ virtual class FieldIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T impl
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.field_if", string clsname="FieldIF");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_cmdline_processor", string clsname="UvmCmdlineProcessor");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -43,7 +39,7 @@ virtual class FieldIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T impl
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class FieldIF");
+            $display("Fatal Error: Failed to construct class UvmCmdlineProcessor");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -60,19 +56,7 @@ virtual class FieldIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T impl
         m_obj = obj;
     endfunction
 
-    virtual function string get_name();
-    endfunction
-
-    virtual function int _get_kind();
-    endfunction
-
-    virtual function int get_size();
-    endfunction
-
-    virtual function bit get_signed();
-    endfunction
-
-    virtual function pyhdl_if::PyObject get_obj_type();
+    virtual function pyhdl_if::PyObject _get_plusargs();
     endfunction
 
 
@@ -93,43 +77,25 @@ virtual class FieldIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T impl
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
-            "get_name": begin
-                string __rval;
-                __rval = get_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
-            "_get_kind": begin
-                int __rval;
-                __rval = _get_kind();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
-            end
-            "get_size": begin
-                int __rval;
-                __rval = get_size();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
-            end
-            "get_signed": begin
-                bit __rval;
-                __rval = get_signed();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
-            end
-            "get_obj_type": begin
+            "_get_plusargs": begin
                 pyhdl_if::PyObject __rval;
-                __rval = get_obj_type();
-                __ret = __rval;
+                __rval = _get_plusargs();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 
 endclass
 
-virtual class FieldIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IFieldIF;
+virtual class UvmCmdlineProcessor_wrap #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmCmdlineProcessor;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -144,7 +110,7 @@ virtual class FieldIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.field_if", string clsname="FieldIF");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_cmdline_processor", string clsname="UvmCmdlineProcessor");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -170,7 +136,7 @@ virtual class FieldIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class FieldIF");
+            $display("Fatal Error: Failed to construct class UvmCmdlineProcessor");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -182,19 +148,7 @@ virtual class FieldIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T
     endfunction
 
 
-    virtual function string get_name();
-    endfunction
-
-    virtual function int _get_kind();
-    endfunction
-
-    virtual function int get_size();
-    endfunction
-
-    virtual function bit get_signed();
-    endfunction
-
-    virtual function pyhdl_if::PyObject get_obj_type();
+    virtual function pyhdl_if::PyObject _get_plusargs();
     endfunction
 
 
@@ -215,49 +169,30 @@ virtual class FieldIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
-            "get_name": begin
-                string __rval;
-                __rval = get_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
-            "_get_kind": begin
-                int __rval;
-                __rval = _get_kind();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
-            end
-            "get_size": begin
-                int __rval;
-                __rval = get_size();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
-            end
-            "get_signed": begin
-                bit __rval;
-                __rval = get_signed();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
-            end
-            "get_obj_type": begin
+            "_get_plusargs": begin
                 pyhdl_if::PyObject __rval;
-                __rval = get_obj_type();
-                __ret = __rval;
+                __rval = _get_plusargs();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 
 endclass
-interface class IObjectTypeIF extends pyhdl_if::ICallApi;
+interface class IUvmObject extends pyhdl_if::ICallApi;
 
     pure virtual function string get_name();
-    pure virtual function pyhdl_if::PyObject get_fields();
 
 endclass
 
-virtual class ObjectTypeIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IObjectTypeIF;
+virtual class UvmObject #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmObject;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -266,7 +201,7 @@ virtual class ObjectTypeIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.object_type_if", string clsname="ObjectTypeIF");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_object", string clsname="UvmObject");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -292,7 +227,7 @@ virtual class ObjectTypeIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class ObjectTypeIF");
+            $display("Fatal Error: Failed to construct class UvmObject");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -312,9 +247,6 @@ virtual class ObjectTypeIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T
     virtual function string get_name();
     endfunction
 
-    virtual function pyhdl_if::PyObject get_fields();
-    endfunction
-
 
     virtual task invokeTask(
         output pyhdl_if::PyObject        retval,
@@ -333,28 +265,25 @@ virtual class ObjectTypeIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
             "get_name": begin
                 string __rval;
                 __rval = get_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
-            "get_fields": begin
-                pyhdl_if::PyObject __rval;
-                __rval = get_fields();
-                __ret = __rval;
-            end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 
 endclass
 
-virtual class ObjectTypeIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IObjectTypeIF;
+virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmObject;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -369,7 +298,7 @@ virtual class ObjectTypeIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends B
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.object_type_if", string clsname="ObjectTypeIF");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_object", string clsname="UvmObject");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -395,7 +324,7 @@ virtual class ObjectTypeIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends B
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class ObjectTypeIF");
+            $display("Fatal Error: Failed to construct class UvmObject");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -408,9 +337,6 @@ virtual class ObjectTypeIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends B
 
 
     virtual function string get_name();
-    endfunction
-
-    virtual function pyhdl_if::PyObject get_fields();
     endfunction
 
 
@@ -431,276 +357,32 @@ virtual class ObjectTypeIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends B
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
-        case (method)
-            "get_name": begin
-                string __rval;
-                __rval = get_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
-            "get_fields": begin
-                pyhdl_if::PyObject __rval;
-                __rval = get_fields();
-                __ret = __rval;
-            end
-            default: begin
-                $display("Fatal: unsupported method call %0s", method);
-            end
-        endcase
-
-        return __ret;
-    endfunction
-
-endclass
-interface class IObjectIF extends pyhdl_if::ICallApi;
-
-    pure virtual function string get_name();
-    pure virtual function pyhdl_if::PyObject get_object_type();
-    pure virtual function pyhdl_if::PyObject pack_ints();
-    pure virtual function int unpack_ints(input pyhdl_if::PyObject intstream);
-
-endclass
-
-virtual class ObjectIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IObjectIF;
-
-    pyhdl_if::PyObject       m_obj;
-
-    function new();
-        m_obj = create_pyobj();
-        pyhdl_if::pyhdl_if_connectObject(m_obj, this);
-    endfunction
-
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.object_if", string clsname="ObjectIF");
-        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
-        __args = pyhdl_if::PyTuple_New(0);
-        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
-
-        if (__cls_m == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
-        if (__cls_t == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
-        if (__obj == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class ObjectIF");
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        pyhdl_if::PyGILState_Release(state);
-
-        return __obj;
-    endfunction
-
-
-    function void init(pyhdl_if::PyObject obj);
-        pyhdl_if::pyhdl_if_connectObject(obj, this);
-        m_obj = obj;
-    endfunction
-
-    virtual function string get_name();
-    endfunction
-
-    virtual function pyhdl_if::PyObject get_object_type();
-    endfunction
-
-    virtual function pyhdl_if::PyObject pack_ints();
-    endfunction
-
-    virtual function int unpack_ints(input pyhdl_if::PyObject intstream);
-    endfunction
-
-
-    virtual task invokeTask(
-        output pyhdl_if::PyObject        retval,
-        inout pyhdl_if::PyGILState_STATE state,
-        input string                     method,
-        input pyhdl_if::PyObject         args);
-
-        retval = pyhdl_if::None;
-
-        case (method)
-            default: begin
-                $display("Fatal: unsupported method call %0s", method);
-            end
-        endcase
-    endtask
-
-    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
-        pyhdl_if::PyObject __ret = pyhdl_if::None;
         case (method)
             "get_name": begin
                 string __rval;
                 __rval = get_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
-            "get_object_type": begin
-                pyhdl_if::PyObject __rval;
-                __rval = get_object_type();
-                __ret = __rval;
-            end
-            "pack_ints": begin
-                pyhdl_if::PyObject __rval;
-                __rval = pack_ints();
-                __ret = __rval;
-            end
-            "unpack_ints": begin
-                int __rval;
-                pyhdl_if::PyObject __intstream = (pyhdl_if::PyTuple_GetItem(args, 0));
-                __rval = unpack_ints(__intstream);
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
-            end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
-
-        return __ret;
-    endfunction
-
-endclass
-
-virtual class ObjectIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IObjectIF;
-
-    pyhdl_if::PyObject       m_obj;
-
-    function new(pyhdl_if::PyObject obj=null);
-        if (obj != null) begin
-            init(obj);
-        end
-    endfunction
-
-    function void init(pyhdl_if::PyObject obj);
-        pyhdl_if::pyhdl_if_connectObject(obj, this);
-        m_obj = obj;
-    endfunction
-
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.object_if", string clsname="ObjectIF");
-        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
-        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
-        __args = pyhdl_if::PyTuple_New(0);
-        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
-
-        if (__cls_m == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
-        if (__cls_t == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
-
-        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
-        if (__obj == null) begin
-            pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class ObjectIF");
-            $finish;
-            pyhdl_if::PyGILState_Release(state);
-            return null;
-        end
 
         pyhdl_if::PyGILState_Release(state);
-
-        return __obj;
-    endfunction
-
-
-    virtual function string get_name();
-    endfunction
-
-    virtual function pyhdl_if::PyObject get_object_type();
-    endfunction
-
-    virtual function pyhdl_if::PyObject pack_ints();
-    endfunction
-
-    virtual function int unpack_ints(input pyhdl_if::PyObject intstream);
-    endfunction
-
-
-    virtual task invokeTask(
-        output pyhdl_if::PyObject        retval,
-        inout pyhdl_if::PyGILState_STATE state,
-        input string                     method,
-        input pyhdl_if::PyObject         args);
-
-        retval = pyhdl_if::None;
-
-        case (method)
-            default: begin
-                $display("Fatal: unsupported method call %0s", method);
-            end
-        endcase
-    endtask
-
-    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
-        pyhdl_if::PyObject __ret = pyhdl_if::None;
-        case (method)
-            "get_name": begin
-                string __rval;
-                __rval = get_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
-            "get_object_type": begin
-                pyhdl_if::PyObject __rval;
-                __rval = get_object_type();
-                __ret = __rval;
-            end
-            "pack_ints": begin
-                pyhdl_if::PyObject __rval;
-                __rval = pack_ints();
-                __ret = __rval;
-            end
-            "unpack_ints": begin
-                int __rval;
-                pyhdl_if::PyObject __intstream = (pyhdl_if::PyTuple_GetItem(args, 0));
-                __rval = unpack_ints(__intstream);
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
-            end
-            default: begin
-                $display("Fatal: unsupported method call %0s", method);
-            end
-        endcase
-
         return __ret;
     endfunction
 
 endclass
-interface class IComponentIF extends pyhdl_if::ICallApi;
+interface class IUvmComponent extends pyhdl_if::ICallApi;
 
     pure virtual function string get_name();
     pure virtual function string get_full_name();
-    pure virtual function pyhdl_if::PyObject create_object_by_name(
-        input string typename,
-        input string name
-    );
-
+    pure virtual function pyhdl_if::PyObject get_children();
 
 endclass
 
-virtual class ComponentIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IComponentIF;
+virtual class UvmComponent #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmComponent;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -709,7 +391,7 @@ virtual class ComponentIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.component_if", string clsname="ComponentIF");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_component", string clsname="UvmComponent");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -735,7 +417,7 @@ virtual class ComponentIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class ComponentIF");
+            $display("Fatal Error: Failed to construct class UvmComponent");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -758,11 +440,7 @@ virtual class ComponentIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
     virtual function string get_full_name();
     endfunction
 
-    virtual function pyhdl_if::PyObject create_object_by_name(
-        input string typename,
-        input string name
-    );
-
+    virtual function pyhdl_if::PyObject get_children();
     endfunction
 
 
@@ -783,6 +461,7 @@ virtual class ComponentIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
             "get_name": begin
                 string __rval;
@@ -794,26 +473,23 @@ virtual class ComponentIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
                 __rval = get_full_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
-            "create_object_by_name": begin
+            "get_children": begin
                 pyhdl_if::PyObject __rval;
-                string __typename = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
-                __rval = create_object_by_name(
-                    __typename,
-                    __name);
-                __ret = __rval;
+                __rval = get_children();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 
 endclass
 
-virtual class ComponentIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IComponentIF;
+virtual class UvmComponent_wrap #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmComponent;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -828,7 +504,7 @@ virtual class ComponentIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BA
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.component_if", string clsname="ComponentIF");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_component", string clsname="UvmComponent");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -854,7 +530,7 @@ virtual class ComponentIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BA
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class ComponentIF");
+            $display("Fatal Error: Failed to construct class UvmComponent");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -872,11 +548,7 @@ virtual class ComponentIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BA
     virtual function string get_full_name();
     endfunction
 
-    virtual function pyhdl_if::PyObject create_object_by_name(
-        input string typename,
-        input string name
-    );
-
+    virtual function pyhdl_if::PyObject get_children();
     endfunction
 
 
@@ -897,6 +569,7 @@ virtual class ComponentIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BA
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
             "get_name": begin
                 string __rval;
@@ -908,33 +581,28 @@ virtual class ComponentIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BA
                 __rval = get_full_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
-            "create_object_by_name": begin
+            "get_children": begin
                 pyhdl_if::PyObject __rval;
-                string __typename = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
-                __rval = create_object_by_name(
-                    __typename,
-                    __name);
-                __ret = __rval;
+                __rval = get_children();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 
 endclass
-interface class IRoot extends pyhdl_if::ICallApi;
+interface class IUvmFactory extends pyhdl_if::ICallApi;
 
-    pure virtual function void post_build(input pyhdl_if::PyObject root);
-    pure virtual function void post_connect(input pyhdl_if::PyObject root);
-    pure virtual task run(input pyhdl_if::PyObject root);
+    pure virtual function pyhdl_if::PyObject typenames();
 
 endclass
 
-class Root #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IRoot;
+virtual class UvmFactory #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmFactory;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -943,7 +611,7 @@ class Root #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IRoo
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.root", string clsname="Root");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_factory", string clsname="UvmFactory");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -969,7 +637,7 @@ class Root #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IRoo
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class Root");
+            $display("Fatal Error: Failed to construct class UvmFactory");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -986,28 +654,8 @@ class Root #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IRoo
         m_obj = obj;
     endfunction
 
-    virtual function void post_build(input pyhdl_if::PyObject root);
-        pyhdl_if::PyObject __res;
-        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
-        void'(pyhdl_if::PyTuple_SetItem(__args, 0, root));
-        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "post_build", __args);
-        pyhdl_if::Py_DecRef(__res);
+    virtual function pyhdl_if::PyObject typenames();
     endfunction
-
-    virtual function void post_connect(input pyhdl_if::PyObject root);
-        pyhdl_if::PyObject __res;
-        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
-        void'(pyhdl_if::PyTuple_SetItem(__args, 0, root));
-        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "post_connect", __args);
-        pyhdl_if::Py_DecRef(__res);
-    endfunction
-
-    virtual task run(input pyhdl_if::PyObject root);
-        pyhdl_if::PyObject __res;
-        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
-        void'(pyhdl_if::PyTuple_SetItem(__args, 0, root));
-        pyhdl_if::pyhdl_if_invokePyTask(__res, m_obj, "run", __args);
-    endtask
 
 
     virtual task invokeTask(
@@ -1027,18 +675,25 @@ class Root #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IRoo
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "typenames": begin
+                pyhdl_if::PyObject __rval;
+                __rval = typenames();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 
 endclass
 
-class Root_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IRoot;
+virtual class UvmFactory_wrap #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmFactory;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -1053,7 +708,7 @@ class Root_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.root", string clsname="Root");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_factory", string clsname="UvmFactory");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -1079,7 +734,7 @@ class Root_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class Root");
+            $display("Fatal Error: Failed to construct class UvmFactory");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1091,28 +746,8 @@ class Root_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements
     endfunction
 
 
-    virtual function void post_build(input pyhdl_if::PyObject root);
-        pyhdl_if::PyObject __res;
-        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
-        void'(pyhdl_if::PyTuple_SetItem(__args, 0, root));
-        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "post_build", __args);
-        pyhdl_if::Py_DecRef(__res);
+    virtual function pyhdl_if::PyObject typenames();
     endfunction
-
-    virtual function void post_connect(input pyhdl_if::PyObject root);
-        pyhdl_if::PyObject __res;
-        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
-        void'(pyhdl_if::PyTuple_SetItem(__args, 0, root));
-        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "post_connect", __args);
-        pyhdl_if::Py_DecRef(__res);
-    endfunction
-
-    virtual task run(input pyhdl_if::PyObject root);
-        pyhdl_if::PyObject __res;
-        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
-        void'(pyhdl_if::PyTuple_SetItem(__args, 0, root));
-        pyhdl_if::pyhdl_if_invokePyTask(__res, m_obj, "run", __args);
-    endtask
 
 
     virtual task invokeTask(
@@ -1132,29 +767,35 @@ class Root_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "typenames": begin
+                pyhdl_if::PyObject __rval;
+                __rval = typenames();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 
 endclass
-interface class IRootIF extends pyhdl_if::ICallApi;
+interface class IUvmComponentProxy extends pyhdl_if::ICallApi;
 
-    pure virtual function void info(
-        input int level,
-        input string msg
-    );
-
-    pure virtual function void error(input string msg);
-    pure virtual function void fatal(input string msg);
+    pure virtual function void build_phase(input pyhdl_if::PyObject phase);
+    pure virtual function void connect_phase(input pyhdl_if::PyObject phase);
+    pure virtual task run_phase(input pyhdl_if::PyObject phase);
+    pure virtual function pyhdl_if::PyObject get_parent();
+    pure virtual function pyhdl_if::PyObject get_factory();
+    pure virtual function void info(input string msg);
 
 endclass
 
-virtual class RootIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IRootIF;
+virtual class UvmComponentProxy #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmComponentProxy;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -1163,7 +804,7 @@ virtual class RootIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T imple
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.root_if", string clsname="RootIF");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_component_proxy", string clsname="UvmComponentProxy");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -1189,7 +830,7 @@ virtual class RootIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T imple
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class RootIF");
+            $display("Fatal Error: Failed to construct class UvmComponentProxy");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1206,17 +847,42 @@ virtual class RootIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T imple
         m_obj = obj;
     endfunction
 
-    virtual function void info(
-        input int level,
-        input string msg
-    );
-
+    virtual function void build_phase(input pyhdl_if::PyObject phase);
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
+        void'(pyhdl_if::PyTuple_SetItem(__args, 0, (phase==null)?pyhdl_if::None:phase));
+        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "build_phase", __args);
+        pyhdl_if::Py_DecRef(__res);
+        pyhdl_if::PyGILState_Release(state);
     endfunction
 
-    virtual function void error(input string msg);
+    virtual function void connect_phase(input pyhdl_if::PyObject phase);
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
+        void'(pyhdl_if::PyTuple_SetItem(__args, 0, (phase==null)?pyhdl_if::None:phase));
+        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "connect_phase", __args);
+        pyhdl_if::Py_DecRef(__res);
+        pyhdl_if::PyGILState_Release(state);
     endfunction
 
-    virtual function void fatal(input string msg);
+    virtual task run_phase(input pyhdl_if::PyObject phase);
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
+        void'(pyhdl_if::PyTuple_SetItem(__args, 0, (phase==null)?pyhdl_if::None:phase));
+        pyhdl_if::pyhdl_if_invokePyTask(__res, m_obj, "run_phase", __args);
+        pyhdl_if::PyGILState_Release(state);
+    endtask
+
+    virtual function pyhdl_if::PyObject get_parent();
+    endfunction
+
+    virtual function pyhdl_if::PyObject get_factory();
+    endfunction
+
+    virtual function void info(input string msg);
     endfunction
 
 
@@ -1237,33 +903,34 @@ virtual class RootIF #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T imple
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "get_parent": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_parent();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "get_factory": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_factory();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             "info": begin
-                int __level = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 0));
-                string __msg = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
-                info(
-                    __level,
-                    __msg);
-            end
-            "error": begin
                 string __msg = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                error(__msg);
-            end
-            "fatal": begin
-                string __msg = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                fatal(__msg);
+                info(__msg);
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 
 endclass
 
-virtual class RootIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T implements IRootIF;
+virtual class UvmComponentProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmComponentProxy;
 
     pyhdl_if::PyObject       m_obj;
 
@@ -1278,7 +945,7 @@ virtual class RootIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.via.root_if", string clsname="RootIF");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_component_proxy", string clsname="UvmComponentProxy");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -1304,7 +971,7 @@ virtual class RootIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class RootIF");
+            $display("Fatal Error: Failed to construct class UvmComponentProxy");
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1316,17 +983,42 @@ virtual class RootIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
     endfunction
 
 
-    virtual function void info(
-        input int level,
-        input string msg
-    );
-
+    virtual function void build_phase(input pyhdl_if::PyObject phase);
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
+        void'(pyhdl_if::PyTuple_SetItem(__args, 0, (phase==null)?pyhdl_if::None:phase));
+        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "build_phase", __args);
+        pyhdl_if::Py_DecRef(__res);
+        pyhdl_if::PyGILState_Release(state);
     endfunction
 
-    virtual function void error(input string msg);
+    virtual function void connect_phase(input pyhdl_if::PyObject phase);
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
+        void'(pyhdl_if::PyTuple_SetItem(__args, 0, (phase==null)?pyhdl_if::None:phase));
+        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "connect_phase", __args);
+        pyhdl_if::Py_DecRef(__res);
+        pyhdl_if::PyGILState_Release(state);
     endfunction
 
-    virtual function void fatal(input string msg);
+    virtual task run_phase(input pyhdl_if::PyObject phase);
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
+        void'(pyhdl_if::PyTuple_SetItem(__args, 0, (phase==null)?pyhdl_if::None:phase));
+        pyhdl_if::pyhdl_if_invokePyTask(__res, m_obj, "run_phase", __args);
+        pyhdl_if::PyGILState_Release(state);
+    endtask
+
+    virtual function pyhdl_if::PyObject get_parent();
+    endfunction
+
+    virtual function pyhdl_if::PyObject get_factory();
+    endfunction
+
+    virtual function void info(input string msg);
     endfunction
 
 
@@ -1347,27 +1039,288 @@ virtual class RootIF_wrap #(type BASE_T=pyhdl_if::CallEmptyBase) extends BASE_T 
 
     virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
         pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "get_parent": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_parent();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "get_factory": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_factory();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             "info": begin
-                int __level = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 0));
-                string __msg = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
-                info(
-                    __level,
-                    __msg);
-            end
-            "error": begin
                 string __msg = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                error(__msg);
-            end
-            "fatal": begin
-                string __msg = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                fatal(__msg);
+                info(__msg);
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
         endcase
 
+        pyhdl_if::PyGILState_Release(state);
+        return __ret;
+    endfunction
+
+endclass
+interface class IUvmSequenceProxy extends pyhdl_if::ICallApi;
+
+    pure virtual task body();
+    pure virtual function pyhdl_if::PyObject create_req();
+    pure virtual function pyhdl_if::PyObject create_rsp();
+    pure virtual task start_item(input pyhdl_if::PyObject item);
+    pure virtual task finish_item(input pyhdl_if::PyObject item);
+
+endclass
+
+virtual class UvmSequenceProxy #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmSequenceProxy;
+
+    pyhdl_if::PyObject       m_obj;
+
+    function new();
+        m_obj = create_pyobj();
+        pyhdl_if::pyhdl_if_connectObject(m_obj, this);
+    endfunction
+
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_sequence_proxy", string clsname="UvmSequenceProxy");
+        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        __args = pyhdl_if::PyTuple_New(0);
+        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
+
+        if (__cls_m == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find module %%s", modname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
+        if (__cls_t == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find class %%s", clsname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
+        if (__obj == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to construct class UvmSequenceProxy");
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        pyhdl_if::PyGILState_Release(state);
+
+        return __obj;
+    endfunction
+
+
+    function void init(pyhdl_if::PyObject obj);
+        pyhdl_if::pyhdl_if_connectObject(obj, this);
+        m_obj = obj;
+    endfunction
+
+    virtual task body();
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(0);
+        pyhdl_if::pyhdl_if_invokePyTask(__res, m_obj, "body", __args);
+        pyhdl_if::PyGILState_Release(state);
+    endtask
+
+    virtual function pyhdl_if::PyObject create_req();
+    endfunction
+
+    virtual function pyhdl_if::PyObject create_rsp();
+    endfunction
+
+    virtual task start_item(input pyhdl_if::PyObject item);
+    endtask
+
+    virtual task finish_item(input pyhdl_if::PyObject item);
+    endtask
+
+
+    virtual task invokeTask(
+        output pyhdl_if::PyObject        retval,
+        inout pyhdl_if::PyGILState_STATE state,
+        input string                     method,
+        input pyhdl_if::PyObject         args);
+
+        retval = pyhdl_if::None;
+
+        case (method)
+            "start_item": begin
+                pyhdl_if::PyObject __item = (pyhdl_if::PyTuple_GetItem(args, 0));
+                pyhdl_if::PyGILState_Release(state); // Release the GIL before invoking the task
+                start_item(__item);
+                state = pyhdl_if::PyGILState_Ensure(); // Reacquire the GIL after invoking the task
+            end
+            "finish_item": begin
+                pyhdl_if::PyObject __item = (pyhdl_if::PyTuple_GetItem(args, 0));
+                pyhdl_if::PyGILState_Release(state); // Release the GIL before invoking the task
+                finish_item(__item);
+                state = pyhdl_if::PyGILState_Ensure(); // Reacquire the GIL after invoking the task
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+    endtask
+
+    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
+        pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        case (method)
+            "create_req": begin
+                pyhdl_if::PyObject __rval;
+                __rval = create_req();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "create_rsp": begin
+                pyhdl_if::PyObject __rval;
+                __rval = create_rsp();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+
+        pyhdl_if::PyGILState_Release(state);
+        return __ret;
+    endfunction
+
+endclass
+
+virtual class UvmSequenceProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T implements IUvmSequenceProxy;
+
+    pyhdl_if::PyObject       m_obj;
+
+    function new(pyhdl_if::PyObject obj=null);
+        if (obj != null) begin
+            init(obj);
+        end
+    endfunction
+
+    function void init(pyhdl_if::PyObject obj);
+        pyhdl_if::pyhdl_if_connectObject(obj, this);
+        m_obj = obj;
+    endfunction
+
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_sequence_proxy", string clsname="UvmSequenceProxy");
+        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        __args = pyhdl_if::PyTuple_New(0);
+        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
+
+        if (__cls_m == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find module %%s", modname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
+        if (__cls_t == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find class %%s", clsname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
+        if (__obj == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to construct class UvmSequenceProxy");
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        pyhdl_if::PyGILState_Release(state);
+
+        return __obj;
+    endfunction
+
+
+    virtual task body();
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(0);
+        pyhdl_if::pyhdl_if_invokePyTask(__res, m_obj, "body", __args);
+        pyhdl_if::PyGILState_Release(state);
+    endtask
+
+    virtual function pyhdl_if::PyObject create_req();
+    endfunction
+
+    virtual function pyhdl_if::PyObject create_rsp();
+    endfunction
+
+    virtual task start_item(input pyhdl_if::PyObject item);
+    endtask
+
+    virtual task finish_item(input pyhdl_if::PyObject item);
+    endtask
+
+
+    virtual task invokeTask(
+        output pyhdl_if::PyObject        retval,
+        inout pyhdl_if::PyGILState_STATE state,
+        input string                     method,
+        input pyhdl_if::PyObject         args);
+
+        retval = pyhdl_if::None;
+
+        case (method)
+            "start_item": begin
+                pyhdl_if::PyObject __item = (pyhdl_if::PyTuple_GetItem(args, 0));
+                pyhdl_if::PyGILState_Release(state); // Release the GIL before invoking the task
+                start_item(__item);
+                state = pyhdl_if::PyGILState_Ensure(); // Reacquire the GIL after invoking the task
+            end
+            "finish_item": begin
+                pyhdl_if::PyObject __item = (pyhdl_if::PyTuple_GetItem(args, 0));
+                pyhdl_if::PyGILState_Release(state); // Release the GIL before invoking the task
+                finish_item(__item);
+                state = pyhdl_if::PyGILState_Ensure(); // Reacquire the GIL after invoking the task
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+    endtask
+
+    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
+        pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        case (method)
+            "create_req": begin
+                pyhdl_if::PyObject __rval;
+                __rval = create_req();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "create_rsp": begin
+                pyhdl_if::PyObject __rval;
+                __rval = create_rsp();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+
+        pyhdl_if::PyGILState_Release(state);
         return __ret;
     endfunction
 

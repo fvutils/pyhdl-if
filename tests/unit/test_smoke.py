@@ -13,7 +13,7 @@ data_dir = os.path.join(
 test_smoke_data_dir = os.path.join(data_dir, "test_smoke")
 test_smoke_str_data_dir = os.path.join(data_dir, "test_smoke_str")
 
-@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_dpi(), indirect=True)
 def test_smoke(pyhdl_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = test_smoke_data_dir + os.pathsep + env["PYTHONPATH"]

@@ -18,6 +18,8 @@ class pyhdl_via_object_type extends ObjectTypeIF;
         via_field fields[$];
         obj_t.get_fields(fields);
 
+        $display("obj_t.get_fields: %0d", fields.size());
+
         foreach (fields[i]) begin
             pyhdl_via_field field = new(fields[i]);
             ret.append_obj(field.m_obj);

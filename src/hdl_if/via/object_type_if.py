@@ -10,6 +10,5 @@ class ObjectTypeIF(object):
 
     @imp
     def get_fields(self) -> List[FieldIF]: pass
-#    @imp
-#    def get_fields(self)
+
 

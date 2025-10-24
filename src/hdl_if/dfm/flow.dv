@@ -17,10 +17,10 @@ package:
     shell: pytask
     run: sv_pkg.py::SvPkg
 
-  - name: VIAPkg
-    desc: PyHDL-IF Verification Environment Introspection Service Package
+  - name: UVMPkg
+    desc: PyHDL-IF UVM integration support
     shell: pytask
-    run: via_pkg.py::VIAPkg
+    run: uvm_pkg.py::UVMPkg
     consumes: none
     needs: [SvPkg]
 

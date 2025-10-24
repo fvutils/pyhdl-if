@@ -1,0 +1,3 @@
+
+class UvmObjectType(object):
+    pass

@@ -568,7 +568,7 @@ class GenSVClass(object):
         elif isinstance(t, type) and issubclass(t, enum.IntEnum):
             return "PyLong_FromLong"
         elif t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__"):
-            return var
+            return f"({var}==null)?pyhdl_if::None:{var}"
         else:
             raise Exception("Unsupported type %s" % str(type))
 

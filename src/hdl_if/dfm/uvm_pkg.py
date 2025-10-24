@@ -2,7 +2,7 @@ import os
 import sys
 from dv_flow.mgr import TaskRunCtxt, TaskDataInput, TaskDataResult, FileSet
 
-async def VIAPkg(ctxt: TaskRunCtxt, input: TaskDataInput) -> TaskDataResult:
+async def UVMPkg(ctxt: TaskRunCtxt, input: TaskDataInput) -> TaskDataResult:
     """
     Task to return the SystemVerilog package file for the HDL interface.
     
@@ -26,8 +26,9 @@ async def VIAPkg(ctxt: TaskRunCtxt, input: TaskDataInput) -> TaskDataResult:
         output=[
             FileSet(
                 filetype="systemVerilogSource",
-                basedir=os.path.join(sharedir, "via"),
-                files=["pyhdl_if_via.sv"]
+                basedir=os.path.join(sharedir, "uvm"),
+                files=["pyhdl_uvm.sv"],
+                incdirs=["."]
             )
         ]
     )

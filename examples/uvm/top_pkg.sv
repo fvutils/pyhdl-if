@@ -8,26 +8,29 @@ package top_pkg;
 
     // First transaction type (memory-like)
     class trans_a extends uvm_sequence_item;
-        rand bit [31:0] data;
-        rand bit [3:0]  addr;
-        rand bit        write;
+        rand bit [31:0] data = 1;
+        rand bit [3:0]  addr = 2;
+        rand bit [3:0]  write = 3;
+        rand bit [63:0]  data2 = 7;
 
         `uvm_object_utils_begin(trans_a)
             `uvm_field_int(data, UVM_ALL_ON)
             `uvm_field_int(addr, UVM_ALL_ON)
             `uvm_field_int(write, UVM_ALL_ON)
+            `uvm_field_int(data2, UVM_ALL_ON)
         `uvm_object_utils_end
 
         function new(string name = "trans_a");
             super.new(name);
         endfunction
+
     endclass
 
     // Second transaction type (stream-like)
     class trans_b extends uvm_sequence_item;
-        rand bit [15:0] data;
-        rand bit        valid;
-        bit            ready;
+        rand bit [15:0] data = 1;
+        rand bit        valid = 2;
+        bit            ready = 3;
 
         `uvm_object_utils_begin(trans_b)
             `uvm_field_int(data, UVM_ALL_ON)

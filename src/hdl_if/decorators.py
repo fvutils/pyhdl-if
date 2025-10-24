@@ -46,30 +46,6 @@ def imp(*args, **kwargs):
     else:
         return MethodDecoratorImpl(MethodKind.Imp, args, kwargs)
 
-# def impfunc(*args, **kwargs):
-#     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-#         return MethodDecoratorImpl(MethodKind.ImpFunc)(args[0])
-#     else:
-#         return MethodDecoratorImpl(MethodKind.ImpFunc, args, kwargs)
-
-# def imptask(*args, **kwargs):
-#     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-#         return MethodDecoratorImpl(MethodKind.ImpTask)(args[0])
-#     else:
-#         return MethodDecoratorImpl(MethodKind.ImpTask, args, kwargs)
-
-# def expfunc(*args, **kwargs):
-#     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-#         return MethodDecoratorImpl(MethodKind.ExpFunc)(args[0])
-#     else:
-#         return MethodDecoratorImpl(MethodKind.ExpFunc, args, kwargs)
-
-# def exptask(*args, **kwargs):
-#     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-#         return MethodDecoratorImpl(MethodKind.ExpTask)(args[0])
-#     else:
-#         return MethodDecoratorImpl(MethodKind.ExpTask, args, kwargs)
-
 #********************************************************************
 #* Decorators for TLM interfaces
 #********************************************************************

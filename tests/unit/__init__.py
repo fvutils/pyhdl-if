@@ -17,6 +17,13 @@ def available_sims_vpi(incl=None, excl=None):
         excl = ["vlt", "xsm"]
     return hdlsim_available_sims(incl, excl)
 
+def available_sims_uvm(incl=None, excl=None):
+    if incl is None:
+        # TODO: control via env var?
+        incl = ["mti", "vcs", "xcm"]
+
+    return hdlsim_available_sims(incl, excl)
+
 
 @pytest.fixture(scope="session")
 def hdl_if_env():
