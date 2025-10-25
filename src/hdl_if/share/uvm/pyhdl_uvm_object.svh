@@ -14,4 +14,8 @@ class pyhdl_uvm_object extends UvmObject;
         return m_uvm_obj.get_name();
     endfunction
 
+    virtual function string sprint();
+        return m_uvm_obj.sprint();
+    endfunction
+
 endclass

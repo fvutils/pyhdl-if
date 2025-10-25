@@ -189,6 +189,7 @@ endclass
 interface class IUvmObject extends pyhdl_if::ICallApi;
 
     pure virtual function string get_name();
+    pure virtual function string sprint();
 
 endclass
 
@@ -247,6 +248,9 @@ virtual class UvmObject #(type BASE_T=CallEmptyBase) extends BASE_T implements I
     virtual function string get_name();
     endfunction
 
+    virtual function string sprint();
+    endfunction
+
 
     virtual task invokeTask(
         output pyhdl_if::PyObject        retval,
@@ -270,6 +274,11 @@ virtual class UvmObject #(type BASE_T=CallEmptyBase) extends BASE_T implements I
             "get_name": begin
                 string __rval;
                 __rval = get_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "sprint": begin
+                string __rval;
+                __rval = sprint();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
             default: begin
@@ -339,6 +348,9 @@ virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impleme
     virtual function string get_name();
     endfunction
 
+    virtual function string sprint();
+    endfunction
+
 
     virtual task invokeTask(
         output pyhdl_if::PyObject        retval,
@@ -364,6 +376,11 @@ virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impleme
                 __rval = get_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
+            "sprint": begin
+                string __rval;
+                __rval = sprint();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
@@ -378,7 +395,9 @@ interface class IUvmComponent extends pyhdl_if::ICallApi;
 
     pure virtual function string get_name();
     pure virtual function string get_full_name();
+    pure virtual function string sprint();
     pure virtual function pyhdl_if::PyObject get_children();
+    pure virtual function pyhdl_if::PyObject get_config_object(input string name);
 
 endclass
 
@@ -440,7 +459,13 @@ virtual class UvmComponent #(type BASE_T=CallEmptyBase) extends BASE_T implement
     virtual function string get_full_name();
     endfunction
 
+    virtual function string sprint();
+    endfunction
+
     virtual function pyhdl_if::PyObject get_children();
+    endfunction
+
+    virtual function pyhdl_if::PyObject get_config_object(input string name);
     endfunction
 
 
@@ -473,9 +498,20 @@ virtual class UvmComponent #(type BASE_T=CallEmptyBase) extends BASE_T implement
                 __rval = get_full_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
+            "sprint": begin
+                string __rval;
+                __rval = sprint();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
             "get_children": begin
                 pyhdl_if::PyObject __rval;
                 __rval = get_children();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "get_config_object": begin
+                pyhdl_if::PyObject __rval;
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = get_config_object(__name);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
@@ -548,7 +584,13 @@ virtual class UvmComponent_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impl
     virtual function string get_full_name();
     endfunction
 
+    virtual function string sprint();
+    endfunction
+
     virtual function pyhdl_if::PyObject get_children();
+    endfunction
+
+    virtual function pyhdl_if::PyObject get_config_object(input string name);
     endfunction
 
 
@@ -581,9 +623,20 @@ virtual class UvmComponent_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impl
                 __rval = get_full_name();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
+            "sprint": begin
+                string __rval;
+                __rval = sprint();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
             "get_children": begin
                 pyhdl_if::PyObject __rval;
                 __rval = get_children();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "get_config_object": begin
+                pyhdl_if::PyObject __rval;
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = get_config_object(__name);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
@@ -791,6 +844,7 @@ interface class IUvmComponentProxy extends pyhdl_if::ICallApi;
     pure virtual task run_phase(input pyhdl_if::PyObject phase);
     pure virtual function pyhdl_if::PyObject get_parent();
     pure virtual function pyhdl_if::PyObject get_factory();
+    pure virtual function pyhdl_if::PyObject get_config_object(input string name);
     pure virtual function void info(input string msg);
 
 endclass
@@ -882,6 +936,9 @@ virtual class UvmComponentProxy #(type BASE_T=CallEmptyBase) extends BASE_T impl
     virtual function pyhdl_if::PyObject get_factory();
     endfunction
 
+    virtual function pyhdl_if::PyObject get_config_object(input string name);
+    endfunction
+
     virtual function void info(input string msg);
     endfunction
 
@@ -913,6 +970,12 @@ virtual class UvmComponentProxy #(type BASE_T=CallEmptyBase) extends BASE_T impl
             "get_factory": begin
                 pyhdl_if::PyObject __rval;
                 __rval = get_factory();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "get_config_object": begin
+                pyhdl_if::PyObject __rval;
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = get_config_object(__name);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             "info": begin
@@ -1018,6 +1081,9 @@ virtual class UvmComponentProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T
     virtual function pyhdl_if::PyObject get_factory();
     endfunction
 
+    virtual function pyhdl_if::PyObject get_config_object(input string name);
+    endfunction
+
     virtual function void info(input string msg);
     endfunction
 
@@ -1051,6 +1117,12 @@ virtual class UvmComponentProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T
                 __rval = get_factory();
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
+            "get_config_object": begin
+                pyhdl_if::PyObject __rval;
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = get_config_object(__name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             "info": begin
                 string __msg = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
                 info(__msg);
@@ -1068,6 +1140,7 @@ endclass
 interface class IUvmSequenceProxy extends pyhdl_if::ICallApi;
 
     pure virtual task body();
+    pure virtual function pyhdl_if::PyObject get_userdata();
     pure virtual function pyhdl_if::PyObject create_req();
     pure virtual function pyhdl_if::PyObject create_rsp();
     pure virtual task start_item(input pyhdl_if::PyObject item);
@@ -1135,6 +1208,9 @@ virtual class UvmSequenceProxy #(type BASE_T=CallEmptyBase) extends BASE_T imple
         pyhdl_if::PyGILState_Release(state);
     endtask
 
+    virtual function pyhdl_if::PyObject get_userdata();
+    endfunction
+
     virtual function pyhdl_if::PyObject create_req();
     endfunction
 
@@ -1179,6 +1255,11 @@ virtual class UvmSequenceProxy #(type BASE_T=CallEmptyBase) extends BASE_T imple
         pyhdl_if::PyObject __ret = pyhdl_if::None;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "get_userdata": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_userdata();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             "create_req": begin
                 pyhdl_if::PyObject __rval;
                 __rval = create_req();
@@ -1261,6 +1342,9 @@ virtual class UvmSequenceProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T 
         pyhdl_if::PyGILState_Release(state);
     endtask
 
+    virtual function pyhdl_if::PyObject get_userdata();
+    endfunction
+
     virtual function pyhdl_if::PyObject create_req();
     endfunction
 
@@ -1305,6 +1389,11 @@ virtual class UvmSequenceProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T 
         pyhdl_if::PyObject __ret = pyhdl_if::None;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "get_userdata": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_userdata();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             "create_req": begin
                 pyhdl_if::PyObject __rval;
                 __rval = create_req();

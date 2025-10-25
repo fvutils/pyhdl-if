@@ -14,6 +14,12 @@ class PyComp(UvmComponentProxy):
         for c in parent.get_children():
             print("Child: %s" % c.get_full_name(), flush=True)
 
+        print("--> get_config", flush=True)
+        has, obj = self.get_config_object("MY_CONFIG")
+        print("<-- get_config", flush=True)
+
+        print("type: %s" % getattr(obj, "obj_t", "<notset>"), flush=True)
+
     def connect_phase(self, phase):
         print("connect_phase", flush=True)
 

@@ -30,6 +30,10 @@ class pyhdl_uvm_wrapper_factory_t #(type WrapperT, type UvmObjT=uvm_object) impl
 
         ret = new(wrapper, wrapper.m_obj);
 
+        if (obj_t != null) begin
+            PyObject_SetAttrString(ret.second, "obj_t", obj_t);
+        end
+
         return ret;
     endfunction
 

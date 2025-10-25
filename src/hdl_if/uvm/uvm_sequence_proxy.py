@@ -4,10 +4,13 @@ from ..decorators import api, imp, exp
 from .uvm_object import UvmObject
 
 @api
-class UvmSequenceProxy(UvmObject):
+class UvmSequenceProxy(object):
 
     @exp
     async def body(self): ...
+
+    @imp
+    def get_userdata(self) -> UvmObject: ...
 
     @imp
     def create_req(self) -> UvmObject: ...

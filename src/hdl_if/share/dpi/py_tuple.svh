@@ -49,7 +49,8 @@ class py_tuple extends py_object;
         PyObject tuple = PyTuple_New(longint'(elems.size()));
         py_tuple ret = new(tuple);
         foreach (elems[i]) begin
-            void'(PyTuple_SetItem(tuple, longint'(i), elems[i].steal()));
+            PyObject elem = (elems[i] != null)?elems[i].steal():None;
+            void'(PyTuple_SetItem(tuple, longint'(i), elem));
         end
 
         if (ctxt != null) begin

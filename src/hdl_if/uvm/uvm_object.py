@@ -11,3 +11,6 @@ class UvmObject(object):
     @imp
     def get_name(self) -> str: ...
 
+    @imp
+    def sprint(self) -> str: ...
+

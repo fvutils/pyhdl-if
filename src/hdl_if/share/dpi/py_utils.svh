@@ -1,7 +1,13 @@
 
+
 /********************************************************************
  * Construction utilities for numeric types
  ********************************************************************/
+
+function automatic py_object py_from_bool(bit val);
+    py_object ret = new(PyBool_FromLong(longint'(val)));
+    return ret;
+endfunction
 
 /**
  * Create a Python integer-value object

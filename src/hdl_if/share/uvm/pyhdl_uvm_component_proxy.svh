@@ -79,6 +79,8 @@ class pyhdl_uvm_component_proxy extends uvm_component;
         m_helper.run_phase(null);
     endtask
 
+
+
 endclass
 
 class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy_wrap;
@@ -86,6 +88,27 @@ class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy_wrap;
 
     virtual function PyObject get_parent();
         return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.get_parent());
+    endfunction
+
+    virtual function PyObject get_config_object(string name);
+        py_tuple ret;
+        uvm_object obj;
+        py_object py_obj;
+        bit has = m_proxy.get_config_object(name, obj);
+        py_object py_has;
+
+        $display("has");
+
+        if (has && obj != null) begin
+            $display("have object");
+            py_obj = new(pyhdl_uvm_object_rgy::inst().wrap(obj));
+        end else begin
+            $display("failed to get object");
+        end
+
+        py_has = py_from_bool(has);
+
+        return py_tuple::mk_init({py_has, py_obj}).borrow();
     endfunction
 
 endclass

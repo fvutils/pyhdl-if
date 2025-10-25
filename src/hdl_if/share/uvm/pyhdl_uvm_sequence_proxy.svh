@@ -1,9 +1,12 @@
 
 typedef class pyhdl_uvm_sequence_proxy_helper;
+typedef class pyhdl_uvm_object_rgy;
 
-
-
-class pyhdl_uvm_sequence_proxy #(type REQ=uvm_sequence_item, type RSP=REQ, string PyClass="")
+class pyhdl_uvm_sequence_proxy #(
+        type REQ=uvm_sequence_item, 
+        type RSP=REQ, 
+        type UserDataT=uvm_object,
+        string PyClass="")
     extends uvm_sequence #(.REQ(REQ), .RSP(RSP));
     typedef pyhdl_uvm_sequence_proxy #(.REQ(REQ), .RSP(RSP), .PyClass(PyClass)) this_t;
     `uvm_object_param_utils(this_t);
@@ -11,10 +14,15 @@ class pyhdl_uvm_sequence_proxy #(type REQ=uvm_sequence_item, type RSP=REQ, strin
     typedef pyhdl_uvm_sequence_proxy_helper #(.REQ(REQ), .RSP(RSP)) helper_t;
 
     string      pyclass = PyClass;
+    UserDataT   userdata;
     helper_t    m_helper;
 
     function new(string name="pyhdl_uvm_sequence_proxy");
         super.new(name);
+    endfunction
+
+    virtual function uvm_object get_userdata();
+        return userdata;
     endfunction
 
     task body();
@@ -49,6 +57,7 @@ class pyhdl_uvm_sequence_proxy #(type REQ=uvm_sequence_item, type RSP=REQ, strin
 
         m_helper = new();
         m_helper.m_proxy = this;
+        m_helper.m_userdata = userdata;
         m_helper.init(m_helper.create_pyobj(modname, clsname));
 
         m_helper.body();
@@ -59,20 +68,29 @@ endclass
 class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ) 
         extends UvmSequenceProxy_wrap;
     uvm_sequence_base       m_proxy;
+    uvm_object              m_userdata;
 
     virtual function string get_name();
         $display("get_name");
         return m_proxy.get_name();
     endfunction
 
+    virtual function PyObject get_userdata();
+        if (m_userdata != null) begin
+            return pyhdl_uvm_object_rgy::inst().wrap(m_userdata);
+        end else begin
+            return None;
+        end
+    endfunction
+
     virtual function PyObject create_req();
         REQ req = REQ::type_id::create();
-        return null;
+        return pyhdl_uvm_object_rgy::inst().wrap(req);
     endfunction
 
     virtual function PyObject create_rsp();
-        RSP req = REQ::type_id::create();
-        return null;
+        RSP rsp = REQ::type_id::create();
+        return pyhdl_uvm_object_rgy::inst().wrap(rsp);
     endfunction
 
 endclass
