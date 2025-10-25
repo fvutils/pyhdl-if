@@ -29,6 +29,8 @@ module call_sv_bfm;
     end
 
     assign dat_r = dat_w;
+    wire[3:0] sel;
+    wire err = 1'b0;
 
     WishboneInitiatorBFM    init_bfm(
         .clock(clk),
@@ -39,7 +41,9 @@ module call_sv_bfm;
         .stb(stb),
         .cyc(cyc),
         .ack(ack),
-        .we(we)
+        .we(we),
+        .sel(sel),
+        .err(err)
     );
 
     initial begin
