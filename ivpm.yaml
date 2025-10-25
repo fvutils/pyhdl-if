@@ -35,7 +35,6 @@ package:
       url: https://github.com/dv-flow/pytest-dfm.git
     - name: dv-flow-libhdlsim
       url: https://github.com/dv-flow/dv-flow-libhdlsim.git
-      branch: mballance/incrcomp
     - name: pytypeworks
       url: https://github.com/mballance-utils/pytypeworks.git
     - name: pyvsc-dataclasses
