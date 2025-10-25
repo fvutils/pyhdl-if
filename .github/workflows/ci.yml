@@ -22,6 +22,7 @@ jobs:
     - name: Run tests
       run: |
         export PYTHONPATH=$(pwd)/src:${PYTHONPATH}
+        export PATH=$(pwd)/packages/python/bin:${PATH}
         export PATH=$(pwd)/packages/verilator/bin:${PATH}
         export PATH=$(pwd)/packages/iverilog/bin:${PATH}
         PYTEST_FV_HDLSIM=vlt ./packages/python/bin/python3 -m pytest ./tests/unit
