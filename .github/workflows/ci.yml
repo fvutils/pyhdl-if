@@ -15,8 +15,10 @@ jobs:
         python3 -m venv py
         ./py/bin/pip install -U ivpm
         ./py/bin/python3 -m ivpm update -a
-        ./packages/python/bin/pip install -U typing_extensions
+        ./packages/python/bin/pip install -U typing_extensions build
         ./packages/python/bin/python3 setup.py build_ext --inplace
+        ./packages/python/bin/python3 -m build -n
+        ls src
     - name: Run tests
       run: |
         export PYTHONPATH=$(pwd)/src:${PYTHONPATH}
