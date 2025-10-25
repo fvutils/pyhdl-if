@@ -18,7 +18,6 @@ async def DpiLib(ctxt : TaskRunCtxt, input : TaskDataInput) -> TaskDataResult:
             FileSet(
                 filetype="systemVerilogDPI",
                 basedir=os.path.dirname(entry),
-                files=[os.path.basename(entry)],
-                incdirs=["."])
+                files=[os.path.basename(entry)])
         ]
     )
