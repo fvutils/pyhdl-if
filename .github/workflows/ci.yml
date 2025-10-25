@@ -16,7 +16,7 @@ jobs:
         ./py/bin/pip install -U ivpm
         ./py/bin/python3 -m ivpm update -a
         ./packages/python/bin/pip install -U typing_extensions
-        ./packages/python/bin/python3 setup.py bdist_wheel
+        ./packages/python/bin/python3 setup.py build_ext --inplace
     - name: Run tests
       run: |
         export PYTHONPATH=$(pwd)/src:${PYTHONPATH}
