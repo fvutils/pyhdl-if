@@ -49,6 +49,8 @@ def test_smoke(pyhdl_dvflow, hdl_if_env):
 
     assert status == 0
 
+    status = None
+
     if os.path.isfile(os.path.join(out.output[0].basedir, "sim.log")):
         print("HAVE: sim log")
         with open(os.path.join(out.output[0].basedir, "sim.log"), "r") as fp:
@@ -64,6 +66,8 @@ def test_smoke(pyhdl_dvflow, hdl_if_env):
     else:
         for e in os.listdir(out.output[0].basedir):
             print("Subelem: %s" % e)
+
+    assert status is not None
 
 
 @pytest.mark.skip("Needs more investigation")
