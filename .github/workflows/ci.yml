@@ -18,13 +18,14 @@ jobs:
         ./packages/python/bin/python3 setup.py bdist_wheel
     - name: Run tests
       run: |
-        rm ivpm.yaml
+        export PYTHONPATH=$(pwd)/src:${PYTHONPATH}
         export PATH=$(pwd)/packages/verilator/bin:${PATH}
         export PATH=$(pwd)/packages/iverilog/bin:${PATH}
-        export PATH=$(pwd)/py/bin:${PATH}
-        ./py/bin/pip install dist/*.whl
-        PYTEST_FV_HDLSIM=vlt ./py/bin/python3 -m pytest ./tests/unit
-        PYTEST_FV_HDLSIM=ivl ./py/bin/python3 -m pytest ./tests/unit
+        PYTEST_FV_HDLSIM=vlt ./packages/python/bin/python3 -m pytest ./tests/unit
+        PYTEST_FV_HDLSIM=ivl ./packages/python/bin/python3 -m pytest ./tests/unit
+#        rm ivpm.yaml
+#        export PATH=$(pwd)/py/bin:${PATH}
+#        ./py/bin/pip install dist/*.whl
   doc:
     runs-on: ubuntu-latest
     needs: linux-pretest
