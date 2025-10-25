@@ -17,7 +17,7 @@ test_smoke_str_data_dir = os.path.join(data_dir, "test_smoke_str")
 def test_smoke(pyhdl_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = test_smoke_data_dir + os.pathsep + env["PYTHONPATH"]
-    hdlsim_dvflow.setEnv(env)
+    pyhdl_dvflow.setEnv(env)
 
     print("test_smoke_data_dir: %s" % test_smoke_data_dir, flush=True)
 
