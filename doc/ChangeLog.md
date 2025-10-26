@@ -1,4 +1,7 @@
 
+## 0.0.6
+- Merge in WIP UVM integration
+
 ## 0.0.5
 - (#34) - Explicitly import pyhdl_if package in generated code and alter the way that
           some library types are referenced to workaround an issue with Verilator (#6549).
