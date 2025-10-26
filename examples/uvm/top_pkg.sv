@@ -2,9 +2,7 @@
 
 package top_pkg;
     import uvm_pkg::*;
-//    import pyhdl_if::*;
-    import pyhdl_if_via::*;
-    import via_uvm::*;
+    import pyhdl_uvm::*;
 
     // First transaction type (memory-like)
     class trans_a extends uvm_sequence_item;

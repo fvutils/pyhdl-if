@@ -83,7 +83,7 @@ class pyhdl_uvm_object_rgy;
                 py_object::mk(ret.second)
             }));
 
-            PyObject_SetAttrString(ret.second, "obj_t", py_obj_t.borrow());
+            void'(PyObject_SetAttrString(ret.second, "obj_t", py_obj_t.borrow()));
 
             py_gil_leave();
 

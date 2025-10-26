@@ -1,10 +1,15 @@
 
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
 package:
   name: uvm
-
-  imports:
-  - "../../packages/via/flow.dv"
-  - "../../src/hdl_if/dfm/flow.dv"
+  with:
+    sim: 
+      type: str
+      # Set to one of the following with -Dsim=<simulator>
+      # - mti - Mentor/Siemens Questa (Modelsim)
+      # - vcs - Synopsys VCS
+      # - xcm - Cadence Xcellium
+      value: "Unspecified"
 
   tasks:
   - name: src
@@ -15,25 +20,23 @@ package:
 
   - name: sim-img
     desc: Builds the simulation image
-    uses: hdlsim.mti.SimImage
+    uses: "hdlsim.${{ sim }}.SimImage"
     needs: 
-    - hdlsim.mti.SimLibUVM
-    - via.UVMPkg
-    - pyhdl-if.VIAPkg
-    - pyhdl-if.DpiLib
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - pyhdl-if.UVMPkg
     - src
     with:
       top: [top]
+
   - name: sim-run
-    uses: hdlsim.mti.SimRun
+    uses: "hdlsim.${{ sim }}.SimRun"
     needs: [sim-img, pyhdl-if.DpiLib]
     with:
       #      args: 
       #- "-valgrind --tool=memcheck"
       plusargs: 
       - UVM_TESTNAME=base_test
-      - pyhdl.via.class=entry.Entry
       - pyhdl.python=${{ rootdir }}/../../packages/python/bin/python
-      - pyhdl.debug=1
+      - pyhdl.debug=0
 
 
