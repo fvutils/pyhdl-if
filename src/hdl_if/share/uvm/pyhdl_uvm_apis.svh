@@ -188,6 +188,7 @@ virtual class UvmCmdlineProcessor_wrap #(type BASE_T=CallEmptyBase) extends BASE
 endclass
 interface class IUvmObject extends pyhdl_if::ICallApi;
 
+    pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function string sprint();
 
@@ -245,6 +246,9 @@ virtual class UvmObject #(type BASE_T=CallEmptyBase) extends BASE_T implements I
         m_obj = obj;
     endfunction
 
+    virtual function bit _randomize();
+    endfunction
+
     virtual function string get_name();
     endfunction
 
@@ -271,6 +275,11 @@ virtual class UvmObject #(type BASE_T=CallEmptyBase) extends BASE_T implements I
         pyhdl_if::PyObject __ret = pyhdl_if::None;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "_randomize": begin
+                bit __rval;
+                __rval = _randomize();
+                __ret = pyhdl_if::PyLong_FromLong(__rval);
+            end
             "get_name": begin
                 string __rval;
                 __rval = get_name();
@@ -345,6 +354,9 @@ virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impleme
     endfunction
 
 
+    virtual function bit _randomize();
+    endfunction
+
     virtual function string get_name();
     endfunction
 
@@ -371,6 +383,11 @@ virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impleme
         pyhdl_if::PyObject __ret = pyhdl_if::None;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "_randomize": begin
+                bit __rval;
+                __rval = _randomize();
+                __ret = pyhdl_if::PyLong_FromLong(__rval);
+            end
             "get_name": begin
                 string __rval;
                 __rval = get_name();
@@ -393,9 +410,7 @@ virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impleme
 endclass
 interface class IUvmComponent extends pyhdl_if::ICallApi;
 
-    pure virtual function string get_name();
     pure virtual function string get_full_name();
-    pure virtual function string sprint();
     pure virtual function pyhdl_if::PyObject get_children();
     pure virtual function pyhdl_if::PyObject get_config_object(input string name);
 
@@ -453,13 +468,7 @@ virtual class UvmComponent #(type BASE_T=CallEmptyBase) extends BASE_T implement
         m_obj = obj;
     endfunction
 
-    virtual function string get_name();
-    endfunction
-
     virtual function string get_full_name();
-    endfunction
-
-    virtual function string sprint();
     endfunction
 
     virtual function pyhdl_if::PyObject get_children();
@@ -488,19 +497,9 @@ virtual class UvmComponent #(type BASE_T=CallEmptyBase) extends BASE_T implement
         pyhdl_if::PyObject __ret = pyhdl_if::None;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
-            "get_name": begin
-                string __rval;
-                __rval = get_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
             "get_full_name": begin
                 string __rval;
                 __rval = get_full_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
-            "sprint": begin
-                string __rval;
-                __rval = sprint();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
             "get_children": begin
@@ -578,13 +577,7 @@ virtual class UvmComponent_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impl
     endfunction
 
 
-    virtual function string get_name();
-    endfunction
-
     virtual function string get_full_name();
-    endfunction
-
-    virtual function string sprint();
     endfunction
 
     virtual function pyhdl_if::PyObject get_children();
@@ -613,19 +606,9 @@ virtual class UvmComponent_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impl
         pyhdl_if::PyObject __ret = pyhdl_if::None;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
-            "get_name": begin
-                string __rval;
-                __rval = get_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
             "get_full_name": begin
                 string __rval;
                 __rval = get_full_name();
-                __ret = pyhdl_if::PyUnicode_FromString(__rval);
-            end
-            "sprint": begin
-                string __rval;
-                __rval = sprint();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
             "get_children": begin

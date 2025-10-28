@@ -1,4 +1,18 @@
 
+`define pyhdl_uvm_object_methods(uvm_obj) \
+    virtual function bit _randomize(); \
+        return this.randomize(); \
+    endfunction \
+    \
+    virtual function string get_name(); \
+        return uvm_obj .get_name(); \
+    endfunction \
+    \
+    virtual function string sprint(); \
+        return uvm_obj .sprint(); \
+    endfunction \
+
+
 /**
  * Accessor class for UVM objects. Exposes key UVM features to Python
  */
@@ -10,12 +24,6 @@ class pyhdl_uvm_object extends UvmObject;
         m_uvm_obj = obj;
     endfunction
 
-    virtual function string get_name();
-        return m_uvm_obj.get_name();
-    endfunction
-
-    virtual function string sprint();
-        return m_uvm_obj.sprint();
-    endfunction
+    `pyhdl_uvm_object_methods(m_uvm_obj)
 
 endclass

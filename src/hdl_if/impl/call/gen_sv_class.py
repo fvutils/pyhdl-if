@@ -520,7 +520,7 @@ class GenSVClass(object):
         self.dec_ind()
         self.println("endfunction")
 
-    def py2sv_func(self, type):
+    def py2sv_func(self, t):
         type_m = {
             ctypes.c_bool : "py_as_bool",
             ctypes.c_byte : "PyLong_AsLong",
@@ -540,13 +540,17 @@ class GenSVClass(object):
             str : "PyUnicode_AsUTF8",
             ctypes.py_object : ""
         }
-        if type not in type_m.keys():
-            raise Exception("Unsupported type %s" % str(type))
-        return "pyhdl_if::" + type_m[type]
+        if t not in type_m.keys():
+            if t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__"):
+                return ""
+            else:
+                raise Exception("Unsupported type %s on " % str(t))
+        return "pyhdl_if::" + type_m[t]
 
     def sv2py_func(self, t, var):
         type_m = {
             ctypes.c_bool : "PyLong_FromLong",
+            bool : "PyLong_FromLong",
             ctypes.c_byte : "PyLong_FromLong",
             ctypes.c_char : "PyLong_FromLong",
             ctypes.c_double : "PyFloat_FromDouble",
@@ -575,6 +579,7 @@ class GenSVClass(object):
     def svtype(self, t):
         type_m = {
             ctypes.c_bool : "bit",
+            bool : "bit",
             ctypes.c_byte : "byte",
             ctypes.c_char : "byte",
             ctypes.c_double : "real",
