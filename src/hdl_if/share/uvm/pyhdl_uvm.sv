@@ -6,6 +6,7 @@ package pyhdl_uvm;
 
     `include "pyhdl_uvm_apis.svh"
 
+    `include "pyhdl_uvm_object_if.svh"
     `include "pyhdl_uvm_object.svh"
     `include "pyhdl_uvm_cmdline_processor.svh"
     `include "pyhdl_uvm_component.svh"

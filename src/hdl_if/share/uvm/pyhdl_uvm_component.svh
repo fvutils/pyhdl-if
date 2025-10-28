@@ -41,7 +41,7 @@ typedef class pyhdl_uvm_object_rgy;
         return py_tuple::mk_init({py_has, py_obj}).borrow(); \
     endfunction \
 
-class pyhdl_uvm_component extends UvmComponent;
+class pyhdl_uvm_component extends UvmComponent implements pyhdl_uvm_object_if;
     uvm_component       m_comp;
 
     function new(uvm_component comp);

@@ -40,16 +40,18 @@ PyHDL-IF uses pytest for its tests. Run the suite of tests like this:
 
 Note: this assumes running `bash` as the shell.
 
-By default, Verilator will be used as the simulator. You can select a different
-simulator using the `PYTEST_FV_HDLSIM' environment variable:
+By default, all available simulators supported by a given test will be run. 
+You can filter the simulators to run using the pytest `-k` option.
 - mti - Siemens Questa (Modeltech)
 - xcm - Cadence Xcelium
 - vcs - Synopsys VCS
 - vlt - Verilator
 
 ```
-% PYTEST_FV_HDLSIM=vlt PYTHONPATH=$(pwd)/src ./packages/python/bin/python3 -m pytest -s tests/
+%  PYTHONPATH=$(pwd)/src ./packages/python/bin/python3 -m pytest -s tests/ -k [vlt]
 ```
+
+The command above runs tests with Verilator only.
 
 
 

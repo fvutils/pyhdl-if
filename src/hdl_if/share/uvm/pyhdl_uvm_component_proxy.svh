@@ -23,6 +23,8 @@ class pyhdl_uvm_component_proxy extends uvm_component;
         PyObject mod, cls;
         int i;
 
+        void'(pyhdl_uvm_object_rgy::inst());
+
         if (pyclass == "") begin
             `uvm_fatal(get_name(), "No value specified for 'pyclass'");
         end
@@ -76,6 +78,9 @@ class pyhdl_uvm_component_proxy extends uvm_component;
     endfunction
 
     task run_phase(uvm_phase phase);
+        // Ensure that the task scheduler is running
+        pyhdl_if_start();
+
         m_helper.run_phase(null);
     endtask
 

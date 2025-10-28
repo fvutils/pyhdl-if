@@ -35,6 +35,7 @@ author = 'Matthew Ballance'
 extensions = [
 #    'sphinx.ext.ingmath', 
     'sphinx.ext.todo', 
+    'sphinx.ext.autodoc',
     'breathe',
     'sphinx_rtd_theme',
     'sphinxarg.ext'

@@ -9,11 +9,13 @@ class UvmComponent(UvmObject):
     Root base for structural UVM components.
 
     Provides (via SV backend):
+
     - Hierarchy: parent/child relationships and hierarchical names.
     - Phasing: build/connect/run/report-style phase callbacks along the UVM schedule.
     - Reporting/Factory/Recording: convenience access through SV UVM infrastructure.
 
     Adapter scope:
+
     - This Python API exposes a subset of queries/utilities.
     - Phase execution, reporting, and factory behavior are managed by the SV side.
     """
@@ -25,10 +27,10 @@ class UvmComponent(UvmObject):
         """
         Randomizes this component via the backend.
 
-        Returns:
-        - True on success, False otherwise.
+        :returns: True on success, False otherwise.
 
         Notes:
+
         - UVM seeding for components is applied during construction in SV when enabled.
         - This call triggers backend-specific randomization of fields/knobs.
         """
@@ -38,10 +40,9 @@ class UvmComponent(UvmObject):
     @imp
     def _randomize(self) -> bool:
         """
-        Backend hook invoked by randomize().
+        Backend hook invoked by ``randomize()``.
 
-        Returns:
-        - True on success, False on failure.
+        :returns: True on success, False on failure.
         """
         ...
 
@@ -58,6 +59,7 @@ class UvmComponent(UvmObject):
         Returns the full hierarchical path to this component.
 
         Behavior:
+
         - Concatenates ancestor full name with this component's leaf name.
         - Top-level components may return the leaf name.
         """
@@ -69,6 +71,7 @@ class UvmComponent(UvmObject):
         Returns a formatted string representation of this component.
 
         Behavior:
+
         - Mirrors UVM sprint semantics for components; uses SV printer policy.
         """
         ...
@@ -79,6 +82,7 @@ class UvmComponent(UvmObject):
         Returns the immediate child components of this component.
 
         Notes:
+
         - Order is implementation-defined.
         - Returned elements are component handles/proxies.
         """
@@ -89,16 +93,15 @@ class UvmComponent(UvmObject):
         """
         Retrieves a configuration object for the given field name.
 
-        Args:
-        - name: Configuration field name (no wildcards).
-
-        Returns:
-        - (found: bool, value: UvmObject)
-          found = True and value set when a matching configuration is available.
-          found = False and value is unspecified otherwise.
+        :param name: Configuration field name (no wildcards).
+        :returns: A tuple ``(found, value)`` where:
+                  - ``found`` is ``True`` when a matching configuration is available, else ``False``.
+                  - ``value`` is the configuration object when found; unspecified otherwise.
+        :rtype: Tuple[bool, UvmObject]
 
         Notes:
-        - Mirrors UVM get_config_object semantics; clone behavior and precedence are
+
+        - Mirrors UVM ``get_config_object`` semantics; clone behavior and precedence are
           handled in SV (global table, then hierarchy).
         - Callers typically cast the returned object to the expected type.
         """

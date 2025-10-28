@@ -30,6 +30,9 @@ class pyhdl_uvm_sequence_proxy #(
         PyObject mod, cls;
         int i;
 
+        // Ensure that the task scheduler is running
+        pyhdl_if_start();
+
         if (pyclass == "") begin
             `uvm_fatal(get_name(), "No value specified for 'pyclass'");
         end
@@ -65,10 +68,14 @@ class pyhdl_uvm_sequence_proxy #(
 
 endclass
 
-class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ) 
-        extends UvmSequenceProxy_wrap;
+class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ)
+        extends UvmSequenceProxy_wrap implements pyhdl_uvm_object_if;
     uvm_sequence_base       m_proxy;
     uvm_object              m_userdata;
+
+    virtual function uvm_object get_object();
+        return m_proxy;
+    endfunction
 
     virtual function string get_name();
         $display("get_name");
@@ -92,5 +99,29 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
         RSP rsp = REQ::type_id::create();
         return pyhdl_uvm_object_rgy::inst().wrap(rsp);
     endfunction
+
+    virtual task start_item(PyObject item);
+        uvm_object item_o;
+        uvm_sequence_item uvm_item;
+
+        item_o = pyhdl_uvm_object_rgy::inst().get_object(item);
+        if ($cast(uvm_item, item_o)) begin
+            m_proxy.start_item(uvm_item);
+        end else begin
+            $display("Fatal: can't cast back to a sequence item");
+        end
+    endtask
+
+    virtual task finish_item(PyObject item);
+        uvm_object item_o;
+        uvm_sequence_item uvm_item;
+
+        item_o = pyhdl_uvm_object_rgy::inst().get_object(item);
+        if ($cast(uvm_item, item_o)) begin
+            m_proxy.finish_item(uvm_item);
+        end else begin
+            $display("Fatal: can't cast back to a sequence item");
+        end
+    endtask
 
 endclass

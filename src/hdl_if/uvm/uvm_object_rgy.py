@@ -1,9 +1,45 @@
-
-from hdl_if import api, exp
+from __future__ import annotations
+from hdl_if import api, exp, imp
+from typing import ClassVar, Optional
 from .uvm_object import UvmObject
 from .uvm_object_type import UvmObjectType, UvmFieldType, UvmFieldKind
 
-class UvmObjectTypeFactory(object):
+@api
+class UvmObjectRgy(object):
+    """Implements type introspection"""
+    _inst : ClassVar[Optional[UvmObjectRgy]] = None
+
+    def __init__(self):
+        UvmObjectRgy._inst = self
+        self._loaded_typenames = False
+        self._typenames = []
+
+    @staticmethod
+    def inst() -> UvmObjectRgy:
+        assert UvmObjectRgy._inst is not None
+        return UvmObjectRgy._inst
+    
+    @property
+    def typenames(self):
+        if not self._loaded_typenames:
+            typedump = self._get_type_dump()
+
+            print("typedump: %s" % typedump, flush=True)
+
+            self._loaded_typenames = True
+        return self._typenames
+    
+    @exp
+    def mk(self, obj : UvmObject) -> UvmObjectType:
+        print("--> mk %s" % obj.get_name())
+        obj_t = UvmObjectType()
+        obj_s = obj.sprint()
+        
+        # Populate fields from the sprint output
+        self.populate_fields(obj_t, obj_s)
+
+        print("<-- mk %s" % obj.get_name())
+        return obj_t
 
     def populate_fields(self, obj_t: UvmObjectType, layout: str) -> None:
         """
@@ -60,13 +96,7 @@ class UvmObjectTypeFactory(object):
                 
             count += 1
 
-    def mk(self, obj : UvmObject) -> UvmObjectType:
-        print("--> mk %s" % obj.get_name())
-        obj_t = UvmObjectType()
-        obj_s = obj.sprint()
-        
-        # Populate fields from the sprint output
-        self.populate_fields(obj_t, obj_s)
-
-        print("<-- mk %s" % obj.get_name())
-        return obj_t
+    
+    
+    @imp
+    def _get_type_dump(self) -> str: ...
