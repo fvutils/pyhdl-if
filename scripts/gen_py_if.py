@@ -855,7 +855,7 @@ def main():
 
     args = parser.parse_args()
 
-    include_pref = {"Py_", "PyBool_", "PyBytes_", "PyDict_", "PyEval_", "PyErr_", 
+    include_pref = {"Py_", "PyBool_", "PyDict_", "PyEval_", "PyErr_", 
                     "PyFloat_",
                     "PyImport_", 
                     "PyIter_", "PyList_", 
