@@ -20,11 +20,11 @@ typedef class pyhdl_uvm_object_rgy;
         return ret.borrow(); \
     endfunction \
     \
-    virtual function PyObject get_config_object(string name); \
+    virtual function PyObject get_config_object(string name, bit clone=1); \
         py_tuple ret; \
         uvm_object obj; \
         py_object py_obj; \
-        bit has = m_comp.get_config_object(name, obj); \
+        bit has = m_comp.get_config_object(name, obj, clone); \
         py_object py_has; \
         \
         $display("has"); \

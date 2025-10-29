@@ -1,4 +1,5 @@
 from __future__ import annotations
+import dataclasses as dc
 from hdl_if import api, exp, imp
 from typing import ClassVar, Optional
 from .uvm_object import UvmObject
@@ -66,16 +67,22 @@ class UvmObjectRgy(object):
                 # Ignore header line (Name Type Size Value)
                 pass
             elif len(tokens) >= 3:
+                # First data line is the object/class line: [name, type, '-', ...]
+                if obj_t.type_name is None and tokens[2] == "-":
+                    # Capture the SV type name from the Type column
+                    obj_t.type_name = self._sanitize_field_name(tokens[1])
+                    count += 1
+                    continue
+
                 # Process field tokens: [field_name, type, size, ...]
                 field_name = tokens[0]
-                
-                # Skip class lines (contain "-" for size)
+
+                # Unknown/unsupported size on field line disables packing
                 if tokens[2] == "-":
-                    # Set can_pack to False when we encounter unknown sizes
                     obj_t.can_pack = False
                     count += 1
                     continue
-                
+
                 try:
                     # Try to parse size as integer
                     size = int(tokens[2])
@@ -83,7 +90,7 @@ class UvmObjectRgy(object):
                     # If size is unknown or unparseable, mark can_pack as False
                     obj_t.can_pack = False
                     size = -1
-                
+
                 # Create field (currently assuming all fields are INT type like SystemVerilog)
                 field = UvmFieldType(
                     name=field_name,
@@ -91,10 +98,48 @@ class UvmObjectRgy(object):
                     size=size,
                     is_signed=False  # Assuming unsigned for now
                 )
-                
+
                 obj_t.fields.append(field)
                 
             count += 1
+
+        # After collecting fields, synthesize a Python dataclass that mirrors them
+        if obj_t.fields and obj_t.data_t is None:
+            obj_t.data_t = self._make_data_dataclass(obj_t)
+
+    def _sanitize_field_name(self, name: str) -> str:
+        # Ensure valid Python identifier
+        s = ''.join((c if (c.isalnum() or c == '_') else '_') for c in name)
+        if not s or s[0].isdigit():
+            s = f"f_{s}"
+        return s
+
+    def _make_data_dataclass(self, obj_t: UvmObjectType):
+        """
+        Builds a Python dataclass type with one field per entry in obj_t.fields.
+        Returns the created type.
+        Each field includes metadata: {"size": f.size, "signed": f.is_signed}.
+        """
+        fields_spec = []
+        for f in obj_t.fields:
+            if f.kind == UvmFieldKind.INT:
+                ftype = int
+                default = 0
+            elif f.kind == UvmFieldKind.STR:
+                ftype = str
+                default = ""
+            elif f.kind == UvmFieldKind.OBJ:
+                ftype = (f.obj_type.data_t if (f.obj_type and f.obj_type.data_t is not None) else object)
+                default = None
+            else:
+                ftype = object
+                default = None
+
+            fname = self._sanitize_field_name(f.name)
+            fields_spec.append((fname, ftype, dc.field(default=default, metadata={"size": f.size, "signed": f.is_signed})))
+
+        typename = obj_t.type_name or "UvmObjectData"
+        return dc.make_dataclass(typename, fields_spec)
 
     
     

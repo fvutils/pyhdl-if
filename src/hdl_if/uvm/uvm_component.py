@@ -89,7 +89,7 @@ class UvmComponent(UvmObject):
         ...
 
     @imp
-    def get_config_object(self, name : str) -> Tuple[bool, UvmObject]:
+    def get_config_object(self, name : str, clone : bool=True) -> Tuple[bool, UvmObject]:
         """
         Retrieves a configuration object for the given field name.
 

@@ -16,5 +16,8 @@ class PyRandSeq(UvmSequenceProxy):  # type: ignore
                 s = "<no sprint available>"
             print(f"PyRandSeq: sending item {i}\n{s}", flush=True)
 
+            val = req.pack()
+            print("val: %s" % str(val))
+
             await self.start_item(req)
             await self.finish_item(req)

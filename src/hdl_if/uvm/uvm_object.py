@@ -1,5 +1,6 @@
 
 import ctypes
+from typing import Generic, TypeVar, List
 from ..decorators import api, imp, exp
 
 @api
@@ -62,4 +63,24 @@ class UvmObject(object):
         - Mirrors UVM sprint semantics: produces the printable view without emitting to output.
         - Formatting policy (printer) is controlled in SV.
         """
+        ...
+
+    def pack(self) -> object: 
+        """Packs field values of the SystemVerilog object into a Python object"""
+        data = self.pack_ints()
+        return getattr(self, "obj_t").unpack_ints(data)
+        ...
+
+    @imp
+    def pack_ints(self) -> List[int]:
+        ...
+
+    def unpack(self, val : object):
+        """Sets the field values of the SystemVerilog object from a Python object"""
+        data = getattr(self, "obj_t").pack_ints(val)
+        self.unpack_ints(data)
+        ...
+
+    @imp
+    def unpack_ints(self, data : List[int]):
         ...

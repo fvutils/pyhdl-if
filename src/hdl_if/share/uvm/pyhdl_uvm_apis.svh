@@ -191,6 +191,8 @@ interface class IUvmObject extends pyhdl_if::ICallApi;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function string sprint();
+    pure virtual function pyhdl_if::PyObject pack_ints();
+    pure virtual function void unpack_ints(input pyhdl_if::PyObject data);
 
 endclass
 
@@ -255,6 +257,12 @@ virtual class UvmObject #(type BASE_T=CallEmptyBase) extends BASE_T implements I
     virtual function string sprint();
     endfunction
 
+    virtual function pyhdl_if::PyObject pack_ints();
+    endfunction
+
+    virtual function void unpack_ints(input pyhdl_if::PyObject data);
+    endfunction
+
 
     virtual task invokeTask(
         output pyhdl_if::PyObject        retval,
@@ -289,6 +297,15 @@ virtual class UvmObject #(type BASE_T=CallEmptyBase) extends BASE_T implements I
                 string __rval;
                 __rval = sprint();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "pack_ints": begin
+                pyhdl_if::PyObject __rval;
+                __rval = pack_ints();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "unpack_ints": begin
+                pyhdl_if::PyObject __data = (pyhdl_if::PyTuple_GetItem(args, 0));
+                unpack_ints(__data);
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
@@ -363,6 +380,12 @@ virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impleme
     virtual function string sprint();
     endfunction
 
+    virtual function pyhdl_if::PyObject pack_ints();
+    endfunction
+
+    virtual function void unpack_ints(input pyhdl_if::PyObject data);
+    endfunction
+
 
     virtual task invokeTask(
         output pyhdl_if::PyObject        retval,
@@ -398,6 +421,15 @@ virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impleme
                 __rval = sprint();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
+            "pack_ints": begin
+                pyhdl_if::PyObject __rval;
+                __rval = pack_ints();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "unpack_ints": begin
+                pyhdl_if::PyObject __data = (pyhdl_if::PyTuple_GetItem(args, 0));
+                unpack_ints(__data);
+            end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
             end
@@ -415,7 +447,11 @@ interface class IUvmComponent extends pyhdl_if::ICallApi;
     pure virtual function string get_full_name();
     pure virtual function string sprint();
     pure virtual function pyhdl_if::PyObject get_children();
-    pure virtual function pyhdl_if::PyObject get_config_object(input string name);
+    pure virtual function pyhdl_if::PyObject get_config_object(
+        input string name,
+        input bit clone
+    );
+
 
 endclass
 
@@ -486,7 +522,11 @@ virtual class UvmComponent #(type BASE_T=CallEmptyBase) extends BASE_T implement
     virtual function pyhdl_if::PyObject get_children();
     endfunction
 
-    virtual function pyhdl_if::PyObject get_config_object(input string name);
+    virtual function pyhdl_if::PyObject get_config_object(
+        input string name,
+        input bit clone
+    );
+
     endfunction
 
 
@@ -537,7 +577,10 @@ virtual class UvmComponent #(type BASE_T=CallEmptyBase) extends BASE_T implement
             "get_config_object": begin
                 pyhdl_if::PyObject __rval;
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                __rval = get_config_object(__name);
+                bit __clone = pyhdl_if::py_as_bool(pyhdl_if::PyTuple_GetItem(args, 1));
+                __rval = get_config_object(
+                    __name,
+                    __clone);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
@@ -619,7 +662,11 @@ virtual class UvmComponent_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impl
     virtual function pyhdl_if::PyObject get_children();
     endfunction
 
-    virtual function pyhdl_if::PyObject get_config_object(input string name);
+    virtual function pyhdl_if::PyObject get_config_object(
+        input string name,
+        input bit clone
+    );
+
     endfunction
 
 
@@ -670,7 +717,10 @@ virtual class UvmComponent_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impl
             "get_config_object": begin
                 pyhdl_if::PyObject __rval;
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                __rval = get_config_object(__name);
+                bit __clone = pyhdl_if::py_as_bool(pyhdl_if::PyTuple_GetItem(args, 1));
+                __rval = get_config_object(
+                    __name,
+                    __clone);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin

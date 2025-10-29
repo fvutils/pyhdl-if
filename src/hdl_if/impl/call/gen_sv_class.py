@@ -523,6 +523,7 @@ class GenSVClass(object):
     def py2sv_func(self, t):
         type_m = {
             ctypes.c_bool : "py_as_bool",
+            bool : "py_as_bool",
             ctypes.c_byte : "PyLong_AsLong",
             ctypes.c_char : "PyLong_AsLong",
             ctypes.c_double : "py_as_double",
