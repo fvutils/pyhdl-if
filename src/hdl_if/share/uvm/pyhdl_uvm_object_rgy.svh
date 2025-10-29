@@ -45,10 +45,15 @@ class pyhdl_uvm_object_rgy extends UvmObjectRgy;
             // Create a new object type
             wrapper = create_object_type(obj);
         end else begin
+            PyObject obj_t;
+
             factory = m_type2factory_m[uvm_obj_t];
             obj_t = m_type2type_m[uvm_obj_t];
 
             wrapper = factory.create(obj, obj_t);
+            if (PyObject_SetAttrString(wrapper.second, "obj_t", obj_t) != 0) begin
+                PyErr_Print();
+            end
         end
 
         if (wrapper == null) begin
@@ -117,12 +122,11 @@ class pyhdl_uvm_object_rgy extends UvmObjectRgy;
             ret = factory.create(obj, null);
 
             py_obj_t = py_object::mk(mk(ret.second));
+            m_type2type_m[obj_t] = py_obj_t.steal();
 
             void'(PyObject_SetAttrString(ret.second, "obj_t", py_obj_t.borrow()));
 
             py_gil_leave();
-
-            m_type2type_m[obj_t] = null;
         end else begin
             $display("Fatal: no factory found for object %0s", obj.get_name());
         end

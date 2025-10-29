@@ -34,6 +34,7 @@ typedef interface class pyhdl_uvm_object_if;
         foreach (data_arr[i]) begin \
             data_arr[i] = dl.get_item(i).as_int(); \
         end \
+        void'(uvm_obj .unpack_ints(data_arr)); \
     endfunction
 
 
