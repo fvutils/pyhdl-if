@@ -1,7 +1,8 @@
 
-from .uvm_cmdline_processor import UvmCmdlineProcessor
-from .uvm_component import UvmComponent
-from .uvm_component_proxy import UvmComponentProxy
-from .uvm_object import UvmObject
-from .uvm_object_rgy import UvmObjectRgy
-from .uvm_sequence_proxy import UvmSequenceProxy
+#from .uvm_cmdline_processor import UvmCmdlineProcessor
+from .component import uvm_component
+from .component_impl import uvm_component_impl
+from .component_proxy import uvm_component_proxy
+from .object import uvm_object
+from .sequence_impl import uvm_sequence_impl
+from .sequence_proxy import uvm_sequence_proxy

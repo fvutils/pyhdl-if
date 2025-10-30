@@ -13,7 +13,7 @@ virtual class UvmCmdlineProcessor #(type BASE_T=CallEmptyBase) extends BASE_T im
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_cmdline_processor", string clsname="UvmCmdlineProcessor");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_cmdline_processor", string clsname="UvmCmdlineProcessor");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -110,7 +110,7 @@ virtual class UvmCmdlineProcessor_wrap #(type BASE_T=CallEmptyBase) extends BASE
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_cmdline_processor", string clsname="UvmCmdlineProcessor");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_cmdline_processor", string clsname="UvmCmdlineProcessor");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -205,7 +205,7 @@ virtual class UvmObject #(type BASE_T=CallEmptyBase) extends BASE_T implements I
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_object", string clsname="UvmObject");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_object", string clsname="UvmObject");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -333,7 +333,7 @@ virtual class UvmObject_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impleme
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_object", string clsname="UvmObject");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_object", string clsname="UvmObject");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -464,7 +464,7 @@ virtual class UvmComponent #(type BASE_T=CallEmptyBase) extends BASE_T implement
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_component", string clsname="UvmComponent");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_component", string clsname="UvmComponent");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -609,7 +609,7 @@ virtual class UvmComponent_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impl
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_component", string clsname="UvmComponent");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_component", string clsname="UvmComponent");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -748,7 +748,7 @@ virtual class UvmFactory #(type BASE_T=CallEmptyBase) extends BASE_T implements 
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_factory", string clsname="UvmFactory");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_factory", string clsname="UvmFactory");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -845,7 +845,7 @@ virtual class UvmFactory_wrap #(type BASE_T=CallEmptyBase) extends BASE_T implem
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_factory", string clsname="UvmFactory");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_factory", string clsname="UvmFactory");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -942,7 +942,7 @@ virtual class UvmComponentProxy #(type BASE_T=CallEmptyBase) extends BASE_T impl
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_component_proxy", string clsname="UvmComponentProxy");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_component_proxy", string clsname="UvmComponentProxy");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -1092,7 +1092,7 @@ virtual class UvmComponentProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_component_proxy", string clsname="UvmComponentProxy");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_component_proxy", string clsname="UvmComponentProxy");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -1237,7 +1237,7 @@ virtual class UvmObjectRgy #(type BASE_T=CallEmptyBase) extends BASE_T implement
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_object_rgy", string clsname="UvmObjectRgy");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_object_rgy", string clsname="UvmObjectRgy");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -1346,7 +1346,7 @@ virtual class UvmObjectRgy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T impl
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_object_rgy", string clsname="UvmObjectRgy");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_object_rgy", string clsname="UvmObjectRgy");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -1454,7 +1454,7 @@ virtual class UvmSequenceProxy #(type BASE_T=CallEmptyBase) extends BASE_T imple
         pyhdl_if::pyhdl_if_connectObject(m_obj, this);
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_sequence_proxy", string clsname="UvmSequenceProxy");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_sequence_proxy", string clsname="UvmSequenceProxy");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);
@@ -1593,7 +1593,7 @@ virtual class UvmSequenceProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T 
         m_obj = obj;
     endfunction
 
-    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.uvm_sequence_proxy", string clsname="UvmSequenceProxy");
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.uvm_sequence_proxy", string clsname="UvmSequenceProxy");
         pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         __args = pyhdl_if::PyTuple_New(0);

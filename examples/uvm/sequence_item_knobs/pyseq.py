@@ -1,21 +1,21 @@
-from hdl_if.uvm import UvmSequenceProxy
+from hdl_if.uvm import uvm_sequence_impl
 
 
-class PyRandSeq(UvmSequenceProxy):  # type: ignore
+class PyRandSeq(uvm_sequence_impl):  # type: ignore
     async def body(self):
         # Send a small burst of fully-randomized items
         for i in range(8):
-            req = self.create_req()
+            req = self.proxy.create_req()
 
             req.randomize()
 
             print("Sending: %s" % req.sprint(), flush=True)
-            await self.start_item(req)
-            await self.finish_item(req)
+            await self.proxy.start_item(req)
+            await self.proxy.finish_item(req)
 
         # Now, exercise each page in turn 
         for i in range(4):
-            req = self.create_req()
+            req = self.proxy.create_req()
             
             # Get the current values
             val = req.pack()
@@ -30,5 +30,5 @@ class PyRandSeq(UvmSequenceProxy):  # type: ignore
 
             print("Page: %d - Sending: %s" % (i, req.sprint()), flush=True)
 
-            await self.start_item(req)
-            await self.finish_item(req)
+            await self.proxy.start_item(req)
+            await self.proxy.finish_item(req)

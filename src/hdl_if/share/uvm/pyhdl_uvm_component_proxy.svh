@@ -64,10 +64,7 @@ class pyhdl_uvm_component_proxy extends uvm_component;
             return;
         end
 
-        $display("modname=%0s clsname=%0s", modname, clsname);
-
-        m_helper = new();
-        m_helper.init(m_helper.create_pyobj(modname, clsname));
+        m_helper = new(pyclass, cls);
         m_helper.m_proxy = this;
 
         m_helper.build_phase(null);
@@ -88,8 +85,29 @@ class pyhdl_uvm_component_proxy extends uvm_component;
 
 endclass
 
-class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy_wrap;
+class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy;
     pyhdl_uvm_component_proxy       m_proxy;
+
+    function new(string clsname, PyObject cls);
+        PyObject impl_o, args;
+        super.new();
+
+        args = PyTuple_New(1);
+        void'(PyTuple_SetItem(args, 0, m_obj));
+
+        impl_o = PyObject_Call(cls, args, null);
+        if (impl_o == null) begin
+            PyErr_Print();
+            $display("Fatal Error: Failed to construct user class %0s", clsname);
+            $finish;
+        end
+
+        if (PyObject_SetAttrString(m_obj, "_impl", impl_o) != 0) begin
+            PyErr_Print();
+            $display("Fatal Error: Failed to set _impl on proxy wrapper");
+            $finish;
+        end
+    endfunction
 
     virtual function PyObject get_parent();
         return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.get_parent());

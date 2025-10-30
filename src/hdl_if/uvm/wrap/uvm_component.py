@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ..decorators import api, imp
+from ...decorators import api, imp
 from typing import List, Tuple
 from .uvm_object import UvmObject
 

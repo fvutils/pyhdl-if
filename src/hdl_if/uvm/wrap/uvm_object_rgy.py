@@ -1,6 +1,6 @@
 from __future__ import annotations
 import dataclasses as dc
-from hdl_if import api, exp, imp
+from ...decorators import api, exp, imp
 from typing import ClassVar, Optional
 from .uvm_object import UvmObject
 from .uvm_object_type import UvmObjectType, UvmFieldType, UvmFieldKind

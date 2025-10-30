@@ -1,15 +1,10 @@
 
-from hdl_if.uvm import UvmComponentProxy, UvmObjectRgy
+from hdl_if.uvm import uvm_component_impl
 
-class PyComp(UvmComponentProxy):
+class PyComp(uvm_component_impl):
 
     def build_phase(self, phase):
         print("-- build_phase", flush=True)
-        inst = UvmObjectRgy.inst()
-
-        print("--> typenames", flush=True)
-        inst.typenames
-        print("<-- typenames", flush=True)
 
 
     def connect_phase(self, phase):

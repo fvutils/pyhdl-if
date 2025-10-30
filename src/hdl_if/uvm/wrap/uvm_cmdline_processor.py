@@ -1,6 +1,6 @@
 import ctypes
 from typing import List, cast
-from ..decorators import api, imp, exp
+from ...decorators import api, imp, exp
 
 @api
 class UvmCmdlineProcessor(object):

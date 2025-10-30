@@ -1,11 +1,12 @@
-from hdl_if.uvm import UvmSequenceProxy
+from hdl_if.uvm import uvm_sequence_impl
 
 
-class PyRandSeq(UvmSequenceProxy):  # type: ignore
+class PyRandSeq(uvm_sequence_impl):
+
     async def body(self):
         # Send a small burst of randomized items
         for i in range(8):
-            req = self.create_req()
+            req = self.proxy.create_req()
             # Backend-driven randomization of the SV sequence item
             req.randomize()
 
@@ -19,5 +20,5 @@ class PyRandSeq(UvmSequenceProxy):  # type: ignore
             val = req.pack()
             print("val: %s" % str(val))
 
-            await self.start_item(req)
-            await self.finish_item(req)
+            await self.proxy.start_item(req)
+            await self.proxy.finish_item(req)

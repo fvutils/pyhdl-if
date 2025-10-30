@@ -1,10 +1,11 @@
 
 import ctypes
 from typing import Generic, TypeVar, List
-from ..decorators import api, imp, exp
+from ...decorators import api, imp, exp
+from ..object import uvm_object
 
 @api
-class UvmObject(object):
+class UvmObject(uvm_object):
     """
     Base for UVM-style data objects in this Python HDL interface.
 

@@ -58,10 +58,25 @@ class pyhdl_uvm_sequence_proxy #(
 
         $display("modname=%0s clsname=%0s", modname, clsname);
 
-        m_helper = new();
+        mod = PyImport_ImportModule(modname);
+        if (mod == null) begin
+            PyErr_Print();
+            `uvm_fatal(get_name, $sformatf("Failed to load Python module %0s", modname));
+            return;
+        end
+
+        cls = PyObject_GetAttrString(mod, clsname);
+
+        if (cls == null) begin
+            PyErr_Print();
+            `uvm_fatal(get_name, $sformatf("Failed to find class %0s in Python module %0s", 
+                clsname, modname));
+            return;
+        end
+
+        m_helper = new(pyclass, cls);
         m_helper.m_proxy = this;
         m_helper.m_userdata = userdata;
-        m_helper.init(m_helper.create_pyobj(modname, clsname));
 
         m_helper.body();
     endtask
@@ -69,9 +84,30 @@ class pyhdl_uvm_sequence_proxy #(
 endclass
 
 class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ)
-        extends UvmSequenceProxy_wrap implements pyhdl_uvm_object_if;
+        extends UvmSequenceProxy implements pyhdl_uvm_object_if;
     uvm_sequence_base       m_proxy;
     uvm_object              m_userdata;
+
+    function new(string clsname, PyObject cls);
+        PyObject impl_o, args;
+        super.new();
+
+        args = PyTuple_New(1);
+        void'(PyTuple_SetItem(args, 0, m_obj));
+
+        impl_o = PyObject_Call(cls, args, null);
+        if (impl_o == null) begin
+            PyErr_Print();
+            $display("Fatal Error: Failed to construct user class %0s", clsname);
+            $finish;
+        end
+
+        if (PyObject_SetAttrString(m_obj, "_impl", impl_o) != 0) begin
+            PyErr_Print();
+            $display("Fatal Error: Failed to set _impl on proxy wrapper");
+            $finish;
+        end
+    endfunction
 
     virtual function uvm_object get_object();
         return m_proxy;

@@ -21,6 +21,7 @@
 #****************************************************************************
 import ctypes
 import enum
+import inspect
 import typing
 from .api_def import ApiDef
 from .method_def import MethodDef, MethodKind
@@ -542,7 +543,7 @@ class GenSVClass(object):
             ctypes.py_object : ""
         }
         if t not in type_m.keys():
-            if t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__"):
+            if t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__") or inspect.isclass(t):
                 return ""
             else:
                 raise Exception("Unsupported type %s on " % str(t))
@@ -572,10 +573,10 @@ class GenSVClass(object):
             return "pyhdl_if::%s(%s)" % (type_m[t], var)
         elif isinstance(t, type) and issubclass(t, enum.IntEnum):
             return "PyLong_FromLong"
-        elif t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__"):
+        elif t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__") or inspect.isclass(t):
             return f"({var}==null)?pyhdl_if::None:{var}"
         else:
-            raise Exception("Unsupported type %s" % str(type))
+            raise Exception("Unsupported type %s (%s)" % (str(type), str(t)))
 
     def svtype(self, t):
         type_m = {
