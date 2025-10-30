@@ -6,8 +6,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from typing import Any
-from hdl_if.uvm.uvm_object_rgy import UvmObjectRgy
-from hdl_if.uvm.uvm_object_type import UvmObjectType, UvmFieldKind
+from hdl_if.uvm.wrap import UvmObjectRgy, UvmObjectType, UvmFieldKind
 
 def test_populate_fields_captures_typename_and_uses_for_dataclass():
     layout = """
