@@ -17,6 +17,7 @@ variety of abstraction levels.
    quickstart
    overview  
    sim_integ
+   uvm
    cmdref
    py_api
    sv_api
