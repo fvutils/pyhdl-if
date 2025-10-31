@@ -14,5 +14,6 @@ package pyhdl_uvm;
     `include "pyhdl_uvm_object_rgy.svh"
     `include "pyhdl_uvm_sequence_proxy.svh"
     `include "pyhdl_uvm_wrapper_factory.svh"
+    `include "pyhdl_uvm2py.svh"
 
 endpackage

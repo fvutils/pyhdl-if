@@ -10,6 +10,7 @@ class pyhdl_uvm2py extends uvm_test;
 
     function void build_phase(uvm_phase phase);
         m_proxy = pyhdl_uvm_component_proxy::type_id::create("m_proxy", this);
+        m_proxy.pyclass = "hdl_if.uvm.pygen::PyGen";
         m_proxy.build_phase(phase);
     endfunction
 

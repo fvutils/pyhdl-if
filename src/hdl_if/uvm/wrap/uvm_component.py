@@ -2,6 +2,7 @@ from __future__ import annotations
 from ...decorators import api, imp
 from typing import List, Tuple
 from .uvm_object import UvmObject
+from ..visitor import uvm_visitor
 
 @api
 class UvmComponent(UvmObject):
@@ -106,3 +107,6 @@ class UvmComponent(UvmObject):
         - Callers typically cast the returned object to the expected type.
         """
         ...
+
+    def accept(self, v : uvm_visitor):
+        v.visit_component(self)

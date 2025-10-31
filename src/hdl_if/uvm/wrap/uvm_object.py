@@ -3,6 +3,7 @@ import ctypes
 from typing import Generic, TypeVar, List
 from ...decorators import api, imp, exp
 from ..object import uvm_object
+from ..visitor import uvm_visitor
 
 @api
 class UvmObject(uvm_object):
@@ -85,3 +86,6 @@ class UvmObject(uvm_object):
     @imp
     def unpack_ints(self, data : List[int]):
         ...
+
+    def accept(self, v : uvm_visitor):
+        v.visit_object(self)

@@ -1,12 +1,14 @@
+from __future__ import annotations
+from typing import cast, TYPE_CHECKING
 
-from typing import cast
-from uvm_component import UvmComponent
-from .uvm_object import UvmObject
+if TYPE_CHECKING:
+    from .component import uvm_component
+    from .object import uvm_object
 
-class Visitor(object):
+class uvm_visitor(object):
 
-    def visitComponet(self, obj : UvmComponent) -> None:
-        self.visitObject(cast(UvmObject, obj))
+    def visit_component(self, obj : uvm_component) -> None:
+        self.visit_object(obj)
 
-    def visitObject(self, obj : UvmObject) -> None:
+    def visit_object(self, obj : uvm_object) -> None:
         pass

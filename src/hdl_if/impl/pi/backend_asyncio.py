@@ -45,7 +45,6 @@ class BackendAsyncio(Backend):
         pass
 
     def mkTask(self, coro):
-        print("mkTask", flush=True)
         return asyncio.ensure_future(coro)
 
     def mkEvent(self):
