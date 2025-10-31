@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ...decorators import api, imp
-from typing import List, Tuple
+from typing import List, Tuple, cast
 from .uvm_object import UvmObject
 from ..visitor import uvm_visitor
 
@@ -20,6 +20,9 @@ class UvmComponent(UvmObject):
     - This Python API exposes a subset of queries/utilities.
     - Phase execution, reporting, and factory behavior are managed by the SV side.
     """
+
+    def __init__(self):
+        self._child_m = None
 
     def __del__(self):
         print("__del__", flush=True)
@@ -76,6 +79,19 @@ class UvmComponent(UvmObject):
         - Mirrors UVM sprint semantics for components; uses SV printer policy.
         """
         ...
+
+    @property
+    def children(self) -> List[object]:
+        return self.get_children()
+    
+    def __getattr__(self, name):
+        if self._child_m is None:
+            m = {}
+            for c in self.get_children():
+                cc = cast(UvmComponent, c)
+                m[cc.get_name()] = cc
+            self._child_m = m
+        return self._child_m[name]
 
     @imp
     def get_children(self) -> List[object]:

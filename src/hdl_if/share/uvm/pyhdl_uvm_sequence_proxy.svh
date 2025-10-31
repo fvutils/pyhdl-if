@@ -48,10 +48,11 @@ class pyhdl_uvm_sequence_proxy #(
             `uvm_fatal(get_name(), $sformatf("Failed to find '::' in pyclass %0s", pyclass))
         end
 
-        for (; i>=0; i--) begin
+        while (i>=0) begin
             if (pyclass[i] != ":") begin
                 break;
             end
+            i--;
         end
 
         modname = pyclass.substr(0, i);

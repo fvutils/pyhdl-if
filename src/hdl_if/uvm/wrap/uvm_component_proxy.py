@@ -1,5 +1,5 @@
 import ctypes
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from ...decorators import api, imp, exp
 from .uvm_factory import UvmFactory
 from .uvm_component import UvmComponent
@@ -13,6 +13,7 @@ class UvmComponentProxy(object):
 
     def __init__(self):
         self._impl : Optional[uvm_component_impl] = None
+        self._child_m = None
 
     @exp
     def build_phase(self, phase : object):
@@ -56,6 +57,23 @@ class UvmComponentProxy(object):
         :returns: Tuple of (Found,Obect). If not found, assume object is None
         """
         ...
+
+    @property
+    def children(self) -> List[object]:
+        return self.get_children()
+
+    @imp
+    def get_children(self) -> List[object]:
+        """
+        Returns the immediate child components of this component.
+
+        Notes:
+
+        - Order is implementation-defined.
+        - Returned elements are component handles/proxies.
+        """
+        ...
+    
 
     @imp
     def info(self, msg : str): ...

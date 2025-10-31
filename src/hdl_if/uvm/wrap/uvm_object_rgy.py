@@ -199,10 +199,25 @@ class UvmObjectRgy(object):
                 default = None
 
             fname = self._sanitize_field_name(f.name)
-            fields_spec.append((fname, ftype, dc.field(default=default, metadata={"size": f.size, "signed": f.is_signed})))
+            ex_idx = -1
+            for i,field in enumerate(fields_spec):
+                if fname == field[0]:
+                    ex_idx = i
+                    break
+
+            if ex_idx == -1:
+                fields_spec.append((fname, ftype, dc.field(default=default, metadata={"size": f.size, "signed": f.is_signed})))
+            else:
+                fields_spec[ex_idx] = (fname, ftype, dc.field(default=default, metadata={"size": f.size, "signed": f.is_signed}))
 
         typename = obj_t.type_name or "UvmObjectData"
-        return dc.make_dataclass(typename, fields_spec)
+        try:
+            ret = dc.make_dataclass(typename, fields_spec)
+        except Exception as e:
+            print("Fields: %s" % str(fields_spec))
+            raise e
+
+        return ret
 
     @imp
     def _get_type_dump(self) -> str: ...

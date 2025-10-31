@@ -40,10 +40,11 @@ class pyhdl_uvm_component_proxy extends uvm_component;
             `uvm_fatal(get_name(), $sformatf("Failed to find '::' in pyclass %0s", pyclass))
         end
 
-        for (; i>=0; i--) begin
+        while (i>=0) begin
             if (pyclass[i] != ":") begin
                 break;
             end
+            i--;
         end
 
         modname = pyclass.substr(0, i);
@@ -132,6 +133,18 @@ class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy;
         py_has = py_from_bool(has);
 
         return py_tuple::mk_init({py_has, py_obj}).borrow();
+    endfunction
+
+    virtual function PyObject get_children();
+        py_list ret = new();
+        uvm_component c[$];
+
+        m_proxy.get_children(c);
+        foreach (c[i]) begin
+            ret.append_obj(pyhdl_uvm_object_rgy::inst().wrap(c[i]));
+        end
+
+        return ret.borrow();
     endfunction
 
 endclass

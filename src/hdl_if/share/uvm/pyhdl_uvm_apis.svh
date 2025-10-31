@@ -929,6 +929,7 @@ interface class IUvmComponentProxy extends pyhdl_if::ICallApi;
     pure virtual function pyhdl_if::PyObject get_parent();
     pure virtual function pyhdl_if::PyObject get_factory();
     pure virtual function pyhdl_if::PyObject get_config_object(input string name);
+    pure virtual function pyhdl_if::PyObject get_children();
     pure virtual function void info(input string msg);
 
 endclass
@@ -1023,6 +1024,9 @@ virtual class UvmComponentProxy #(type BASE_T=CallEmptyBase) extends BASE_T impl
     virtual function pyhdl_if::PyObject get_config_object(input string name);
     endfunction
 
+    virtual function pyhdl_if::PyObject get_children();
+    endfunction
+
     virtual function void info(input string msg);
     endfunction
 
@@ -1060,6 +1064,11 @@ virtual class UvmComponentProxy #(type BASE_T=CallEmptyBase) extends BASE_T impl
                 pyhdl_if::PyObject __rval;
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
                 __rval = get_config_object(__name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "get_children": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_children();
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             "info": begin
@@ -1168,6 +1177,9 @@ virtual class UvmComponentProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T
     virtual function pyhdl_if::PyObject get_config_object(input string name);
     endfunction
 
+    virtual function pyhdl_if::PyObject get_children();
+    endfunction
+
     virtual function void info(input string msg);
     endfunction
 
@@ -1205,6 +1217,11 @@ virtual class UvmComponentProxy_wrap #(type BASE_T=CallEmptyBase) extends BASE_T
                 pyhdl_if::PyObject __rval;
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
                 __rval = get_config_object(__name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "get_children": begin
+                pyhdl_if::PyObject __rval;
+                __rval = get_children();
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             "info": begin
