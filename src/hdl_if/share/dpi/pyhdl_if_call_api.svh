@@ -60,7 +60,7 @@
 
         void'(PyTuple_SetItem(proxy_args, 0, PyUnicode_FromString(method)));
         void'(PyTuple_SetItem(proxy_args, 1, args));
-        
+
         res = pyhdl_pi_if_HandleErr(PyObject_Call(invoke_py_f, proxy_args, null));
 
         PyGILState_Release(state);

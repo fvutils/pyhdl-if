@@ -66,9 +66,8 @@ endclass
 class pyhdl_uvm_component_w extends UvmComponent_imp_impl #(pyhdl_uvm_component) implements pyhdl_uvm_object_if;
 
     function new(uvm_component obj);
-        super.new(null);
-        m_impl = new(obj);
-        pyhdl_if_connectObject(m_obj, this);
+        pyhdl_uvm_component impl = new(obj);
+        super.new(impl);
     endfunction
 
     virtual function uvm_object get_object();
