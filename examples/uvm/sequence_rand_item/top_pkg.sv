@@ -94,8 +94,7 @@ package top_pkg;
 
         task run_phase(uvm_phase phase);
             // Python-driven sequence proxy specialized to seq_item
-            typedef pyhdl_uvm_sequence_proxy #(
-                .REQ(seq_item), .PyClass("pyseq:PyRandSeq")) py_seq_t;
+            typedef pyhdl_uvm_sequence_proxy #(.REQ(seq_item)) py_seq_t;
             py_seq_t seq;
 
             phase.raise_objection(this);

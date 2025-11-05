@@ -7,18 +7,12 @@ class PyRandSeq(uvm_sequence_impl):
         # Send a small burst of randomized items
         for i in range(8):
             req = self.proxy.create_req()
+
+            await self.proxy.start_item(req)
             # Backend-driven randomization of the SV sequence item
             req.randomize()
 
-            # Optional visibility
-            try:
-                s = req.sprint()
-            except Exception:
-                s = "<no sprint available>"
-            print(f"PyRandSeq: sending item {i}\n{s}", flush=True)
+            vals = req.pack()
+            print("Addr: 0x%08x" % vals.addr)
 
-            val = req.pack()
-            print("val: %s" % str(val))
-
-            await self.proxy.start_item(req)
             await self.proxy.finish_item(req)

@@ -7,9 +7,10 @@ from .uvm_object import UvmObject
 from ..component import uvm_component
 from ..component_impl import uvm_component_impl
 from ..component_proxy import uvm_component_proxy
+from .uvm_component import UvmComponent
 
 @api
-class UvmComponentProxy(object):
+class UvmComponentProxy(UvmComponent):
 
     def __init__(self):
         self._impl : Optional[uvm_component_impl] = None
@@ -37,20 +38,13 @@ class UvmComponentProxy(object):
         await self._impl.run_phase(phase)
         ...
 
-    @imp
-    def get_parent(self) -> object:
-        """
-        Gets the parent UVM Component
 
-        :returns: Parent UVM component
-        """
-        ...
 
     @imp
     def get_factory(self) -> UvmFactory: ...
 
     @imp
-    def get_config_object(self, name : str) -> Tuple[bool, UvmObject]:
+    def get_config_object(self, name : str, clone : bool=False) -> Tuple[bool, UvmObject]:
         """
         Gets an object from the config database
 
@@ -58,21 +52,21 @@ class UvmComponentProxy(object):
         """
         ...
 
-    @property
-    def children(self) -> List[object]:
-        return self.get_children()
+    # @property
+    # def children(self) -> List[object]:
+    #     return self.get_children()
 
-    @imp
-    def get_children(self) -> List[object]:
-        """
-        Returns the immediate child components of this component.
+    # @imp
+    # def get_children(self) -> List[object]:
+    #     """
+    #     Returns the immediate child components of this component.
 
-        Notes:
+    #     Notes:
 
-        - Order is implementation-defined.
-        - Returned elements are component handles/proxies.
-        """
-        ...
+    #     - Order is implementation-defined.
+    #     - Returned elements are component handles/proxies.
+    #     """
+    #     ...
     
 
     @imp

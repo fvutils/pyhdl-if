@@ -96,18 +96,18 @@ class pyhdl_uvm_object_rgy extends UvmObjectRgy;
         if ($cast(comp, obj)) begin
             $display("component");
             factory = pyhdl_uvm_wrapper_factory_t #(
-                pyhdl_uvm_component,
+                pyhdl_uvm_component_w,
                 uvm_component)::inst();
-        end else if ($cast(seq, obj)) begin
-        end else if ($cast(seq_item, obj)) begin
-            // For now, just a plain object
-            factory = pyhdl_uvm_wrapper_factory_t #(
-                pyhdl_uvm_object,
-                uvm_object)::inst();
+        // end // else if ($cast(seq, obj)) begin
+        // end else if ($cast(seq_item, obj)) begin
+        //     // For now, just a plain object
+        //     factory = pyhdl_uvm_wrapper_factory_t #(
+        //         pyhdl_uvm_object_w,
+        //         uvm_object)::inst();
         end else begin
             // Just a plain object
             factory = pyhdl_uvm_wrapper_factory_t #(
-                pyhdl_uvm_object,
+                pyhdl_uvm_object_w,
                 uvm_object)::inst();
         end
 

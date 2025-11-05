@@ -23,6 +23,9 @@ class UvmObject(uvm_object):
     - In SV, ``get_full_name`` defaults to ``get_name`` for objects without hierarchy; components override it.
     """
 
+    def __del__(self):
+        print("__del__", flush=True)
+
     def randomize(self) -> None:
         """
         Randomizes this object via the backend.

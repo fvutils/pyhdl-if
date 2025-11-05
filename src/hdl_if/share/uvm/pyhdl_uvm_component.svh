@@ -1,56 +1,78 @@
 
 typedef class pyhdl_uvm_object_rgy;
 
-`define pyhdl_uvm_component_methods(uvm_obj) \
-    `pyhdl_uvm_object_methods(uvm_obj) \
-    \
-    virtual function string get_full_name(); \
-        return uvm_obj .get_full_name(); \
-    endfunction \
-    \
-    virtual function PyObject get_children(); \
-        py_list ret = new(); \
-        uvm_component c[$]; \
-        \
-        m_comp.get_children(c); \
-        foreach (c[i]) begin \
-            ret.append_obj(pyhdl_uvm_object_rgy::inst().wrap(c[i])); \
-        end \
-        \
-        return ret.borrow(); \
-    endfunction \
-    \
-    virtual function PyObject get_config_object(string name, bit clone=1); \
-        py_tuple ret; \
-        uvm_object obj; \
-        py_object py_obj; \
-        bit has = m_comp.get_config_object(name, obj, clone); \
-        py_object py_has; \
-        \
-        $display("has"); \
-        \
-        if (has && obj != null) begin \
-            $display("have object"); \
-            py_obj = new(pyhdl_uvm_object_rgy::inst().wrap(obj)); \
-        end else begin \
-            $display("failed to get object"); \
-        end \
-        \
-        py_has = py_from_bool(has); \
-        \
-        return py_tuple::mk_init({py_has, py_obj}).borrow(); \
-    endfunction \
-
-class pyhdl_uvm_component extends UvmComponent implements pyhdl_uvm_object_if;
-    uvm_component       m_comp;
+class pyhdl_uvm_component extends pyhdl_uvm_object implements pyhdl_uvm_object_if;
 
     function new(uvm_component comp);
-        super.new();
-        m_comp = comp;
+        super.new(comp);
     endfunction
 
-    `pyhdl_uvm_component_methods(m_comp)
+    virtual function PyObject get_parent();
+        uvm_component comp;
+        $cast(comp, m_uvm_obj);
+        return pyhdl_uvm_object_rgy::inst().wrap(comp.get_parent());
+    endfunction
 
 
+    virtual function string get_full_name();
+        uvm_component comp;
+        $cast(comp, m_uvm_obj);
+        return comp.get_full_name();
+    endfunction
+
+    virtual function PyObject get_children();
+        uvm_component comp;
+        py_list ret = new();
+        uvm_component c[$];
+
+        $cast(comp, m_uvm_obj);
+
+        comp.get_children(c);
+        foreach (c[i]) begin
+            ret.append_obj(pyhdl_uvm_object_rgy::inst().wrap(c[i]));
+        end
+
+        return ret.borrow();
+    endfunction
+
+    virtual function PyObject get_config_object(string name, bit clone=1);
+        py_tuple ret;
+        uvm_object obj;
+        py_object py_obj;
+        bit has;
+        py_object py_has;
+        uvm_component comp;
+
+        $cast(comp, m_uvm_obj);
+        has = comp.get_config_object(name, obj, clone);
+
+        $display("has");
+
+        if (has && obj != null) begin
+            $display("have object");
+            py_obj = new(pyhdl_uvm_object_rgy::inst().wrap(obj));
+        end else begin
+            $display("failed to get object");
+        end
+
+        py_has = py_from_bool(has);
+
+        return py_tuple::mk_init({py_has, py_obj}).borrow();
+    endfunction
+
+
+endclass
+
+class pyhdl_uvm_component_w extends UvmComponent_imp_impl #(pyhdl_uvm_component) implements pyhdl_uvm_object_if;
+
+    function new(uvm_component obj);
+        super.new(null);
+        m_impl = new(obj);
+        pyhdl_if_connectObject(m_obj, this);
+    endfunction
+
+    virtual function uvm_object get_object();
+        return m_impl.m_uvm_obj;
+    endfunction
 
 endclass

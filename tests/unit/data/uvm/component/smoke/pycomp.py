@@ -1,21 +1,18 @@
 
-from hdl_if.uvm import UvmComponentProxy
+from hdl_if.uvm import uvm_component_impl
 
 
-class PyComp(UvmComponentProxy):
-
-    def __init__(self):
-        print("PyComp", flush=True)
+class PyComp(uvm_component_impl):
 
     def build_phase(self, phase):
         print("build_phase", flush=True)
-        parent = self.get_parent()
+        parent = self.proxy.get_parent()
         print("parent: %s" % parent.get_name());
         for c in parent.get_children():
             print("Child: %s" % c.get_full_name(), flush=True)
 
         print("--> get_config", flush=True)
-        has, obj = self.get_config_object("MY_CONFIG")
+        has, obj = self.proxy.get_config_object("MY_CONFIG")
         print("<-- get_config", flush=True)
 
         print("type: %s" % getattr(obj, "obj_t", "<notset>"), flush=True)

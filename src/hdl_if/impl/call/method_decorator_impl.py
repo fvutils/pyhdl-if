@@ -71,9 +71,20 @@ class MethodDecoratorImpl(object):
 
         if self._kind == MethodKind.ImpFunc:
             closure = ImpFuncImpl(md)
-            return lambda self, *args, **kwargs: closure(self, *args, **kwargs)
+            def _wrap(self, *args, **kwargs):
+                return closure(self, *args, **kwargs)
+            setattr(_wrap, "__pyhdl_method_def__", md)
+            return _wrap
         elif self._kind == MethodKind.ImpTask:
             closure = ImpTaskImpl(md)
-            return lambda self, *args, **kwargs: closure(self, *args, **kwargs)
+            def _wrap(self, *args, **kwargs):
+                return closure(self, *args, **kwargs)
+            setattr(_wrap, "__pyhdl_method_def__", md)
+            return _wrap
         else:
+            # ExpFunc/ExpTask: return original function but tag metadata
+            try:
+                setattr(T, "__pyhdl_method_def__", md)
+            except Exception:
+                pass
             return T

@@ -38,7 +38,7 @@ def test_smoke(pyhdl_dvflow, hdl_if_env):
 
     sim_img = pyhdl_dvflow.mkTask("hdlsim.%s.SimImage" % pyhdl_dvflow.sim,
                         top=["call_sv_bfm"],
-                        needs=[hdl_if_pkg, hdl_if_dpi, gen_api, test_sv])
+                        needs=[hdl_if_pkg, gen_api, hdl_if_dpi, test_sv])
     
     sim_run = pyhdl_dvflow.mkTask(
         "hdlsim.%s.SimRun" % pyhdl_dvflow.sim,

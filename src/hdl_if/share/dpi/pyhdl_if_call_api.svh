@@ -184,7 +184,7 @@
         int obj_id = (sv_api_if != null)?allocObjId(sv_api_if):-1;
         PyObject args, ret, connect;
         PyGILState_STATE state = PyGILState_Ensure();
-        
+
         connect = PyObject_GetAttrString(__ep_h, "connectObj");
         args = PyTuple_New(2);
 

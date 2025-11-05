@@ -51,9 +51,13 @@ class ApiDecoratorImpl(object):
         ad = ApiDef(
             fullname,
             init_params,
-            ctor.getMethodDefs())
+            ctor.getMethodDefs(),
+            pycls=T)
         rgy.addApiDef(ad)
+        # Attach ApiDef to the Python class to enable robust MRO-based lookup
+        try:
+            setattr(T, "__pyhdl_api_def__", ad)
+        except Exception:
+            pass
 
         return T
-
-

@@ -24,38 +24,36 @@ class UvmComponent(UvmObject):
     def __init__(self):
         self._child_m = None
 
-    def __del__(self):
-        print("__del__", flush=True)
 
-    def randomize(self) -> bool:
-        """
-        Randomizes this component via the backend.
+    # def randomize(self) -> bool:
+    #     """
+    #     Randomizes this component via the backend.
 
-        :returns: True on success, False otherwise.
+    #     :returns: True on success, False otherwise.
 
-        Notes:
+    #     Notes:
 
-        - UVM seeding for components is applied during construction in SV when enabled.
-        - This call triggers backend-specific randomization of fields/knobs.
-        """
-        return self._randomize()
+    #     - UVM seeding for components is applied during construction in SV when enabled.
+    #     - This call triggers backend-specific randomization of fields/knobs.
+    #     """
+    #     return self._randomize()
 
-    # Implementation detail
-    @imp
-    def _randomize(self) -> bool:
-        """
-        Backend hook invoked by ``randomize()``.
+    # # Implementation detail
+    # @imp
+    # def _randomize(self) -> bool:
+    #     """
+    #     Backend hook invoked by ``randomize()``.
 
-        :returns: True on success, False on failure.
-        """
-        ...
+    #     :returns: True on success, False on failure.
+    #     """
+    #     ...
 
-    @imp
-    def get_name(self) -> str:
-        """
-        Returns the leaf instance name of this component.
-        """
-        ...
+    # @imp
+    # def get_name(self) -> str:
+    #     """
+    #     Returns the leaf instance name of this component.
+    #     """
+    #     ...
 
     @imp
     def get_full_name(self) -> str:
@@ -70,15 +68,24 @@ class UvmComponent(UvmObject):
         ...
 
     @imp
-    def sprint(self) -> str:
+    def get_parent(self) -> object:
         """
-        Returns a formatted string representation of this component.
+        Gets the parent UVM Component
 
-        Behavior:
-
-        - Mirrors UVM sprint semantics for components; uses SV printer policy.
+        :returns: Parent UVM component
         """
         ...
+
+    # @imp
+    # def sprint(self) -> str:
+    #     """
+    #     Returns a formatted string representation of this component.
+
+    #     Behavior:
+
+    #     - Mirrors UVM sprint semantics for components; uses SV printer policy.
+    #     """
+    #     ...
 
     @property
     def children(self) -> List[object]:

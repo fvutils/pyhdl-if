@@ -1,5 +1,6 @@
 
 typedef class UvmComponentProxy_wrap;
+typedef class pyhdl_uvm_component;
 typedef class pyhdl_uvm_component_proxy_helper;
 typedef class pyhdl_uvm_object_rgy;
 
@@ -17,6 +18,8 @@ class pyhdl_uvm_component_proxy extends uvm_component;
     function new(string name, uvm_component parent);
         super.new(name, parent);
     endfunction
+
+
 
     function void build_phase(uvm_phase phase);
         string modname, clsname;
@@ -65,36 +68,45 @@ class pyhdl_uvm_component_proxy extends uvm_component;
             return;
         end
 
-        m_helper = new(pyclass, cls);
-        m_helper.m_proxy = this;
+        m_helper = new(this, pyclass, cls);
 
-        m_helper.build_phase(null);
+        m_helper.m_exp.build_phase(null);
     endfunction
 
     function void connect_phase(uvm_phase phase);
-        m_helper.connect_phase(null);
+        m_helper.m_exp.connect_phase(null);
     endfunction
 
     task run_phase(uvm_phase phase);
         // Ensure that the task scheduler is running
         pyhdl_if_start();
 
-        m_helper.run_phase(null);
+        m_helper.m_exp.run_phase(null);
     endtask
-
-
 
 endclass
 
-class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy;
-    pyhdl_uvm_component_proxy       m_proxy;
 
-    function new(string clsname, PyObject cls);
+class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy_imp_impl implements UvmComponentProxy_imp_if;
+    pyhdl_uvm_component_proxy       m_proxy;
+    UvmComponentProxy_exp_impl      m_exp;
+
+    function new(pyhdl_uvm_component_proxy impl, string clsname, PyObject cls);
         PyObject impl_o, args;
-        super.new();
+
+        super.new(null);
+        $cast(m_impl, this);
+
+        pyhdl_if_connectObject(m_obj, m_impl);
+
+        m_proxy = impl;
+
+        m_exp = new(m_obj);
 
         args = PyTuple_New(1);
         void'(PyTuple_SetItem(args, 0, m_obj));
+
+        $display("m_obj: %p", m_obj);
 
         impl_o = PyObject_Call(cls, args, null);
         if (impl_o == null) begin
@@ -110,11 +122,7 @@ class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy;
         end
     endfunction
 
-    virtual function PyObject get_parent();
-        return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.get_parent());
-    endfunction
-
-    virtual function PyObject get_config_object(string name);
+    virtual function PyObject get_config_object(string name, bit clone=0);
         py_tuple ret;
         uvm_object obj;
         py_object py_obj;
@@ -145,6 +153,40 @@ class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy;
         end
 
         return ret.borrow();
+    endfunction
+
+    virtual function bit _randomize();
+        return m_proxy.randomize();
+    endfunction
+
+    virtual function PyObject get_factory();
+        return null;
+    endfunction
+
+    virtual function void info(string msg);
+    endfunction
+
+    virtual function PyObject get_parent();
+        $display("-- get_parent");
+        return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.get_parent());
+    endfunction
+
+    virtual function string sprint();
+        return m_proxy.sprint();
+    endfunction
+
+    virtual function string get_name();
+        return m_proxy.get_name();
+    endfunction
+
+    virtual function string get_full_name();
+        return m_proxy.get_full_name();
+    endfunction
+
+    virtual function PyObject pack_ints();
+    endfunction
+
+    virtual function void unpack_ints(PyObject data);
     endfunction
 
 endclass
