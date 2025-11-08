@@ -7,7 +7,8 @@ import os
 # Add src directory to Python path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
-from hdl_if.uvm.wrap import UvmObjectType, UvmFieldType, UvmFieldKind, UvmObjectRgy
+from hdl_if.uvm.wrap import UvmObjectType, UvmFieldType, UvmFieldKind
+from hdl_if.uvm.wrap import uvm_object_rgy as UvmObjectRgy
 
 
 class TestUvmObjectTypeFactory:
