@@ -95,6 +95,12 @@ def test_real_imp(hdlsim_dvflow, hdl_if_env):
                 print("build.log\n%s" % fp.read())
         else:
             print("No build.log")
+        sim_log = os.path.join(hdlsim_dvflow.builder.rundir, "hdlsim.%s.SimRun" % hdlsim_dvflow.sim, "sim.log")
+        if os.path.isfile(sim_log):
+            with open(sim_log, "r") as fp:
+                print("sim.log\n%s" % fp.read())
+        else:
+            print("No sim.log")
 
     assert status == 0
 
