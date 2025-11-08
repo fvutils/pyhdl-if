@@ -85,6 +85,17 @@ def test_real_imp(hdlsim_dvflow, hdl_if_env):
 
     status, out = hdlsim_dvflow.runTask(sim_run)
 
+    if status != 1:
+        print("Test failed...")
+        for e in os.listdir(os.path.join(hdlsim_dvflow.builder.rundir)):
+            print("Dir: %s" % e)
+        build_log = os.path.join(hdlsim_dvflow.builder.rundir, "hdlsim.%s.SimImage" % hdlsim_dvflow.sim, "build.log")
+        if os.path.isfile(build_log):
+            with open(build_log, "r") as fp:
+                print("build.log\n%s" % fp.read())
+        else:
+            print("No build.log")
+
     assert status == 0
 
     with open(os.path.join(out.output[0].basedir, "status.txt"), "r") as fp:
