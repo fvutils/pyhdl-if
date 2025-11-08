@@ -85,7 +85,7 @@ def test_real_imp(hdlsim_dvflow, hdl_if_env):
 
     status, out = hdlsim_dvflow.runTask(sim_run)
 
-    if status != 1:
+    if status != 0:
         print("Test failed...")
         for e in os.listdir(os.path.join(hdlsim_dvflow.builder.rundir)):
             print("Dir: %s" % e)

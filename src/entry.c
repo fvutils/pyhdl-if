@@ -262,13 +262,13 @@ lib_h_t find_loaded_lib(const char *sym) {
 
     // First, try loading the executable
     {
-        DEBUG("Try finding symbol \"%s\" in the executable\n", sym);
+        DEBUG("Try finding symbol \"%s\" in the executable", sym);
         ret = dlopen(0, RTLD_LAZY);
         if (dlsym(ret, sym)) {
             DEBUG("returning %p", ret);
             return ret;
         } else {
-            DEBUG("didn't find symbol \"%s\" in the executable\n", sym);
+            DEBUG("didn't find symbol \"%s\" in the executable", sym);
             ret = 0;
         }
     }
@@ -282,7 +282,7 @@ lib_h_t find_loaded_lib(const char *sym) {
         char *path_s = strdup(mapfile_path);
         char *path = path_s;
         char *idx;
-        DEBUG("path_s: %s", path_s);
+        DEBUG_LEVEL(3, "path_s: %s", path_s);
 
         if ((idx=strchr(path, '/'))) {
             path = idx;
@@ -297,7 +297,7 @@ lib_h_t find_loaded_lib(const char *sym) {
                 // File doesn't exist. Read another line to complete the path
                 if (fgets(mapfile_path, sizeof(mapfile_path), map_fp)) {
                     char *tpath;
-                    DEBUG("malloc %lld", (unsigned long long)(strlen(path) + strlen(mapfile_path)+2));
+                    DEBUG_LEVEL(3, "malloc %lld", (unsigned long long)(strlen(path) + strlen(mapfile_path)+2));
                     tpath = (char *)malloc(strlen(path) + strlen(mapfile_path) + 2);
 
                     strcpy(tpath, path);
@@ -486,8 +486,10 @@ lib_h_t find_config_python_lib(const char *python) {
         const char *ld_library_path = getenv("LD_LIBRARY_PATH");
         DEBUG("LD_LIBRARY_PATH: %s", ld_library_path?ld_library_path:"null");
 
-        for (i=0; environ[i]; i++) {
-            DEBUG("environ[%d]: %s", i, environ[i]);
+        if (prv_debug >= 2) {
+            for (i=0; environ[i]; i++) {
+                DEBUG("environ[%d]: %s", i, environ[i]);
+            }
         }
 
     }
@@ -518,7 +520,7 @@ lib_h_t find_config_python_lib(const char *python) {
                 newlen = (eol-bp); // exclude the '\n'
             } else {
                 newlen = (&buf[sz]-bp);
-                DEBUG("no eol: newlen=%d (%s)", (int)(&buf[sz]-bp), bp);
+                DEBUG_LEVEL(3, "no eol: newlen=%d (%s)", (int)(&buf[sz]-bp), bp);
             }
 
             // Append to buffer
@@ -534,7 +536,7 @@ lib_h_t find_config_python_lib(const char *python) {
                     // Realloc the buffer
                     int32_t newsz = ((2*linebuf_max)>linebuf_len+newlen)?(2*linebuf_max):linebuf_len+newlen+1;
                     char *tmp = (char *)malloc(newsz);
-                    DEBUG("Realloc buffer %d -> %d", linebuf_max, newsz);
+                    DEBUG_LEVEL(3, "Realloc buffer %d -> %d", linebuf_max, newsz);
                     memcpy(tmp, linebuf, linebuf_len);
                     free(linebuf);
                     linebuf = tmp;
@@ -543,7 +545,7 @@ lib_h_t find_config_python_lib(const char *python) {
                 memcpy(&linebuf[linebuf_len], bp, newlen);
                 linebuf_len += newlen;
                 linebuf[linebuf_len] = 0;
-                DEBUG("Total linebuf: (%s)", linebuf);
+                DEBUG_LEVEL(3, "Total linebuf: (%s)", linebuf);
             }
 
             if (eol) {
@@ -552,7 +554,7 @@ lib_h_t find_config_python_lib(const char *python) {
                 char *val_start;
                 char *val_end;
 
-                DEBUG("Line: %s\n", linebuf);
+                DEBUG_LEVEL(3, "Line: %s\n", linebuf);
 
                 while (isspace(*key_start)) {
                     key_start++;
