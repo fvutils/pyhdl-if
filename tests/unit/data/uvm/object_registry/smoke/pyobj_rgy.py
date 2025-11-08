@@ -1,5 +1,5 @@
 from hdl_if.uvm import uvm_component_impl
-from hdl_if.uvm.wrap.uvm_object_rgy import UvmObjectRgy
+from hdl_if.uvm.wrap.object_rgy import UvmObjectRgy
 
 class PyObjRgyTest(uvm_component_impl):
 

@@ -1,5 +1,5 @@
 
-from .uvm_component_proxy import UvmComponentProxy
+from .component_proxy import UvmComponentProxy
 
 class Uvm2Py(UvmComponentProxy):
     """

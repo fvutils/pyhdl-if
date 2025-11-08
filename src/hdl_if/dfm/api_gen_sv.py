@@ -18,7 +18,8 @@ async def APIGenSV(runner, input) -> None:
     cmd = [
         sys.executable,
         '-m', 'hdl_if',
-        'api-gen-sv'
+        'api-gen-sv',
+        '--deprecated'
     ]
 
     for m in input.params.modules:

@@ -30,10 +30,11 @@ from .api_def_rgy import ApiDefRgy
 
 class GenSVClass(object):
 
-    def __init__(self, out, ind="", uvm=False):
+    def __init__(self, out, ind="", uvm=False, deprecated=False):
         self._out = out
         self._ind = ind
         self._uvm = uvm
+        self._deprecated = deprecated
         self._have_imp = False
         pass
 
@@ -96,10 +97,12 @@ class GenSVClass(object):
 #        self.println()
 #        self.gen_class_interface_combined(api)
 #        self.println()
-        self.gen_class_creator(api)
-        self.println()
-        self.gen_class_wrapper(api)
-        self.println()
+
+        if self._deprecated:
+            self.gen_class_creator(api)
+            self.println()
+            self.gen_class_wrapper(api)
+            self.println()
 
         # New Exp/Imp interface and implementation generation
         self.gen_exp_if(api)

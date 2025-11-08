@@ -55,7 +55,34 @@ Calling a SystemVerilog Task from Python
 SystemVerilog API Classes
 *************************
 
+The `api-gen-sv` command generates convenience classes to enable
+calling `exp` methods from SystemVerilog and to allow SystemVerilog
+classes to implement `imp` methods.
+
+.. code-block:: python3
+
+    class 
+
+
 *************************
 SystemVerilog UVM Classes
 *************************
+
+PyHDL-IF provides built-in support for interacting with SystemVerilog UVM
+testbench environments. The following classes exist for each UVM class:
+
+* Python `Protocol` class in hdl_if.uvm that defines the available methods. 
+  Note that these classes are not marked with @api, @imp, or @exp.
+* Python implementation classes in hdl_if.uvm.wrap that implement the 
+  interface to SystemVerilog. 
+* SystemVerilog interface class in hdl_if/share/uvm/pyhdl_uvm_<name>.svh 
+  that implements the conversion between SystemVerilog types and Python
+  types when necessary.
+* SystemVerilog wrapper class in hdl_if/share/uvm/pyhdl_uvm_<name>.svh
+  named pyhdl_uvm_<name>_w. This class extends from the generated SV/Python
+  integration 'imp' implementation class, and implements pyhdl_uvm_object_if.
+
+In general, SystemVerilog inout method parameters are implemented as
+return values of the Python method.
+
 

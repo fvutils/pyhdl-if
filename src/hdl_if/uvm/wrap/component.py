@@ -1,11 +1,12 @@
 from __future__ import annotations
 from ...decorators import api, imp
 from typing import List, Tuple, cast
-from .uvm_object import UvmObject
+from .object import uvm_object as uvm_object_w
+from ..object import uvm_object
 from ..visitor import uvm_visitor
 
 @api
-class UvmComponent(UvmObject):
+class uvm_component(uvm_object_w):
     """
     Root base for structural UVM components.
 
@@ -22,6 +23,7 @@ class UvmComponent(UvmObject):
     """
 
     def __init__(self):
+        super().__init__()
         self._child_m = None
 
 
@@ -113,7 +115,7 @@ class UvmComponent(UvmObject):
         ...
 
     @imp
-    def get_config_object(self, name : str, clone : bool=True) -> Tuple[bool, UvmObject]:
+    def get_config_object(self, name : str, clone : bool=True) -> Tuple[bool, uvm_object]:
         """
         Retrieves a configuration object for the given field name.
 
@@ -121,7 +123,7 @@ class UvmComponent(UvmObject):
         :returns: A tuple ``(found, value)`` where:
                   - ``found`` is ``True`` when a matching configuration is available, else ``False``.
                   - ``value`` is the configuration object when found; unspecified otherwise.
-        :rtype: Tuple[bool, UvmObject]
+        :rtype: Tuple[bool, uvm_object]
 
         Notes:
 

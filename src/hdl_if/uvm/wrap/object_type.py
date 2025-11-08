@@ -13,7 +13,7 @@ class UvmFieldType(object):
     kind: UvmFieldKind = UvmFieldKind.INT
     size: int = -1
     is_signed: bool = False
-    obj_type: Optional['UvmObjectType'] = None
+    obj_type: Optional['uvm_object_type'] = None
 
 @dc.dataclass
 class UvmObjectType(object):

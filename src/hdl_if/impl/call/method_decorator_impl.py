@@ -39,7 +39,7 @@ class MethodDecoratorImpl(object):
         code = T.__code__
         hints = get_type_hints(T)
 
-        if "return" in hints.keys():
+        if "return" in hints.keys() and hints["return"] != type(None):
             rtype = hints["return"]
         else:
             rtype = None

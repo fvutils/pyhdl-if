@@ -3,7 +3,7 @@ from typing import List, cast
 from ...decorators import api, imp, exp
 
 @api
-class UvmCmdlineProcessor(object):
+class uvm_cmdline_processor(object):
 
     def plusargs(self) -> List[str]:
         return cast(List[str], self._get_plusargs())

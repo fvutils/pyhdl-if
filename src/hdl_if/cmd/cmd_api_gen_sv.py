@@ -51,7 +51,7 @@ class CmdApiGenSV(object):
             os.makedirs(os.path.dirname(args.output))
 
         with open(args.output, "w") as fp:
-            gen = GenSVClass(fp, uvm=args.uvm)
+            gen = GenSVClass(fp, uvm=args.uvm, deprecated=getattr(args, "deprecated", False))
 
             if args.package is not None:
                 gen.println('`include "pyhdl_if_macros.svh"')
@@ -67,4 +67,3 @@ class CmdApiGenSV(object):
                 gen.println("endpackage")
 
         pass
-

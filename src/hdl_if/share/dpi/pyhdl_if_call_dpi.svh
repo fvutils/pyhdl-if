@@ -10,9 +10,11 @@ function PyObject pyhdl_call_if_invoke_hdl_f(
     end else begin
         $display("Fatal: obj_id %0d doesn't exist", obj_id);
     end
-    if (ret == null) begin
+    if (PyErr_Occurred() != null) begin
+        PyErr_Print();
+        ret = null;
+    end else if (ret == null) begin
         ret = pyhdl_if::None;
-//        ret = pyhdl_if::PyUnicode_FromString("abc");
     end
     `PYHDL_IF_LEAVE(("pyhdl_call_if_invoke_hdl_f"));
     return ret;

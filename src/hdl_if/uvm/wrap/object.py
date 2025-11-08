@@ -2,11 +2,11 @@
 import ctypes
 from typing import Generic, TypeVar, List
 from ...decorators import api, imp, exp
-from ..object import uvm_object
+from ..object import uvm_object as uvm_object_p
 from ..visitor import uvm_visitor
 
 @api
-class UvmObject(uvm_object):
+class uvm_object(uvm_object_p):
     """
     Base for UVM-style data objects in this Python HDL interface.
 
@@ -42,6 +42,13 @@ class UvmObject(uvm_object):
         if not self._randomize():
             raise Exception("Randomization failed")
 
+    @imp
+    def reseed(self) -> None:
+        """
+        Reseeds this object's RNG via the backend using UVM seeding rules.
+        """
+        pass
+
     # Implementation detail
     @imp
     def _randomize(self) -> bool: ...
@@ -59,6 +66,60 @@ class UvmObject(uvm_object):
         ...
 
     @imp
+    def set_name(self, name: str) -> None:
+        """
+        Sets the object's leaf instance name in the backend.
+        """
+        ...
+
+    @imp
+    def get_inst_id(self) -> int:
+        """
+        Returns the unique instance ID assigned by the backend.
+        """
+        ...
+
+    @imp
+    def get_type_name(self) -> str: ...
+
+    @imp
+    def create(self, name: str = "") -> uvm_object_p: ...
+
+    @imp
+    def clone(self) -> uvm_object_p: ...
+
+    @imp
+    def print(self) -> None: ...
+
+    @imp
+    def convert2string(self) -> str: ...
+
+    @imp
+    def record(self) -> None: ...
+
+    @imp
+    def copy(self, rhs: uvm_object_p) -> None: ...
+
+    @imp
+    def compare(self, rhs: uvm_object_p) -> bool: ...
+
+    @imp
+    def set_int_local(self, name: str, value: int) -> None: ...
+
+    @imp
+    def set_string_local(self, name: str, value: str) -> None: ...
+
+    @imp
+    def set_object_local(self, name: str, value: uvm_object_p) -> None: ...
+
+    @imp
+    def get_inst_count(self) -> int:
+        """
+        Returns the number of instances created for this object's type in the backend.
+        """
+        ...
+
+    @imp
     def sprint(self) -> str: 
         """
         Returns a formatted string representation of this object.
@@ -67,6 +128,14 @@ class UvmObject(uvm_object):
 
         - Mirrors UVM sprint semantics: produces the printable view without emitting to output.
         - Formatting policy (printer) is controlled in SV.
+        """
+        ...
+
+    @imp
+    def get_full_name(self) -> str:
+        """
+        Returns the full hierarchical name for components; for plain objects,
+        this typically matches get_name().
         """
         ...
 

@@ -30,6 +30,8 @@ def getparser():
         help="Specify a Python module to load for API discovery")
     api_gen_sv.add_argument("-uvm", action="store_true",
         help="Generates UVM-friendly interface classes")
+    api_gen_sv.add_argument("--deprecated", action="store_true",
+        help="Enable deprecated SV class output")
     api_gen_sv.add_argument("-i", "--include",
         action="append",
         help="Specify a pattern for API inclusion")
@@ -81,4 +83,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -1,9 +1,9 @@
 
 typedef class pyhdl_uvm_object_rgy;
 
-class pyhdl_uvm_component extends pyhdl_uvm_object implements pyhdl_uvm_object_if;
+class pyhdl_uvm_component extends pyhdl_uvm_object;
 
-    function new(uvm_component comp);
+    function new(uvm_object comp);
         super.new(comp);
     endfunction
 
@@ -63,15 +63,4 @@ class pyhdl_uvm_component extends pyhdl_uvm_object implements pyhdl_uvm_object_i
 
 endclass
 
-class pyhdl_uvm_component_w extends UvmComponent_imp_impl #(pyhdl_uvm_component) implements pyhdl_uvm_object_if;
-
-    function new(uvm_component obj);
-        pyhdl_uvm_component impl = new(obj);
-        super.new(impl);
-    endfunction
-
-    virtual function uvm_object get_object();
-        return m_impl.m_uvm_obj;
-    endfunction
-
-endclass
+`pyhdl_uvm_type_utils(uvm_component, uvm_object)

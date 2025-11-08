@@ -22,5 +22,12 @@ class PyComp(uvm_component_impl):
 
     async def run_phase(self, phase):
         print("run_phase", flush=True)
+        # Exercise phase objections
+        try:
+            print("phase name:", phase.get_name(), flush=True)
+        except Exception as e:
+            print("phase.get_name failed:", e, flush=True)
+        phase.raise_objection(self.proxy)
+        phase.drop_objection(self.proxy)
 
     pass

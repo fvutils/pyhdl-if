@@ -1,8 +1,9 @@
 
-typedef class UvmComponentProxy_wrap;
 typedef class pyhdl_uvm_component;
 typedef class pyhdl_uvm_component_proxy_helper;
 typedef class pyhdl_uvm_object_rgy;
+typedef class pyhdl_uvm_phase;
+
 
 /**
  * Class used to implement a UVM component in Python
@@ -25,8 +26,7 @@ class pyhdl_uvm_component_proxy extends uvm_component;
         string modname, clsname;
         PyObject mod, cls;
         int i;
-
-        void'(pyhdl_uvm_object_rgy::inst());
+        PyObject __ph = pyhdl_uvm_object_rgy::inst().wrap(phase);
 
         if (pyclass == "") begin
             `uvm_fatal(get_name(), "No value specified for 'pyclass'");
@@ -70,34 +70,41 @@ class pyhdl_uvm_component_proxy extends uvm_component;
 
         m_helper = new(this, pyclass, cls);
 
-        m_helper.m_exp.build_phase(null);
+        // Allow the component/proxy to be located via the 'helper' 
+        // handle
+        pyhdl_uvm_object_rgy::inst().register_object(this, m_helper.m_obj);
+
+        m_helper.m_exp.build_phase(__ph);
     endfunction
 
     function void connect_phase(uvm_phase phase);
-        m_helper.m_exp.connect_phase(null);
+        PyObject __ph = pyhdl_uvm_object_rgy::inst().wrap(phase);
+        m_helper.m_exp.connect_phase(__ph);
     endfunction
 
     task run_phase(uvm_phase phase);
+        PyObject __ph = pyhdl_uvm_object_rgy::inst().wrap(phase);
         // Ensure that the task scheduler is running
         pyhdl_if_start();
 
-        m_helper.m_exp.run_phase(null);
+        m_helper.m_exp.run_phase(__ph);
     endtask
 
 endclass
 
 
-class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy_imp_impl implements UvmComponentProxy_imp_if;
+class pyhdl_uvm_component_proxy_helper 
+    extends uvm_component_proxy_imp_impl #(pyhdl_uvm_component_proxy_helper);
     pyhdl_uvm_component_proxy       m_proxy;
-    UvmComponentProxy_exp_impl      m_exp;
+    uvm_component_proxy_exp_impl    m_exp;
 
     function new(pyhdl_uvm_component_proxy impl, string clsname, PyObject cls);
         PyObject impl_o, args;
 
-        super.new(null);
-        $cast(m_impl, this);
+        super.new(this);
+//        $cast(m_impl, this);
 
-        pyhdl_if_connectObject(m_obj, m_impl);
+//        pyhdl_if_connectObject(m_obj, m_impl);
 
         m_proxy = impl;
 
@@ -120,6 +127,66 @@ class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy_imp_impl implem
             $display("Fatal Error: Failed to set _impl on proxy wrapper");
             $finish;
         end
+    endfunction
+
+    virtual function void reseed();
+        m_proxy.reseed();
+    endfunction
+
+    virtual function void set_name(string name);
+        m_proxy.set_name(name);
+    endfunction
+
+    virtual function int get_inst_id();
+        return m_proxy.get_inst_id();
+    endfunction
+
+    virtual function int get_inst_count();
+        return m_proxy.get_inst_count();
+    endfunction
+
+    virtual function string get_type_name();
+        return m_proxy.get_type_name();
+    endfunction
+
+    virtual function PyObject create();
+        return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.create());
+    endfunction
+
+    virtual function PyObject clone();
+        return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.clone());
+    endfunction
+
+    virtual function void print();
+        m_proxy.print();
+    endfunction
+
+    virtual function string convert2string();
+        return m_proxy.convert2string();
+    endfunction
+
+    virtual function void record();
+        m_proxy.record();
+    endfunction
+
+    virtual function void copy(PyObject rhs);
+        m_proxy.copy(pyhdl_uvm_object_rgy::inst().get_object(rhs));
+    endfunction
+
+    virtual function bit compare(PyObject rhs);
+        return m_proxy.compare(pyhdl_uvm_object_rgy::inst().get_object(rhs));
+    endfunction
+
+    virtual function void set_int_local(string name, int value);
+        m_proxy.set_int_local(name, value);
+    endfunction
+
+    virtual function void set_string_local(string name, string value);
+        m_proxy.set_string_local(name, value);
+    endfunction
+
+    virtual function void set_object_local(string name, PyObject value);
+        m_proxy.set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
     endfunction
 
     virtual function PyObject get_config_object(string name, bit clone=0);
@@ -190,4 +257,3 @@ class pyhdl_uvm_component_proxy_helper extends UvmComponentProxy_imp_impl implem
     endfunction
 
 endclass
-

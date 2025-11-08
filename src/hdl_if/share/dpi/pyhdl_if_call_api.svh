@@ -37,7 +37,7 @@
         void'(PyTuple_SetItem(proxy_args, 0, PyLong_FromLong(longint'(sem_id))));
         void'(PyTuple_SetItem(proxy_args, 1, PyUnicode_FromString(method)));
         void'(PyTuple_SetItem(proxy_args, 2, args));
-        
+
         void'(pyhdl_pi_if_HandleErr(PyObject_Call(invoke_py_t, proxy_args, null)));
 
         pyhdl_if_waitSem(sem_id, res);

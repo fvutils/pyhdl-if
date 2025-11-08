@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from typing import Any
-from hdl_if.uvm.wrap.uvm_object_rgy import UvmObjectRgy
+from hdl_if.uvm.wrap.object_rgy import UvmObjectRgy
 
 def test_parse_typedump_factory_configuration():
     """Test the _parse_typedump method with the expected factory configuration format"""

@@ -18,7 +18,7 @@ def _emit_sv_for(cls) -> str:
     fullname = cls.__module__ + "." + cls.__qualname__
     ad = next(a for a in ApiDefRgy.inst().getApis() if a.fullname == fullname)
     out = io.StringIO()
-    GenSVClass(out, ind="", uvm=False).gen(ad)
+    GenSVClass(out, ind="", uvm=False, deprecated=True).gen(ad)
     return out.getvalue()
 
 
@@ -53,7 +53,7 @@ def test_union_methods_across_inheritance():
     sv = _emit_sv_for(Derived)
 
     # Extract interface block
-    iface_hdr = f"interface class I{Derived.__name__} extends pyhdl_if::ICallApi;"
+    iface_hdr = f"interface class {Derived.__name__}_exp_if;"
     assert iface_hdr in sv
     iface_start = sv.index(iface_hdr)
     iface_end = sv.index("endclass", iface_start)
@@ -63,8 +63,8 @@ def test_union_methods_across_inheritance():
     assert "base_only_exp(" in iface_block
     assert "derived_only_exp(" in iface_block
 
-    # Func-dispatch appears in both creator and wrapper; expect two occurrences
-    assert sv.count('"%s": begin' % "base_imp") == 2
+    # Func-dispatch now appears in creator, wrapper, and imp_impl; expect three occurrences
+    assert sv.count('"%s": begin' % "base_imp") == 3
 
 
 def test_override_masks_base():
@@ -96,7 +96,7 @@ def test_override_masks_base():
 
     sv = _emit_sv_for(Derived2)
 
-    iface_hdr = f"interface class I{Derived2.__name__} extends pyhdl_if::ICallApi;"
+    iface_hdr = f"interface class {Derived2.__name__}_exp_if;"
     assert iface_hdr in sv
     iface_start = sv.index(iface_hdr)
     iface_end = sv.index("endclass", iface_start)
@@ -105,5 +105,5 @@ def test_override_masks_base():
     # Only one declaration of foo in the interface
     assert iface_block.count("foo(") == 1
 
-    # Func-dispatch appears in both creator and wrapper; expect two occurrences
-    assert sv.count('"%s": begin' % "drv_imp") == 2
+    # Func-dispatch now appears in creator, wrapper, and imp_impl; expect three occurrences
+    assert sv.count('"%s": begin' % "drv_imp") == 3

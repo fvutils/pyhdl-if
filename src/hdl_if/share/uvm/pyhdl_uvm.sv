@@ -1,8 +1,12 @@
 `include "uvm_macros.svh"
+`include "pyhdl_uvm_macros.svh"
 
 package pyhdl_uvm;
     import uvm_pkg::*;
     import pyhdl_if::*;
+
+    typedef class pyhdl_uvm_object_type_rgy;
+    typedef class pyhdl_uvm_object_type_rgy_p;
 
     `include "pyhdl_uvm_apis.svh"
 
@@ -13,6 +17,7 @@ package pyhdl_uvm;
     `include "pyhdl_uvm_component_proxy.svh"
     `include "pyhdl_uvm_object_rgy.svh"
     `include "pyhdl_uvm_sequence_proxy.svh"
+    `include "pyhdl_uvm_phase.svh"
     `include "pyhdl_uvm_wrapper_factory.svh"
     `include "pyhdl_uvm2py.svh"
 

@@ -2,23 +2,23 @@ from __future__ import annotations
 import dataclasses as dc
 from ...decorators import api, exp, imp
 from typing import ClassVar, List, Optional
-from .uvm_object import UvmObject
-from .uvm_object_type import UvmObjectType, UvmFieldType, UvmFieldKind
+from .object import uvm_object
+from .object_type import UvmObjectType, UvmFieldType, UvmFieldKind
 
 @api
-class UvmObjectRgy(object):
+class uvm_object_rgy(object):
     """Implements type introspection"""
-    _inst : ClassVar[Optional[UvmObjectRgy]] = None
+    _inst : ClassVar[Optional[uvm_object_rgy]] = None
 
     def __init__(self):
-        UvmObjectRgy._inst = self
+        uvm_object_rgy._inst = self
         self._loaded_typenames = False
         self._typenames = []
 
     @staticmethod
-    def inst() -> UvmObjectRgy:
-        assert UvmObjectRgy._inst is not None
-        return UvmObjectRgy._inst
+    def inst() -> uvm_object_rgy:
+        assert uvm_object_rgy._inst is not None
+        return uvm_object_rgy._inst
     
     @property
     def typenames(self):
@@ -94,7 +94,7 @@ class UvmObjectRgy(object):
         return type_names
     
     @exp
-    def mk(self, obj : UvmObject) -> UvmObjectType:
+    def mk(self, obj : uvm_object) -> UvmObjectType:
         print("--> mk %s" % obj.get_name())
         obj_t = UvmObjectType()
         obj_s = obj.sprint()
@@ -221,3 +221,7 @@ class UvmObjectRgy(object):
 
     @imp
     def _get_type_dump(self) -> str: ...
+
+
+# Backward-compatible alias
+UvmObjectRgy = uvm_object_rgy

@@ -1,14 +1,20 @@
 
+typedef class pyhdl_uvm_object_rgy;
+
 typedef interface class pyhdl_uvm_object_if;
 
 /**
  * Accessor class for UVM objects. Exposes key UVM features to Python
  */
-class pyhdl_uvm_object implements pyhdl_uvm_object_if;
+class pyhdl_uvm_object;
     uvm_object      m_uvm_obj;
 
     function new(uvm_object obj);
         m_uvm_obj = obj;
+    endfunction
+
+    virtual function string get_type_name();
+        return m_uvm_obj .get_type_name();
     endfunction
 
     virtual function bit _randomize();
@@ -21,6 +27,51 @@ class pyhdl_uvm_object implements pyhdl_uvm_object_if;
 
     virtual function string sprint();
         return m_uvm_obj .sprint();
+    endfunction
+
+    virtual function string get_full_name();
+        return m_uvm_obj .get_full_name();
+    endfunction
+
+    virtual function PyObject create(string name="");
+        return pyhdl_uvm_object_rgy::inst().wrap(m_uvm_obj .create(name));
+    endfunction
+
+    virtual function void print();
+        m_uvm_obj .print();
+    endfunction
+
+    virtual function string convert2string();
+        return m_uvm_obj .convert2string();
+    endfunction
+
+    virtual function void record();
+        m_uvm_obj .record();
+    endfunction
+
+    virtual function void copy(PyObject rhs);
+        m_uvm_obj .copy(pyhdl_uvm_object_rgy::inst().get_object(rhs));
+    endfunction
+
+    virtual function void set_int_local(string name, longint unsigned value);
+        m_uvm_obj .set_int_local(name, value);
+    endfunction
+
+    virtual function void set_string_local(string name, string value);
+        m_uvm_obj .set_string_local(name, value);
+    endfunction
+
+    virtual function void set_object_local(string name, PyObject value);
+        m_uvm_obj .set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
+    endfunction
+
+    virtual function bit compare(PyObject rhs);
+        return m_uvm_obj .compare(pyhdl_uvm_object_rgy::inst().get_object(rhs));
+    endfunction
+
+
+    virtual function PyObject clone();
+        return pyhdl_uvm_object_rgy::inst().wrap(m_uvm_obj .clone());
     endfunction
 
     virtual function uvm_object get_object();
@@ -46,18 +97,22 @@ class pyhdl_uvm_object implements pyhdl_uvm_object_if;
         void'(m_uvm_obj .unpack_ints(data_arr));
     endfunction
 
-endclass
-
-class pyhdl_uvm_object_w extends UvmObject_imp_impl #(pyhdl_uvm_object) implements pyhdl_uvm_object_if;
-
-    function new(uvm_object obj);
-        super.new(null);
-        m_impl = new(obj);
-        pyhdl_if_connectObject(m_obj, this);
+    virtual function void reseed();
+        m_uvm_obj .reseed();
     endfunction
 
-    virtual function uvm_object get_object();
-        return m_impl.m_uvm_obj;
+    virtual function void set_name(string name);
+        m_uvm_obj .set_name(name);
+    endfunction
+
+    virtual function longint unsigned get_inst_id();
+        return m_uvm_obj .get_inst_id();
+    endfunction
+
+    virtual function longint unsigned get_inst_count();
+        return m_uvm_obj .get_inst_count();
     endfunction
 
 endclass
+
+`pyhdl_uvm_type_utils(uvm_object, uvm_object)

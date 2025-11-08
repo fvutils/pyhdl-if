@@ -79,19 +79,26 @@ class pyhdl_uvm_sequence_proxy #(
         m_helper.m_proxy = this;
         m_helper.m_userdata = userdata;
 
-        m_helper.body();
+        // Associate the Python object for the helper with the sequence object
+        pyhdl_uvm_object_rgy::inst().register_object(this, m_helper.m_obj);
+
+        m_helper.m_exp.body();
     endtask
 
 endclass
 
 class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ)
-        extends UvmSequenceProxy implements pyhdl_uvm_object_if;
-    uvm_sequence_base       m_proxy;
-    uvm_object              m_userdata;
+        extends uvm_sequence_proxy_imp_impl #(pyhdl_uvm_sequence_proxy_helper #(REQ,RSP)) 
+        implements pyhdl_uvm_object_if;
+    uvm_sequence_base               m_proxy;
+    uvm_sequence_proxy_exp_impl     m_exp;
+    uvm_object                      m_userdata;
 
     function new(string clsname, PyObject cls);
         PyObject impl_o, args;
-        super.new();
+        super.new(this);
+
+        m_exp = new(m_obj);
 
         args = PyTuple_New(1);
         void'(PyTuple_SetItem(args, 0, m_obj));
@@ -114,9 +121,73 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
         return m_proxy;
     endfunction
 
+    virtual function PyObject get_pyobject();
+        return m_obj;
+    endfunction
+
     virtual function string get_name();
         $display("get_name");
         return m_proxy.get_name();
+    endfunction
+
+    virtual function void reseed();
+        m_proxy.reseed();
+    endfunction
+
+    virtual function void set_name(string name);
+        m_proxy.set_name(name);
+    endfunction
+
+    virtual function int get_inst_id();
+        return m_proxy.get_inst_id();
+    endfunction
+
+    virtual function int get_inst_count();
+        return m_proxy.get_inst_count();
+    endfunction
+
+    virtual function string get_type_name();
+        return m_proxy.get_type_name();
+    endfunction
+
+    virtual function PyObject create();
+        return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.create());
+    endfunction
+
+    virtual function PyObject clone();
+        return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.clone());
+    endfunction
+
+    virtual function void print();
+        m_proxy.print();
+    endfunction
+
+    virtual function string convert2string();
+        return m_proxy.convert2string();
+    endfunction
+
+    virtual function void record();
+        m_proxy.record();
+    endfunction
+
+    virtual function void copy(PyObject rhs);
+        m_proxy.copy(pyhdl_uvm_object_rgy::inst().get_object(rhs));
+    endfunction
+
+    virtual function bit compare(PyObject rhs);
+        return m_proxy.compare(pyhdl_uvm_object_rgy::inst().get_object(rhs));
+    endfunction
+
+    virtual function void set_int_local(string name, int value);
+        m_proxy.set_int_local(name, value);
+    endfunction
+
+    virtual function void set_string_local(string name, string value);
+        m_proxy.set_string_local(name, value);
+    endfunction
+
+    virtual function void set_object_local(string name, PyObject value);
+        m_proxy.set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
     endfunction
 
     virtual function PyObject get_userdata();

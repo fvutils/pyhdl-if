@@ -24,51 +24,160 @@ class factory_print_catcher extends uvm_report_catcher;
     endfunction
 endclass
 
-class pyhdl_uvm_object_rgy extends UvmObjectRgy;
+class pyhdl_uvm_object_type;
+    pyhdl_uvm_object_type       subtypes[$];
+    string                      name;
+
+    function new(string name);
+        this.name = name;
+    endfunction
+
+    virtual function bit issubclass(uvm_object obj);
+        return 0;
+    endfunction
+
+    virtual function pyhdl_uvm_object_if create(uvm_object obj);
+        $display("Fatal: pyhdl_uvm_object_type base::create called", name);
+        return null;
+    endfunction
+
+    virtual function int subtype_subclasses(ref pyhdl_uvm_object_type types[$], uvm_object obj);
+        types = {};
+        foreach (subtypes[i]) begin
+            if (subtypes[i].issubclass(obj)) begin
+                types.push_back(subtypes[i]);
+            end
+        end
+        return types.size();
+    endfunction
+
+endclass
+
+class pyhdl_uvm_object_type_p #(type T=uvm_object, type Tw=pyhdl_uvm_object_w) extends pyhdl_uvm_object_type;
+    typedef pyhdl_uvm_object_type_p #(T,Tw) this_t;
+    static this_t   prv_inst;
+
+    function new(string name);
+        super.new(name);
+    endfunction
+
+    virtual function bit issubclass(uvm_object obj);
+        T test_t;
+        return $cast(test_t, obj);
+    endfunction
+
+    virtual function pyhdl_uvm_object_if create(uvm_object obj);
+        Tw w = new(obj);
+
+        $display("Note: %0s Create(%0s) -> %0p", name, obj.get_name(), w);
+
+        // Create type on first object creation (?)
+        return w;
+    endfunction
+
+    static function pyhdl_uvm_object_type inst(string name);
+        if (prv_inst == null) begin
+            prv_inst = new(name);
+        end
+        return prv_inst;
+    endfunction
+endclass
+
+class pyhdl_uvm_object_type_rgy;
+
+endclass
+
+class pyhdl_uvm_object_type_rgy_p #(
+    type Ct=uvm_object,
+    type Ctw=pyhdl_uvm_object_w,
+    type Cb=uvm_object,
+    type Cbw=pyhdl_uvm_object_w) extends pyhdl_uvm_object_type_rgy;
+    typedef pyhdl_uvm_object_type_rgy_p #(Ct,Ctw,Cb,Cbw) this_t;
+    pyhdl_uvm_object_type clstype;
+    pyhdl_uvm_object_type basetype;
+
+    static this_t prv_inst;
+
+    function new(string classname, string basename);
+        clstype = pyhdl_uvm_object_type_p #(Ct,Ctw)::inst(classname);
+        basetype = pyhdl_uvm_object_type_p #(Cb,Cbw)::inst(basename);
+    endfunction
+
+    static function pyhdl_uvm_object_type_rgy inst(
+        string classname,
+        string basename);
+        if (prv_inst != null) begin
+            $display("Fatal: multiple registration");
+        end
+        prv_inst = new(classname, basename);
+        if (prv_inst.clstype != prv_inst.basetype) begin
+            // Build the type tree
+            prv_inst.basetype.subtypes.push_back(prv_inst.clstype);
+        end
+        return prv_inst;
+    endfunction
+
+endclass
+
+class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rgy);
     static pyhdl_uvm_object_rgy    m_inst;
+    uvm_object_rgy_exp_impl        m_exp;
     pyhdl_uvm_object_if            m_obj_rgy[PyObject];
-    pyhdl_uvm_wrapper_factory      m_type2factory_m[uvm_object_wrapper];
+    uvm_object                     m_obj_m[PyObject];
+    pyhdl_uvm_object_type          m_type2factory_m[uvm_object_wrapper];
     PyObject                       m_type2type_m[uvm_object_wrapper];
+    pyhdl_uvm_object_type          m_clstype_root;
 
     function new();
-        super.new();
+        super.new(this);
+        m_exp = new(m_obj);
+        m_clstype_root = pyhdl_uvm_object_type_p #(uvm_object,pyhdl_uvm_object_w)::inst("uvm_object");
+        $display("m_clstype_root: %0p %0d", m_clstype_root, m_clstype_root.subtypes.size());
     endfunction
 
     function PyObject wrap(uvm_object obj);
-        PyObject ret, obj_t;
+        PyObject obj_t;
         uvm_object_wrapper uvm_obj_t = obj.get_object_type();
-        pyhdl_uvm_wrapper_factory factory;
         pyhdl_uvm_object_if obj_if;
-        create_t wrapper;
 
         if (!m_type2factory_m.exists(uvm_obj_t)) begin
             // Create a new object type
-            wrapper = create_object_type(obj);
+            obj_if = create_object_type(obj);
+
+            $display("obj_if(1): %0p", obj_if);
         end else begin
+            pyhdl_uvm_object_type pyhdl_obj_t;
             PyObject obj_t;
 
-            factory = m_type2factory_m[uvm_obj_t];
+            pyhdl_obj_t = m_type2factory_m[uvm_obj_t];
             obj_t = m_type2type_m[uvm_obj_t];
 
-            wrapper = factory.create(obj, obj_t);
-            if (PyObject_SetAttrString(wrapper.second, "obj_t", obj_t) != 0) begin
+            obj_if = pyhdl_obj_t.create(obj);
+
+            $display("obj_if(2): %0p", obj_if);
+
+            if (obj_if == null) begin
+                $display("Fatal: failed to create wrapper from previously-registered type %0s",
+                    pyhdl_obj_t.name);
+            end
+
+            if (PyObject_SetAttrString(obj_if.get_pyobject(), "obj_t", obj_t) != 0) begin
                 PyErr_Print();
             end
         end
 
-        if (wrapper == null) begin
-            $display("Fatal: failed to create a wrapper for UVM object %0s",
-                obj.get_name());
+        if (obj_if == null) begin
+            $display("Fatal: failed to create a wrapper for UVM object %0s (%0s)",
+                obj.get_name(), obj.get_type_name());
         end
 
-        if ($cast(obj_if, wrapper.first)) begin
-            // Save the wrapper object with the registry to prevent GC
-            m_obj_rgy[wrapper.second] = obj_if;
-        end else begin
-            $display("Fatal: Failed to cast to object_if");
-        end
+        m_obj_rgy[obj_if.get_pyobject()] = obj_if;
 
-        return wrapper.second;
+        return obj_if.get_pyobject();
+    endfunction
+
+    function void register_object(uvm_object obj, PyObject pyobj);
+        m_obj_m[pyobj] = obj;
     endfunction
 
     function uvm_object get_object(PyObject obj);
@@ -76,62 +185,67 @@ class pyhdl_uvm_object_rgy extends UvmObjectRgy;
         if (m_obj_rgy.exists(obj)) begin
             pyhdl_uvm_object_if obj_if = m_obj_rgy[obj];
             ret = obj_if.get_object();
+        end else if (m_obj_m.exists(obj)) begin
+            $display("Specially-registered");
+            ret = m_obj_m[obj];
         end else begin
             $display("Fatal: Object is not registered");
+            $stacktrace;
         end
         return ret;
     endfunction
 
-    function create_t create_object_type(uvm_object obj);
+    function pyhdl_uvm_object_if create_object_type(uvm_object obj);
         uvm_component comp;
         uvm_sequence_base seq;
         uvm_sequence_item seq_item;
         uvm_reg_field reg_field;
         pyhdl_uvm_wrapper_factory factory;
         py_object py_obj_t;
-        create_t ret;
+        pyhdl_uvm_object_if obj_if;
+        pyhdl_uvm_object_type pyhdl_obj_t;
+        pyhdl_uvm_object_type subtypes[$];
+        uvm_object_wrapper obj_t = obj.get_object_type();
 
         py_gil_enter();
 
-        if ($cast(comp, obj)) begin
-            $display("component");
-            factory = pyhdl_uvm_wrapper_factory_t #(
-                pyhdl_uvm_component_w,
-                uvm_component)::inst();
-        // end // else if ($cast(seq, obj)) begin
-        // end else if ($cast(seq_item, obj)) begin
-        //     // For now, just a plain object
-        //     factory = pyhdl_uvm_wrapper_factory_t #(
-        //         pyhdl_uvm_object_w,
-        //         uvm_object)::inst();
-        end else begin
-            // Just a plain object
-            factory = pyhdl_uvm_wrapper_factory_t #(
-                pyhdl_uvm_object_w,
-                uvm_object)::inst();
+        if (!m_clstype_root.issubclass(obj)) begin
+            $display("Fatal: obj must always be a subclass of base");
+        end
+        pyhdl_obj_t = m_clstype_root;
+
+        while (pyhdl_obj_t.subtype_subclasses(subtypes, obj) == 1) begin
+            pyhdl_obj_t = subtypes[0];
         end
 
-        if (factory != null) begin
-            uvm_object_wrapper obj_t = obj.get_object_type();
-
-            $display("Register");
-//            ret = new();
-
-            m_type2factory_m[obj_t] = factory;
-
-            ret = factory.create(obj, null);
-
-            py_obj_t = py_object::mk(mk(ret.second));
-            m_type2type_m[obj_t] = py_obj_t.steal();
-
-            void'(PyObject_SetAttrString(ret.second, "obj_t", py_obj_t.borrow()));
-
-            py_gil_leave();
-        end else begin
-            $display("Fatal: no factory found for object %0s", obj.get_name());
+        if (subtypes.size() > 0) begin
+            $display("Fatal: found multiple matches");
         end
 
-        return ret;
+        if (pyhdl_obj_t == null) begin
+            $display("Fatal: Failed to find a type for object %0s (%0s)",
+                obj.get_name(), obj.get_type_name());
+        end else begin
+            $display("Found type %0s", pyhdl_obj_t.name);
+        end
+
+        m_type2factory_m[obj_t] = pyhdl_obj_t;
+
+        obj_if = pyhdl_obj_t.create(obj);
+
+        if (obj_if == null) begin
+            $display("Fatal: type %0s returned a null obj_if", pyhdl_obj_t.name);
+        end
+
+        py_obj_t = py_object::mk(m_exp.mk(obj_if.get_pyobject()));
+        m_type2type_m[obj_t] = py_obj_t.steal();
+
+        void'(PyObject_SetAttrString(
+            obj_if.get_pyobject(), "obj_t", py_obj_t.borrow()));
+
+        py_gil_leave();
+
+        return obj_if;
     endfunction
 
     function void drop(PyObject obj);
