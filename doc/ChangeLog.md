@@ -1,4 +1,9 @@
 
+## 0.1.0
+- Breaking API change in generated SV classes. By default, the generator now
+  produces separate <class>_imp_impl and <class>_exp_impl classes. Add 
+  --deprecated when calling the generator to enable previous behavior.
+
 ## 0.0.6
 - Merge in WIP UVM integration
 
