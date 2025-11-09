@@ -1,6 +1,7 @@
 
 import ctypes
 from typing import Optional
+from ..component import uvm_component as uvm_component_p
 from ...decorators import api, imp, exp
 from .object import uvm_object
 from ..sequence_proxy import uvm_sequence_proxy
@@ -72,4 +73,12 @@ class uvm_sequence_proxy(object):
     def copy(self, rhs : uvm_object_p) -> None:
         assert self._impl is not None
         return self._impl.copy(rhs)
+
+    @property
+    def m_sequencer(self) -> uvm_component_p: 
+        return self._get_sequencer()
+
+    @imp
+    def _get_sequencer(self) -> uvm_component_p:
+        raise NotImplementedError()
 

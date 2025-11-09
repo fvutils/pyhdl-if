@@ -140,6 +140,10 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         uvm_object_wrapper uvm_obj_t = obj.get_object_type();
         pyhdl_uvm_object_if obj_if;
 
+        if (obj == null) begin
+            return None;
+        end 
+
         if (!m_type2factory_m.exists(uvm_obj_t)) begin
             // Create a new object type
             obj_if = create_object_type(obj);

@@ -2,12 +2,17 @@
 typedef class pyhdl_uvm_sequence_proxy_helper;
 typedef class pyhdl_uvm_object_rgy;
 
+interface class pyhdl_uvm_sequence_proxy_if;
+    pure virtual function uvm_sequencer_base _get_sequencer();
+endclass
+
 class pyhdl_uvm_sequence_proxy #(
         type REQ=uvm_sequence_item, 
         type RSP=REQ, 
         type UserDataT=uvm_object,
         string PyClass="")
-    extends uvm_sequence #(.REQ(REQ), .RSP(RSP));
+    extends uvm_sequence #(.REQ(REQ), .RSP(RSP))
+    implements pyhdl_uvm_sequence_proxy_if;
     typedef pyhdl_uvm_sequence_proxy #(.REQ(REQ), .RSP(RSP), .PyClass(PyClass)) this_t;
     `uvm_object_param_utils(this_t);
 
@@ -23,6 +28,10 @@ class pyhdl_uvm_sequence_proxy #(
 
     virtual function uvm_object get_userdata();
         return userdata;
+    endfunction
+
+    virtual function uvm_sequencer_base _get_sequencer();
+        return m_sequencer;
     endfunction
 
     task body();
@@ -188,6 +197,13 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
 
     virtual function void set_object_local(string name, PyObject value);
         m_proxy.set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
+    endfunction
+
+    virtual function PyObject _get_sequencer();
+        pyhdl_uvm_sequence_proxy_if proxy;
+        $cast (proxy, m_proxy);
+        $display("-- _get_sequencer");
+        return pyhdl_uvm_object_rgy::inst().wrap(proxy._get_sequencer());
     endfunction
 
     virtual function PyObject get_userdata();
