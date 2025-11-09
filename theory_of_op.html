@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyHDL-IF Theory of Operation &mdash; PyHDL-IF  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyHDL-IF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uvm.html">UVM Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sv_api.html">SystemVerilog API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyHDL-IF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">PyHDL-IF Theory of Operation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/theory_of_op.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyhdl-if-theory-of-operation">
+<h1>PyHDL-IF Theory of Operation<a class="headerlink" href="#pyhdl-if-theory-of-operation" title="Link to this heading"></a></h1>
+<section id="pyhdl-if-library-fundamentals">
+<h2>PyHDL-IF Library Fundamentals<a class="headerlink" href="#pyhdl-if-library-fundamentals" title="Link to this heading"></a></h2>
+<p>PyHDL-IF implements a function- and task-based interface with the simulator
+using three core components:</p>
+<ul class="simple">
+<li><p>Python library</p></li>
+<li><p>SystemVerilog library</p></li>
+<li><p>DPI library</p></li>
+</ul>
+<p>These three components provide APIs that are used to create linked pairs of
+Python and SystemVerilog objects. Each object in the pair is responsible for
+implementing and responding to method invocation requests from its peer
+object.</p>
+<section id="startup-behavior">
+<h3>Startup Behavior<a class="headerlink" href="#startup-behavior" title="Link to this heading"></a></h3>
+<p>On startup, the simulator initializes the pyhdl_if package by calling
+<cite>__pyhdl_if_init</cite>. This method loads the DPI library, initializes the
+Python interpreter, and loads the Python portion of the PyHDL-IF library.
+The pyhdl_if SystemVerilog package calls <cite>hdl_if.impl.dpi.dpi_init</cite> as
+a step in the startup process. This method returns an HdlCallEndpointDPI
+object that allows the Python and SystemVerilog portions of the
+implementation to coordinate.</p>
+</section>
+<section id="connecting-peer-objects">
+<h3>Connecting Peer Objects<a class="headerlink" href="#connecting-peer-objects" title="Link to this heading"></a></h3>
+<p>The Python and SystemVerilog peer objects may be created in any manner.
+Before they can be used as a pair, though, they must be connected. This
+is done by passing both the SystemVerilog and Python objects to
+<cite>pyhdl_if_connectObject</cite>. This method allocates a unique integer
+identifier for the SystemVerilog object and calls <cite>connectObj</cite> on
+the endpoint (ie HdlCallEndpointDPI), passing the Python object and
+the unique identifier for the SystemVerilog object.</p>
+</section>
+<section id="calling-a-python-method-from-systemverilog">
+<h3>Calling a Python Method from SystemVerilog<a class="headerlink" href="#calling-a-python-method-from-systemverilog" title="Link to this heading"></a></h3>
+</section>
+<section id="calling-a-python-async-method-from-systemverilog">
+<h3>Calling a Python Async Method from SystemVerilog<a class="headerlink" href="#calling-a-python-async-method-from-systemverilog" title="Link to this heading"></a></h3>
+</section>
+<section id="calling-a-systemverilog-function-from-python">
+<h3>Calling a SystemVerilog Function from Python<a class="headerlink" href="#calling-a-systemverilog-function-from-python" title="Link to this heading"></a></h3>
+</section>
+<section id="calling-a-systemverilog-task-from-python">
+<h3>Calling a SystemVerilog Task from Python<a class="headerlink" href="#calling-a-systemverilog-task-from-python" title="Link to this heading"></a></h3>
+</section>
+</section>
+<section id="systemverilog-api-classes">
+<h2>SystemVerilog API Classes<a class="headerlink" href="#systemverilog-api-classes" title="Link to this heading"></a></h2>
+<p>The <cite>api-gen-sv</cite> command generates convenience classes to enable
+calling <cite>exp</cite> methods from SystemVerilog and to allow SystemVerilog
+classes to implement <cite>imp</cite> methods.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span>
+</pre></div>
+</div>
+</section>
+<section id="systemverilog-uvm-classes">
+<h2>SystemVerilog UVM Classes<a class="headerlink" href="#systemverilog-uvm-classes" title="Link to this heading"></a></h2>
+<p>PyHDL-IF provides built-in support for interacting with SystemVerilog UVM
+testbench environments. The following classes exist for each UVM class:</p>
+<ul class="simple">
+<li><p>Python <cite>Protocol</cite> class in hdl_if.uvm that defines the available methods.
+Note that these classes are not marked with &#64;api, &#64;imp, or &#64;exp.</p></li>
+<li><p>Python implementation classes in hdl_if.uvm.wrap that implement the
+interface to SystemVerilog.</p></li>
+<li><p>SystemVerilog interface class in hdl_if/share/uvm/pyhdl_uvm_&lt;name&gt;.svh
+that implements the conversion between SystemVerilog types and Python
+types when necessary.</p></li>
+<li><p>SystemVerilog wrapper class in hdl_if/share/uvm/pyhdl_uvm_&lt;name&gt;.svh
+named pyhdl_uvm_&lt;name&gt;_w. This class extends from the generated SV/Python
+integration ‘imp’ implementation class, and implements pyhdl_uvm_object_if.</p></li>
+</ul>
+<p>In general, SystemVerilog inout method parameters are implemented as
+return values of the Python method.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Matthew Ballance.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
