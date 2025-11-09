@@ -110,10 +110,6 @@ class py_object;
             kwargs = py_dict::mk_init('{});
         end
 
-        $display("attr: %0p", attr);
-        $display("args: %0p", args.obj);
-        $display("kwargs: %0p", kwargs.obj);
-
         ret_o = PyObject_Call(attr, args.obj, kwargs.obj);
 
         if (ret_o == null) begin
