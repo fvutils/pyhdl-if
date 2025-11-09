@@ -2236,7 +2236,7 @@ interface class uvm_sequence_proxy_imp_if;
     pure virtual function pyhdl_if::PyObject create_rsp();
     pure virtual task start_item(input pyhdl_if::PyObject item);
     pure virtual task finish_item(input pyhdl_if::PyObject item);
-    pure virtual function void get_type_name();
+    pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create();
     pure virtual function pyhdl_if::PyObject clone();
     pure virtual function void print();
@@ -2385,8 +2385,9 @@ class uvm_sequence_proxy_imp_impl #(type ImpT=uvm_sequence_proxy_imp_if) impleme
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             "get_type_name": begin
-                m_impl.get_type_name();
-                __ret = pyhdl_if::None;
+                string __rval;
+                __rval = m_impl.get_type_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
             end
             "create": begin
                 pyhdl_if::PyObject __rval;

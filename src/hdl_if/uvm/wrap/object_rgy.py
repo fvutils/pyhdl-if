@@ -25,7 +25,7 @@ class uvm_object_rgy(object):
         if not self._loaded_typenames:
             typedump = self._get_type_dump()
 
-            print("typedump: %s" % typedump, flush=True)
+#            print("typedump: %s" % typedump, flush=True)
 
             # Parse the factory configuration dump
             self._typenames = self._parse_typedump(typedump)
@@ -95,14 +95,14 @@ class uvm_object_rgy(object):
     
     @exp
     def mk(self, obj : uvm_object) -> UvmObjectType:
-        print("--> mk %s" % obj.get_name())
+#        print("--> mk %s" % obj.get_name())
         obj_t = UvmObjectType()
         obj_s = obj.sprint()
         
         # Populate fields from the sprint output
         self.populate_fields(obj_t, obj_s)
 
-        print("<-- mk %s" % obj.get_name())
+#        print("<-- mk %s" % obj.get_name())
         return obj_t
 
     def populate_fields(self, obj_t: UvmObjectType, layout: str) -> None:

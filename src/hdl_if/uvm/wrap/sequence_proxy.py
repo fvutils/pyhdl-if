@@ -35,10 +35,8 @@ class uvm_sequence_proxy(object):
     async def finish_item(self, item : uvm_object_p): ...
 
     @imp
-    def get_type_name(self):
-        if self._impl is not None:
-            return self._impl.get_type_name()
-        return None
+    def get_type_name(self) -> str:
+        raise NotImplementedError()
 
     @imp
     def create(self) -> Optional[uvm_object_p]:

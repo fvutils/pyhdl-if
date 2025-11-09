@@ -69,8 +69,6 @@ class pyhdl_uvm_object_type_p #(type T=uvm_object, type Tw=pyhdl_uvm_object_w) e
     virtual function pyhdl_uvm_object_if create(uvm_object obj);
         Tw w = new(obj);
 
-        $display("Note: %0s Create(%0s) -> %0p", name, obj.get_name(), w);
-
         // Create type on first object creation (?)
         return w;
     endfunction
@@ -132,7 +130,6 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         super.new(this);
         m_exp = new(m_obj);
         m_clstype_root = pyhdl_uvm_object_type_p #(uvm_object,pyhdl_uvm_object_w)::inst("uvm_object");
-        $display("m_clstype_root: %0p %0d", m_clstype_root, m_clstype_root.subtypes.size());
     endfunction
 
     function PyObject wrap(uvm_object obj);
@@ -148,7 +145,6 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
             // Create a new object type
             obj_if = create_object_type(obj);
 
-            $display("obj_if(1): %0p", obj_if);
         end else begin
             pyhdl_uvm_object_type pyhdl_obj_t;
             PyObject obj_t;
@@ -157,8 +153,6 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
             obj_t = m_type2type_m[uvm_obj_t];
 
             obj_if = pyhdl_obj_t.create(obj);
-
-            $display("obj_if(2): %0p", obj_if);
 
             if (obj_if == null) begin
                 $display("Fatal: failed to create wrapper from previously-registered type %0s",
@@ -190,7 +184,6 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
             pyhdl_uvm_object_if obj_if = m_obj_rgy[obj];
             ret = obj_if.get_object();
         end else if (m_obj_m.exists(obj)) begin
-            $display("Specially-registered");
             ret = m_obj_m[obj];
         end else begin
             $display("Fatal: Object is not registered");
@@ -230,7 +223,7 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
             $display("Fatal: Failed to find a type for object %0s (%0s)",
                 obj.get_name(), obj.get_type_name());
         end else begin
-            $display("Found type %0s", pyhdl_obj_t.name);
+//            $display("Found type %0s", pyhdl_obj_t.name);
         end
 
         m_type2factory_m[obj_t] = pyhdl_obj_t;
@@ -264,9 +257,7 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         // save the message printed by factory.print()
         uvm_report_cb::add(null, catcher);
 
-        $display("--> print");
         factory.print();
-        $display("<-- print\n%0s", catcher.factory_print);
 
         uvm_report_cb::delete(null, catcher);
 

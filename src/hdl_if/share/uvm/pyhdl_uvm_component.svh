@@ -46,13 +46,8 @@ class pyhdl_uvm_component extends pyhdl_uvm_object;
         $cast(comp, m_uvm_obj);
         has = comp.get_config_object(name, obj, clone);
 
-        $display("has");
-
         if (has && obj != null) begin
-            $display("have object");
             py_obj = new(pyhdl_uvm_object_rgy::inst().wrap(obj));
-        end else begin
-            $display("failed to get object");
         end
 
         py_has = py_from_bool(has);
