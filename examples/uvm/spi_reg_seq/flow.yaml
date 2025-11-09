@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+package:
+  name: uvm
+  with:
+    sim: 
+      type: str
+      # Set to one of the following with -Dsim=<simulator>
+      # - mti - Mentor/Siemens Questa (Modelsim)
+      # - vcs - Synopsys VCS
+      # - xcm - Cadence Xcellium
+      value: "Unspecified"
+
+  tasks:
+  - name: src
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [top_pkg.sv, top.sv]
+
+  - name: sim-img
+    desc: Builds the simulation image
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs: 
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - pyhdl-if.UVMPkg
+    - src
+    with:
+      top: [top]
+
+  - name: extract-py-mirrors
+    uses: "hdlsim.${{ sim }}.SimRun"
+    needs: [sim-img, pyhdl-if.DpiLib]
+    with:
+      plusargs: 
+      - UVM_TESTNAME=pyhdl_uvm2py
+      - pyhdl_outdir=${{ rootdir }}/python
+
+  - name: sim-run
+    uses: "hdlsim.${{ sim }}.SimRun"
+    needs: [sim-img, pyhdl-if.DpiLib]
+    with:
+      plusargs: 
+      - UVM_TESTNAME=base_test
+      - pyhdl.python=${{ rootdir }}/../../packages/python/bin/python
+      - pyhdl.debug=0
