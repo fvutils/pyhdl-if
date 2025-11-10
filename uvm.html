@@ -49,7 +49,19 @@
 <li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">UVM Support</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#environment-integration">Environment Integration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#initiating-python-behavior">Initiating Python Behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initiating-python-behavior">Initiating Python Behavior</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#component-proxy-systemverilog">Component Proxy (SystemVerilog)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#python-component-implementation">Python Component Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sequence-proxy-systemverilog">Sequence Proxy (SystemVerilog)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#python-sequence-implementation">Python Sequence Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-item-manipulation">Advanced Item Manipulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pyclass-string-format">PyClass String Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#starting-a-sequence-proxy">Starting a Sequence Proxy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lifecycle-summary">Lifecycle Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#class-api-reference">Class API Reference</a></li>
 </ul>
 </li>
@@ -89,6 +101,182 @@
 </section>
 <section id="initiating-python-behavior">
 <h2>Initiating Python Behavior<a class="headerlink" href="#initiating-python-behavior" title="Link to this heading"></a></h2>
+<section id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h3>
+<p>SystemVerilog proxy classes construct and drive Python implementations at
+runtime. You supply the Python implementation class via a string (<code class="docutils literal notranslate"><span class="pre">pyclass</span></code>
+field or <code class="docutils literal notranslate"><span class="pre">PyClass</span></code> parameter) and the proxy:
+1. Parses the string into module and class names
+2. Imports the Python module
+3. Instantiates the class
+4. Attaches the Python object to the SV proxy wrapper
+5. Invokes phase or sequence body callbacks (starting the Python task</p>
+<blockquote>
+<div><p>scheduler when needed)</p>
+</div></blockquote>
+</section>
+<section id="component-proxy-systemverilog">
+<h3>Component Proxy (SystemVerilog)<a class="headerlink" href="#component-proxy-systemverilog" title="Link to this heading"></a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">pyhdl_uvm_component_proxy</span></code> to host a Python UVM component implementation.</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="kd">class</span><span class="w"> </span><span class="nc">my_env</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="nc">uvm_env</span><span class="p">;</span>
+<span class="w">  </span><span class="no">`uvm_component_utils</span><span class="p">(</span><span class="n">my_env</span><span class="p">)</span>
+
+<span class="w">  </span><span class="n">pyhdl_uvm_component_proxy</span><span class="w"> </span><span class="n">m_pycomp</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">function</span><span class="w"> </span><span class="k">new</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">uvm_component</span><span class="w"> </span><span class="n">parent</span><span class="p">);</span>
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="k">new</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">parent</span><span class="p">);</span>
+<span class="w">  </span><span class="k">endfunction</span>
+
+<span class="w">  </span><span class="k">function</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">build_phase</span><span class="p">(</span><span class="n">uvm_phase</span><span class="w"> </span><span class="n">phase</span><span class="p">);</span>
+<span class="w">    </span><span class="k">super</span><span class="p">.</span><span class="n">build_phase</span><span class="p">(</span><span class="n">phase</span><span class="p">);</span>
+<span class="w">    </span><span class="n">m_pycomp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyhdl_uvm_component_proxy</span><span class="o">::</span><span class="n">type_id</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;m_pycomp&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Format: module::Class or module:Class</span>
+<span class="w">    </span><span class="n">m_pycomp</span><span class="p">.</span><span class="n">pyclass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pycomp::PyComp&quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">endfunction</span>
+<span class="kd">endclass</span>
+</pre></div>
+</div>
+<p>Example: <code class="docutils literal notranslate"><span class="pre">examples/uvm/component_proxy_smoke/top_pkg.sv</span></code> with Python
+implementation in <code class="docutils literal notranslate"><span class="pre">examples/uvm/component_proxy_smoke/pycomp.py</span></code>.</p>
+</section>
+<section id="python-component-implementation">
+<h3>Python Component Implementation<a class="headerlink" href="#python-component-implementation" title="Link to this heading"></a></h3>
+<p>Subclass <code class="docutils literal notranslate"><span class="pre">uvm_component_impl</span></code> and implement phase methods. A <code class="docutils literal notranslate"><span class="pre">proxy</span></code>
+dataclass field is injected to reference the SV proxy.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">hdl_if.uvm</span> <span class="kn">import</span> <span class="n">uvm_component_impl</span>
+
+<span class="k">class</span> <span class="nc">PyComp</span><span class="p">(</span><span class="n">uvm_component_impl</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">build_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phase</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-- build_phase&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">connect_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phase</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-- connect_phase&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">run_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phase</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello from PyComp run_phase&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="sequence-proxy-systemverilog">
+<h3>Sequence Proxy (SystemVerilog)<a class="headerlink" href="#sequence-proxy-systemverilog" title="Link to this heading"></a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">pyhdl_uvm_sequence_proxy</span></code> to host a Python sequence body and drive SV
+sequence items.</p>
+<p>Two ways to specify the Python class:</p>
+<ol class="arabic">
+<li><p>As a parameter at typedef:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="n">pyhdl_uvm_sequence_proxy</span><span class="w"> </span><span class="p">#(</span>
+<span class="w">  </span><span class="p">.</span><span class="n">REQ</span><span class="p">(</span><span class="n">seq_item</span><span class="p">),</span>
+<span class="w">  </span><span class="p">.</span><span class="n">PyClass</span><span class="p">(</span><span class="s">&quot;pyseq:PyRandSeq&quot;</span><span class="p">)</span>
+<span class="p">)</span><span class="w"> </span><span class="n">py_seq_t</span><span class="p">;</span>
+
+<span class="k">initial</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">  </span><span class="n">py_seq_t</span><span class="w"> </span><span class="n">seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">py_seq_t</span><span class="o">::</span><span class="n">type_id</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;seq&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">seq</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">m_env</span><span class="p">.</span><span class="n">m_seqr</span><span class="p">);</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+</li>
+<li><p>By assigning the <code class="docutils literal notranslate"><span class="pre">pyclass</span></code> field after construction:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="n">pyhdl_uvm_sequence_proxy</span><span class="w"> </span><span class="p">#(.</span><span class="n">REQ</span><span class="p">(</span><span class="n">seq_item</span><span class="p">))</span><span class="w"> </span><span class="n">py_seq_t</span><span class="p">;</span>
+
+<span class="k">initial</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">  </span><span class="n">py_seq_t</span><span class="w"> </span><span class="n">seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">py_seq_t</span><span class="o">::</span><span class="n">type_id</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;seq&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">seq</span><span class="p">.</span><span class="n">pyclass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pyseq::PyRandSeq&quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="n">seq</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">m_env</span><span class="p">.</span><span class="n">m_seqr</span><span class="p">);</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Examples:
+- <code class="docutils literal notranslate"><span class="pre">examples/uvm/sequence_rand_item/top_pkg.sv</span></code>
+- <code class="docutils literal notranslate"><span class="pre">examples/uvm/sequence_item_knobs/top_pkg.sv</span></code>
+- <code class="docutils literal notranslate"><span class="pre">examples/uvm/multi_comp_hierarchy/top_pkg.sv</span></code>
+- <code class="docutils literal notranslate"><span class="pre">examples/uvm/spi_reg_seq/top_pkg.sv</span></code></p>
+</section>
+<section id="python-sequence-implementation">
+<h3>Python Sequence Implementation<a class="headerlink" href="#python-sequence-implementation" title="Link to this heading"></a></h3>
+<p>Subclass <code class="docutils literal notranslate"><span class="pre">uvm_sequence_impl</span></code> and implement <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span> <span class="pre">body(self)</span></code> using
+the injected <code class="docutils literal notranslate"><span class="pre">self.proxy</span></code> helpers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">hdl_if.uvm</span> <span class="kn">import</span> <span class="n">uvm_sequence_impl</span>
+
+<span class="k">class</span> <span class="nc">PyRandSeq</span><span class="p">(</span><span class="n">uvm_sequence_impl</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">create_req</span><span class="p">()</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">randomize</span><span class="p">()</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">start_item</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span><span class="o">.</span><span class="n">finish_item</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+
+        <span class="c1"># Additional pattern (knobs / unpack/pack) shown in other examples</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-item-manipulation">
+<h3>Advanced Item Manipulation<a class="headerlink" href="#advanced-item-manipulation" title="Link to this heading"></a></h3>
+<p>Typical flow inside the Python sequence:
+- Create item: <code class="docutils literal notranslate"><span class="pre">req</span> <span class="pre">=</span> <span class="pre">self.proxy.create_req()</span></code>
+- Randomize SV-side: <code class="docutils literal notranslate"><span class="pre">req.randomize()</span></code>
+- Access packed view: <code class="docutils literal notranslate"><span class="pre">vals</span> <span class="pre">=</span> <span class="pre">req.pack()</span></code>
+- Modify fields: assign to <code class="docutils literal notranslate"><span class="pre">vals</span></code> then <code class="docutils literal notranslate"><span class="pre">req.unpack(vals)</span></code>
+- Handshake: <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">self.proxy.start_item(req)</span></code> / <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">self.proxy.finish_item(req)</span></code></p>
+<p>See:
+- <code class="docutils literal notranslate"><span class="pre">examples/uvm/sequence_item_knobs/pyseq.py</span></code> (control knobs + field</p>
+<blockquote>
+<div><p>mutation)</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/uvm/spi_reg_seq/pyseq.py</span></code> (register access sequencing)</p></li>
+</ul>
+</section>
+<section id="pyclass-string-format">
+<h3>PyClass String Format<a class="headerlink" href="#pyclass-string-format" title="Link to this heading"></a></h3>
+<p>Accepted forms: <code class="docutils literal notranslate"><span class="pre">module::ClassName</span></code> (recommended) or <code class="docutils literal notranslate"><span class="pre">module:ClassName</span></code>.</p>
+<p>Parsing steps (SV side):
+- Scan from end for first <code class="docutils literal notranslate"><span class="pre">:</span></code> (possibly part of a <code class="docutils literal notranslate"><span class="pre">::</span></code> pair)
+- Class name = substring after the last colon(s)
+- Module name = substring before the preceding colons
+- Import: <code class="docutils literal notranslate"><span class="pre">PyImport_ImportModule(module)</span></code>
+- Lookup: <code class="docutils literal notranslate"><span class="pre">PyObject_GetAttrString(module,</span> <span class="pre">ClassName)</span></code></p>
+<p>Errors:
+- Empty string -&gt; fatal
+- Missing <code class="docutils literal notranslate"><span class="pre">::</span></code> / <code class="docutils literal notranslate"><span class="pre">:</span></code> delimiter -&gt; fatal
+- Module or class not found -&gt; fatal (prints Python error stack)</p>
+</section>
+<section id="starting-a-sequence-proxy">
+<h3>Starting a Sequence Proxy<a class="headerlink" href="#starting-a-sequence-proxy" title="Link to this heading"></a></h3>
+<p>After creating and setting the Python class reference, start on a sequencer:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="n">py_seq_t</span><span class="w"> </span><span class="n">seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">py_seq_t</span><span class="o">::</span><span class="n">type_id</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;seq&quot;</span><span class="p">);</span>
+<span class="n">seq</span><span class="p">.</span><span class="n">pyclass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;pyseq::PyRandSeq&quot;</span><span class="p">;</span>
+<span class="n">seq</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">m_env</span><span class="p">.</span><span class="n">m_seqr</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Internals:
+- Scheduler startup via <code class="docutils literal notranslate"><span class="pre">pyhdl_if_start()</span></code>
+- Python <code class="docutils literal notranslate"><span class="pre">body()</span></code> coroutine awaited within SV <code class="docutils literal notranslate"><span class="pre">task</span> <span class="pre">body()</span></code>
+- <code class="docutils literal notranslate"><span class="pre">create_req()</span></code> / <code class="docutils literal notranslate"><span class="pre">create_rsp()</span></code> provide typed SV items
+- <code class="docutils literal notranslate"><span class="pre">start_item()</span></code> / <code class="docutils literal notranslate"><span class="pre">finish_item()</span></code> delegate to UVM item handshake</p>
+</section>
+<section id="lifecycle-summary">
+<h3>Lifecycle Summary<a class="headerlink" href="#lifecycle-summary" title="Link to this heading"></a></h3>
+<p>Component:
+1. Set <code class="docutils literal notranslate"><span class="pre">pyclass</span></code> before or during build.
+2. SV build_phase loads module/class, constructs helper + Python impl.
+3. Phases call through to Python implementation.</p>
+<p>Sequence:
+1. Set <code class="docutils literal notranslate"><span class="pre">PyClass</span></code> parameter or <code class="docutils literal notranslate"><span class="pre">pyclass</span></code> field.
+2. On <code class="docutils literal notranslate"><span class="pre">start()</span></code>, SV <code class="docutils literal notranslate"><span class="pre">body()</span></code> loads Python class, constructs helper.
+3. Python <code class="docutils literal notranslate"><span class="pre">body()</span></code> drives items using proxy methods.</p>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Ensure module is on PYTHONPATH or relative to invocation directory.</p></li>
+<li><p>Verify delimiter usage (<code class="docutils literal notranslate"><span class="pre">module::Class</span></code>).</p></li>
+<li><p>Use sprint/print inside Python phases to confirm activation.</p></li>
+<li><p>Fatal errors are raised via UVM macros after Python traceback printing.</p></li>
+</ul>
+</section>
 </section>
 <section id="class-api-reference">
 <h2>Class API Reference<a class="headerlink" href="#class-api-reference" title="Link to this heading"></a></h2>
