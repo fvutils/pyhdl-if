@@ -133,7 +133,7 @@ package top_pkg;
       cpol     .configure(this, 1 , 2 , "RW", 0, 0, 1, 0, 0);
       cpha     .configure(this, 1 , 3 , "RW", 0, 0, 1, 0, 0);
       lsb_first.configure(this, 1 , 4 , "RW", 0, 0, 1, 0, 0);
-      rsvd     .configure(this, 27, 5 , "RO", 0, 0, 0, 0, 0);
+      rsvd     .configure(this, 27, 5 , "WO", 0, 0, 0, 0, 0);
     endfunction
   endclass
 
@@ -189,7 +189,7 @@ package top_pkg;
       rsvd = uvm_reg_field::type_id::create("rsvd");
 
       data.configure(this, 8 , 0 , "WO", 0, 0, 1, 0, 0);
-      rsvd.configure(this, 24, 8 , "RO", 0, 0, 0, 0, 0);
+      rsvd.configure(this, 24, 8 , "WO", 0, 0, 0, 0, 0);
     endfunction
   endclass
 
