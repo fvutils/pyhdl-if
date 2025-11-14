@@ -1,7 +1,7 @@
 from hdl_if.uvm import uvm_sequence_impl
 
 
-class PyRandSeq(uvm_sequence_impl):  # type: ignore
+class PyRandSeq(uvm_sequence_impl):
     async def body(self):
         # Send a small burst of fully-randomized items
         for i in range(8):

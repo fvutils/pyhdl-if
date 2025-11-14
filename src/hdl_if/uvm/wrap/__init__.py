@@ -1,4 +1,5 @@
 
+from .analysis_port_proxy import uvm_analysis_port_proxy
 from .cmdline_processor import uvm_cmdline_processor
 from .component import uvm_component
 from .component_proxy import uvm_component_proxy

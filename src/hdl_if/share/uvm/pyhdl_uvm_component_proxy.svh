@@ -113,8 +113,6 @@ class pyhdl_uvm_component_proxy_helper
         args = PyTuple_New(1);
         void'(PyTuple_SetItem(args, 0, m_obj));
 
-        $display("m_obj: %p", m_obj);
-
         impl_o = PyObject_Call(cls, args, null);
         if (impl_o == null) begin
             PyErr_Print();
@@ -196,13 +194,8 @@ class pyhdl_uvm_component_proxy_helper
         bit has = m_proxy.get_config_object(name, obj);
         py_object py_has;
 
-        $display("has");
-
         if (has && obj != null) begin
-            $display("have object");
             py_obj = new(pyhdl_uvm_object_rgy::inst().wrap(obj));
-        end else begin
-            $display("failed to get object");
         end
 
         py_has = py_from_bool(has);
@@ -234,7 +227,6 @@ class pyhdl_uvm_component_proxy_helper
     endfunction
 
     virtual function PyObject get_parent();
-        $display("-- get_parent");
         return pyhdl_uvm_object_rgy::inst().wrap(m_proxy.get_parent());
     endfunction
 

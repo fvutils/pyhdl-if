@@ -9,9 +9,11 @@ package pyhdl_uvm;
     typedef class pyhdl_uvm_object_type_rgy_p;
 
     `include "pyhdl_uvm_apis.svh"
-
     `include "pyhdl_uvm_object_if.svh"
+
+    `include "pyhdl_uvm_analysis_port.svh"
     `include "pyhdl_uvm_object.svh"
+    `include "pyhdl_uvm_object_type.svh"
     `include "pyhdl_uvm_cmdline_processor.svh"
     `include "pyhdl_uvm_component.svh"
     `include "pyhdl_uvm_component_proxy.svh"

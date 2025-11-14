@@ -2,6 +2,7 @@ from __future__ import annotations
 from ...decorators import api, imp
 from typing import List, Tuple, cast
 from .object import uvm_object as uvm_object_w
+from ..component import uvm_component as uvm_component_p
 from ..object import uvm_object
 from ..visitor import uvm_visitor
 
@@ -97,7 +98,7 @@ class uvm_component(uvm_object_w):
         if self._child_m is None:
             m = {}
             for c in self.get_children():
-                cc = cast(UvmComponent, c)
+                cc = cast(uvm_component_p, c)
                 m[cc.get_name()] = cc
             self._child_m = m
         return self._child_m[name]

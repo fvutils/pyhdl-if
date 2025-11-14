@@ -4,6 +4,8 @@ typedef interface class pyhdl_uvm_object_if;
 typedef interface class pyhdl_uvm_wrapper_factory;
 typedef class pyhdl_uvm_wrapper_factory_t;
 typedef class create_t;
+typedef class pyhdl_uvm_object_type;
+typedef class pyhdl_uvm_object_type_p;
 
 /**
  * Implements a report catcher to allow capturing the 
@@ -24,62 +26,6 @@ class factory_print_catcher extends uvm_report_catcher;
     endfunction
 endclass
 
-class pyhdl_uvm_object_type;
-    pyhdl_uvm_object_type       subtypes[$];
-    string                      name;
-
-    function new(string name);
-        this.name = name;
-    endfunction
-
-    virtual function bit issubclass(uvm_object obj);
-        return 0;
-    endfunction
-
-    virtual function pyhdl_uvm_object_if create(uvm_object obj);
-        $display("Fatal: pyhdl_uvm_object_type base::create called", name);
-        return null;
-    endfunction
-
-    virtual function int subtype_subclasses(ref pyhdl_uvm_object_type types[$], uvm_object obj);
-        types = {};
-        foreach (subtypes[i]) begin
-            if (subtypes[i].issubclass(obj)) begin
-                types.push_back(subtypes[i]);
-            end
-        end
-        return types.size();
-    endfunction
-
-endclass
-
-class pyhdl_uvm_object_type_p #(type T=uvm_object, type Tw=pyhdl_uvm_object_w) extends pyhdl_uvm_object_type;
-    typedef pyhdl_uvm_object_type_p #(T,Tw) this_t;
-    static this_t   prv_inst;
-
-    function new(string name);
-        super.new(name);
-    endfunction
-
-    virtual function bit issubclass(uvm_object obj);
-        T test_t;
-        return $cast(test_t, obj);
-    endfunction
-
-    virtual function pyhdl_uvm_object_if create(uvm_object obj);
-        Tw w = new(obj);
-
-        // Create type on first object creation (?)
-        return w;
-    endfunction
-
-    static function pyhdl_uvm_object_type inst(string name);
-        if (prv_inst == null) begin
-            prv_inst = new(name);
-        end
-        return prv_inst;
-    endfunction
-endclass
 
 class pyhdl_uvm_object_type_rgy;
 
@@ -122,8 +68,8 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
     uvm_object_rgy_exp_impl        m_exp;
     pyhdl_uvm_object_if            m_obj_rgy[PyObject];
     uvm_object                     m_obj_m[PyObject];
-    pyhdl_uvm_object_type          m_type2factory_m[uvm_object_wrapper];
-    PyObject                       m_type2type_m[uvm_object_wrapper];
+    pyhdl_uvm_object_type          m_type2factory_m[string];
+    PyObject                       m_type2type_m[string];
     pyhdl_uvm_object_type          m_clstype_root;
 
     function new();
@@ -134,7 +80,7 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
 
     function PyObject wrap(uvm_object obj);
         PyObject obj_t;
-        uvm_object_wrapper uvm_obj_t = obj.get_object_type();
+        string uvm_obj_t = obj.get_type_name();
         pyhdl_uvm_object_if obj_if;
 
         if (obj == null) begin
@@ -202,7 +148,7 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         pyhdl_uvm_object_if obj_if;
         pyhdl_uvm_object_type pyhdl_obj_t;
         pyhdl_uvm_object_type subtypes[$];
-        uvm_object_wrapper obj_t = obj.get_object_type();
+        string obj_t = obj.get_type_name();
 
         py_gil_enter();
 
