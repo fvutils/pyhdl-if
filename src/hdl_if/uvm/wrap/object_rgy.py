@@ -174,7 +174,8 @@ class uvm_object_rgy(object):
         
         if obj_t.data_t is None:
             fields_spec = ()
-            obj_t.data_t = dc.make_dataclass(obj_t.type_name, fields_spec)
+            # Provide a fallback typename when no type name was discovered
+            obj_t.data_t = dc.make_dataclass(obj_t.type_name or "UvmObjectData", fields_spec)
 
     def _sanitize_field_name(self, name: str) -> str:
         # Ensure valid Python identifier
