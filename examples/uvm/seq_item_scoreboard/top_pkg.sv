@@ -138,7 +138,7 @@ package top_pkg;
       proxy = pyhdl_uvm_component_proxy::type_id::create("proxy", this);
       proxy.pyclass = "pycomp::PyComp";
 
-      ap_b_proxy = new("a_proxy", this);
+      ap_b_proxy = new("ap_b_proxy", this);
 
     endfunction
 

@@ -210,6 +210,22 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         return catcher.factory_print;
     endfunction
 
+    virtual function PyObject create_by_name(string name);
+        uvm_factory factory = uvm_factory::get();
+        uvm_object obj;
+        uvm_component comp;
+        $display("name: %0s", name);
+        obj = factory.create_object_by_name(name);
+        if (obj == null) begin
+            uvm_phase phase = new();
+            comp = factory.create_component_by_name(name, "", "", null);
+            comp.build_phase(phase);
+            $display("comp: %0p", comp);
+            obj = comp;
+        end
+        return pyhdl_uvm_object_rgy::inst().wrap(obj);
+    endfunction
+
     static function pyhdl_uvm_object_rgy inst();
         if (m_inst == null) begin
             m_inst = new();

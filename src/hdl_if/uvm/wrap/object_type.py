@@ -60,7 +60,7 @@ class UvmObjectType(object):
         if not self.can_pack:
             raise ValueError("Packing disabled due to unknown field sizes or unsupported kinds (can_pack=False)")
         if self.data_t is None:
-            raise ValueError("data_t is not defined for this UvmObjectType")
+            raise ValueError("data_t is not defined for this UvmObjectType (%s)" % self.type_name)
 
         # Build MSB-first bitstream from fields
         bits: List[int] = []
@@ -126,7 +126,7 @@ class UvmObjectType(object):
             data_t instance populated with unpacked field values.
         """
         if self.data_t is None:
-            raise ValueError("data_t is not defined for this UvmObjectType")
+            raise ValueError("data_t is not defined for this UvmObjectType (%s)" % self.type_name)
         if not isinstance(intstream, list):
             raise TypeError("intstream must be a List[int]")
 

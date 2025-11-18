@@ -28,7 +28,8 @@ async def SvPkg(ctxt: TaskRunCtxt, input: TaskDataInput) -> TaskDataResult:
                 filetype="systemVerilogSource",
                 basedir=os.path.join(sharedir, "dpi"),
                 files=["pyhdl_if.sv"],
-                incdirs=["."]
+                incdirs=["."],
+                defines=["HAVE_PYHDL_IF"]
             )
         ]
     )

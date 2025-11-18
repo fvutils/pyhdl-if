@@ -23,6 +23,16 @@ class uvm_object(uvm_object_p):
     - In SV, ``get_full_name`` defaults to ``get_name`` for objects without hierarchy; components override it.
     """
 
+    def __init__(self):
+        self._pack = None
+        pass
+
+    # def __getattr__(self, name):
+    #     pass
+
+    # def __setattr__(self, name, value):
+    #     pass
+
     def __del__(self):
         print("__del__", flush=True)
 

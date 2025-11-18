@@ -1432,6 +1432,7 @@ endclass
 
 interface class uvm_object_rgy_imp_if;
     pure virtual function string _get_type_dump();
+    pure virtual function pyhdl_if::PyObject create_by_name(input string name);
 endclass
 
 class uvm_object_rgy_exp_impl implements uvm_object_rgy_exp_if;
@@ -1565,6 +1566,12 @@ class uvm_object_rgy_imp_impl #(type ImpT=uvm_object_rgy_imp_if) implements pyhd
                 string __rval;
                 __rval = m_impl._get_type_dump();
                 __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "create_by_name": begin
+                pyhdl_if::PyObject __rval;
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = m_impl.create_by_name(__name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);

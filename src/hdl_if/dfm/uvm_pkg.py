@@ -28,7 +28,8 @@ async def UVMPkg(ctxt: TaskRunCtxt, input: TaskDataInput) -> TaskDataResult:
                 filetype="systemVerilogSource",
                 basedir=os.path.join(sharedir, "uvm"),
                 files=["pyhdl_uvm.sv"],
-                incdirs=["."]
+                incdirs=["."],
+                defines=["HAVE_PYHDL_IF_UVM"]
             )
         ]
     )

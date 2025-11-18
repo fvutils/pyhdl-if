@@ -4,6 +4,7 @@ from ...decorators import api, exp, imp
 from typing import ClassVar, List, Optional
 from .object import uvm_object
 from .object_type import UvmObjectType, UvmFieldType, UvmFieldKind
+from ..object import uvm_object as uvm_object_p
 
 @api
 class uvm_object_rgy(object):
@@ -64,13 +65,13 @@ class uvm_object_rgy(object):
         for line in lines:
             stripped = line.strip()
             
-            # Look for "Type Name" header
-            if "Type Name" in stripped:
+            # Look for "Type Name" header (case-insensitive, allow leading spaces)
+            if stripped.lower().startswith("type name"):
                 found_header = True
                 continue
-            
-            # Look for the dashes after "Type Name"
-            if found_header and stripped.startswith('-'):
+
+            # Look for the separator line (only dashes) after "Type Name"
+            if found_header and stripped and all(c == '-' for c in stripped):
                 in_type_section = True
                 continue
             
@@ -110,6 +111,7 @@ class uvm_object_rgy(object):
         Parse the layout string (from obj.sprint()) and populate the fields list.
         Sets can_pack to False if any field has unknown size.
         """
+        print("populate_fields %s" % str(obj_t), flush=True)
         if not layout:
             return
             
@@ -169,6 +171,10 @@ class uvm_object_rgy(object):
         # After collecting fields, synthesize a Python dataclass that mirrors them
         if obj_t.fields and obj_t.data_t is None:
             obj_t.data_t = self._make_data_dataclass(obj_t)
+        
+        if obj_t.data_t is None:
+            fields_spec = ()
+            obj_t.data_t = dc.make_dataclass(obj_t.type_name, fields_spec)
 
     def _sanitize_field_name(self, name: str) -> str:
         # Ensure valid Python identifier
@@ -221,6 +227,9 @@ class uvm_object_rgy(object):
 
     @imp
     def _get_type_dump(self) -> str: ...
+
+    @imp
+    def create_by_name(self, name : str) -> uvm_object_p: ...
 
 
 # Backward-compatible alias
