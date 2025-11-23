@@ -1,6 +1,6 @@
 
-class pyhdl_uvm2py extends uvm_test;
-    `uvm_component_utils(pyhdl_uvm2py)
+class pyhdl_uvm_pygen extends uvm_test;
+    `uvm_component_utils(pyhdl_uvm_pygen)
 
     pyhdl_uvm_component_proxy  m_proxy;
 

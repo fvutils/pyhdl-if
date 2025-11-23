@@ -18,7 +18,7 @@ class UvmFieldType(object):
 
 @dc.dataclass
 class UvmObjectType(object):
-    super_t : str = dc.field()
+    super_t : Optional[str] = dc.field(default=None)  # Make optional to allow zero-arg construction in tests
     can_pack : bool = dc.field(default=True)
     data_t : Optional[Type] = dc.field(default=None)
     fields : List[UvmFieldType] = dc.field(default_factory=list)
