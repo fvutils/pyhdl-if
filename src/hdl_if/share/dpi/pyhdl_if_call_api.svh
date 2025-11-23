@@ -191,5 +191,11 @@
         void'(PyTuple_SetItem(args, 0, obj));
         void'(PyTuple_SetItem(args, 1, PyLong_FromLong(longint'(obj_id))));
         ret = PyObject_Call(connect, args, null);
+
+        if (ret == null) begin
+            `PYHDL_IF_ERROR(("exception while calling 'connectObj'"));
+            `STACKTRACE;
+            PyErr_Print();
+        end
         PyGILState_Release(state);
     endfunction

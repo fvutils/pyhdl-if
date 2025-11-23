@@ -68,8 +68,8 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
     uvm_object_rgy_exp_impl        m_exp;
     pyhdl_uvm_object_if            m_obj_rgy[PyObject];
     uvm_object                     m_obj_m[PyObject];
-    pyhdl_uvm_object_type          m_type2factory_m[string];
-    PyObject                       m_type2type_m[string];
+    pyhdl_uvm_object_type          m_type2factory_m[uvm_object_wrapper];
+    PyObject                       m_type2type_m[pyhdl_uvm_object_type];
     pyhdl_uvm_object_type          m_clstype_root;
 
     function new();
@@ -80,14 +80,14 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
 
     function PyObject wrap(uvm_object obj);
         PyObject obj_t;
-        string uvm_obj_t = obj.get_type_name();
+        uvm_object_wrapper uvm_obj_t = obj.get_object_type();
         pyhdl_uvm_object_if obj_if;
 
         if (obj == null) begin
             return None;
         end 
 
-        if (!m_type2factory_m.exists(uvm_obj_t)) begin
+        if (uvm_obj_t == null || !m_type2factory_m.exists(uvm_obj_t)) begin
             // Create a new object type
             obj_if = create_object_type(obj);
 
@@ -96,7 +96,7 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
             PyObject obj_t;
 
             pyhdl_obj_t = m_type2factory_m[uvm_obj_t];
-            obj_t = m_type2type_m[uvm_obj_t];
+            obj_t = m_type2type_m[pyhdl_obj_t];
 
             obj_if = pyhdl_obj_t.create(obj);
 
@@ -105,7 +105,7 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
                     pyhdl_obj_t.name);
             end
 
-            if (PyObject_SetAttrString(obj_if.get_pyobject(), "obj_t", obj_t) != 0) begin
+            if (PyObject_SetAttrString(obj_if.get_pyobject(), "_uvm_obj_t", obj_t) != 0) begin
                 PyErr_Print();
             end
         end
@@ -147,8 +147,9 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         py_object py_obj_t;
         pyhdl_uvm_object_if obj_if;
         pyhdl_uvm_object_type pyhdl_obj_t;
+        string                pyhdl_super_t;
         pyhdl_uvm_object_type subtypes[$];
-        string obj_t = obj.get_type_name();
+        uvm_object_wrapper obj_t = obj.get_object_type();
 
         py_gil_enter();
 
@@ -157,8 +158,14 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         end
         pyhdl_obj_t = m_clstype_root;
 
+        foreach (pyhdl_obj_t.subtypes[i]) begin
+            $display("Subtype: %0s", pyhdl_obj_t.subtypes[i].name);
+        end
+
         while (pyhdl_obj_t.subtype_subclasses(subtypes, obj) == 1) begin
+            pyhdl_super_t = pyhdl_obj_t.name;
             pyhdl_obj_t = subtypes[0];
+            $display("Found: %0s", pyhdl_obj_t.name);
         end
 
         if (subtypes.size() > 0) begin
@@ -172,6 +179,8 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
 //            $display("Found type %0s", pyhdl_obj_t.name);
         end
 
+        $display("obj.type: %0s ; pyhdl_obj_t: %0s", obj.get_type_name(), pyhdl_obj_t.name);
+
         m_type2factory_m[obj_t] = pyhdl_obj_t;
 
         obj_if = pyhdl_obj_t.create(obj);
@@ -181,10 +190,10 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         end
 
         py_obj_t = py_object::mk(m_exp.mk(obj_if.get_pyobject()));
-        m_type2type_m[obj_t] = py_obj_t.steal();
+        m_type2type_m[pyhdl_obj_t] = py_obj_t.steal();
 
         void'(PyObject_SetAttrString(
-            obj_if.get_pyobject(), "obj_t", py_obj_t.borrow()));
+            obj_if.get_pyobject(), "_uvm_obj_t", py_obj_t.borrow()));
 
         py_gil_leave();
 
@@ -193,6 +202,12 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
 
     function void drop(PyObject obj);
 
+    endfunction
+
+    function PyObject clp();
+        return pyhdl_uvm_object_rgy::inst().wrap(
+            uvm_cmdline_processor::get_inst()
+        );
     endfunction
 
     virtual function string _get_type_dump();

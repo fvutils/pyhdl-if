@@ -19,7 +19,11 @@ class pyhdl_uvm_object_type;
     virtual function int subtype_subclasses(ref pyhdl_uvm_object_type types[$], uvm_object obj);
         types = {};
         foreach (subtypes[i]) begin
+            $display("%0s: issubclass(%0s)",
+                subtypes[i].name,
+                obj.get_type_name());
             if (subtypes[i].issubclass(obj)) begin
+                $display("issubtype");
                 types.push_back(subtypes[i]);
             end
         end

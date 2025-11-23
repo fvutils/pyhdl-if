@@ -13,6 +13,6 @@ class PyRandSeq(uvm_sequence_impl):
             req.randomize()
 
             vals = req.pack()
-            print("Addr: 0x%08x" % vals.addr)
+            print("Addr: 0x%08x" % req.addr, flush=True)
 
             await self.proxy.finish_item(req)

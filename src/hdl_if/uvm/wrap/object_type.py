@@ -1,5 +1,6 @@
+from __future__ import annotations
 import dataclasses as dc
-from typing import List, Optional, Type
+from typing import Dict, List, Optional, Type
 from enum import Enum
 
 class UvmFieldKind(Enum):
@@ -17,9 +18,11 @@ class UvmFieldType(object):
 
 @dc.dataclass
 class UvmObjectType(object):
+    super_t : str = dc.field()
     can_pack : bool = dc.field(default=True)
     data_t : Optional[Type] = dc.field(default=None)
     fields : List[UvmFieldType] = dc.field(default_factory=list)
+    field_m : Dict[str,UvmFieldType] = dc.field(default_factory=dict)
     type_name : Optional[str] = dc.field(default=None)
 
     def _sanitize_field_name(self, name: str) -> str:

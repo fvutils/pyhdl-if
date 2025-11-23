@@ -8,7 +8,7 @@ package:
       # - mti - Mentor/Siemens Questa (Modelsim)
       # - vcs - Synopsys VCS
       # - xcm - Cadence Xcellium
-      value: "Unspecified"
+      value: "vlt"
 
   tasks:
   - name: src
