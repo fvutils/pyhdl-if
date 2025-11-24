@@ -140,8 +140,10 @@ for f in os.listdir(pkg_dir):
 
         out_c = Output(io.StringIO())
         self.out_s.append(out_c)
+        base = self._gen_field_decl(obj)
+
         out_c.println("@dc.dataclass(kw_only=True)")
-        out_c.println("class %s(uvm_component):" % obj.get_type_name())
+        out_c.println("class %s(uvm_component%s):" % (obj.get_type_name(), base))
         new_types : Dict[str,uvm_object] = {}
 
         added = False
@@ -199,42 +201,44 @@ for f in os.listdir(pkg_dir):
 
         out_c = Output(io.StringIO())
         self.out_s.append(out_c)
+
+        base = self._gen_fields(obj)
+
         out_c.println("@dc.dataclass")
-        out_c.println("class %s(uvm_object):" % obj.get_type_name())
-        self._gen_fields(obj)
+        out_c.println("class %s(uvm_object%s):" % (obj.get_type_name(), base))
+        out_c.inc_ind()
+        out_c.println("pass")
+        out_c.dec_ind()
 
         self.out_s.pop()
-        # if len(out_c.clsnames):
-        #     out.println("import typing")
-        #     out.println("if typing.TYPE_CHECKING:")
-        #     out.inc_ind()
-        #     for cls in out_c.clsnames:
-        #         out.println("from .%s import %s" %)
-        #     out.dec_ind()
 
         out.out.write(cast(io.StringIO,out_c.out).getvalue())
         self.out_s.pop()
         out.out.close()
 
 
-    def _gen_fields(self, obj : uvm_object):
+    def _gen_fields(self, obj):
         out = self.out_s[-1]
 
-        # Get the value object
         val = obj.pack()
+        # Get the value object
         fields = dc.fields(val)
+        if len(fields) > 0:
+            clsname = "%s_fields" % obj.get_type_name()
+            base = ", %s" % clsname
 
-        for f in dc.fields(val):
-            out.println("    %s" % self._gen_field_decl(f))
+            out.println("")
+            out.println("@dc.dataclass(kw_only=True)")
+            out.println("class %s(object):" % clsname)
+            out.inc_ind()
+            for f in fields:
+                out.println("%s" % self._gen_field_decl(f))
+            out.dec_ind()
+            out.println("")
+        else:
+            base = ""
 
-        out.println("")
-        out.println("    @dc.dataclass(kw_only=True)")
-        out.println("    class Fields(object):")
-        for f in fields:
-            out.println("        %s" % self._gen_field_decl(f))
-
-        if len(fields) == 0:
-            out.println("        pass")
+        return base
 
 #        out.println("")
 #        out.println("    def pack(self) -> Fields: ...")
