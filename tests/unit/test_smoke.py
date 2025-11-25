@@ -23,6 +23,8 @@ def test_smoke(pyhdl_dvflow, hdl_if_env):
 
     print("test_smoke_data_dir: %s" % test_smoke_data_dir, flush=True)
 
+    args = ["-timescale=1ps/1ps"] if pyhdl_dvflow.sim == "vcs" else []
+
     hdl_if_pkg = pyhdl_dvflow.mkTask("pyhdl-if.SvPkg")
     hdl_if_dpi = pyhdl_dvflow.mkTask("pyhdl-if.DpiLib")
 
@@ -38,7 +40,8 @@ def test_smoke(pyhdl_dvflow, hdl_if_env):
                                    include=[
                                        "wb_init_bfm.sv", 
                                        "call_sv_bfm.sv"],
-                                   type="systemVerilogSource")
+                                   type="systemVerilogSource",
+                                   elabargs=args)
 
     sim_img = pyhdl_dvflow.mkTask("hdlsim.%s.SimImage" % pyhdl_dvflow.sim,
                         top=["call_sv_bfm"],
