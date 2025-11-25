@@ -15,6 +15,9 @@ def available_sims_vpi(incl=None, excl=None):
     if excl is None:
         # TODO: control via env var?
         excl = ["vlt", "xsm"]
+    else:
+        if "vlt" not in excl: excl.append("vlt")
+        if "xsm" not in excl: excl.append("xsm")
     return hdlsim_available_sims(incl, excl)
 
 def available_sims_uvm(incl=None, excl=None):
