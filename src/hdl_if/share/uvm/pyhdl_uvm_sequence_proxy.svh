@@ -7,8 +7,8 @@ interface class pyhdl_uvm_sequence_proxy_if;
 endclass
 
 class pyhdl_uvm_sequence_proxy #(
-        type REQ=uvm_sequence_item, 
-        type RSP=REQ, 
+        type REQ=uvm_sequence_item,
+        type RSP=REQ,
         type UserDataT=uvm_object,
         string PyClass="")
     extends uvm_sequence #(.REQ(REQ), .RSP(RSP))

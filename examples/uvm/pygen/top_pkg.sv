@@ -77,8 +77,14 @@ package top_pkg;
 
         function void build_phase(uvm_phase phase);
             super.build_phase(phase);
+            $display("my_env::build_phase");
             m_seqr = my_sequencer::type_id::create("m_seqr", this);
             m_drv  = my_driver::type_id::create("m_drv", this);
+            begin
+                uvm_component children[$];
+                get_children(children);
+                $display("Children: %0d", children.size());
+            end
         endfunction
 
         function void connect_phase(uvm_phase phase);
@@ -104,7 +110,8 @@ package top_pkg;
 
         task run_phase(uvm_phase phase);
             // Python-driven sequence proxy specialized to seq_item
-            typedef pyhdl_uvm_sequence_proxy #(.REQ(seq_item), .PyClass("pyseq:PyRandSeq")) py_seq_t;
+            typedef pyhdl_uvm_sequence_proxy #(
+                .REQ(seq_item), .PyClass("pyseq:PyRandSeq")) py_seq_t;
             py_seq_t seq;
 
             phase.raise_objection(this);

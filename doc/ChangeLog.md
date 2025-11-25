@@ -1,4 +1,7 @@
 
+## 0.2.0
+- Add generation of Python classes that mirror user-defined UVM classes
+
 ## 0.1.0
 - Breaking API change in generated SV classes. By default, the generator now
   produces separate <class>_imp_impl and <class>_exp_impl classes. Add 

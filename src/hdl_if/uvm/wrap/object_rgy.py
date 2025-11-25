@@ -1,7 +1,8 @@
 from __future__ import annotations
 import dataclasses as dc
 from ...decorators import api, exp, imp
-from typing import ClassVar, List, Optional
+from typing import ClassVar, List, Optional, cast
+from .cmdline_processor import uvm_cmdline_processor
 from .object import uvm_object
 from .object_type import UvmObjectType, UvmFieldType, UvmFieldKind
 from ..object import uvm_object as uvm_object_p
@@ -97,21 +98,25 @@ class uvm_object_rgy(object):
     @exp
     def mk(self, obj : uvm_object) -> UvmObjectType:
 #        print("--> mk %s" % obj.get_name())
-        obj_t = UvmObjectType()
+
+        obj_t = UvmObjectType("Any")
         obj_s = obj.sprint()
-        
+
         # Populate fields from the sprint output
         self.populate_fields(obj_t, obj_s)
 
 #        print("<-- mk %s" % obj.get_name())
         return obj_t
+    
+    @imp
+    def clp(self) -> uvm_cmdline_processor: ...
 
     def populate_fields(self, obj_t: UvmObjectType, layout: str) -> None:
         """
         Parse the layout string (from obj.sprint()) and populate the fields list.
         Sets can_pack to False if any field has unknown size.
         """
-        print("populate_fields %s" % str(obj_t), flush=True)
+
         if not layout:
             return
             
@@ -165,6 +170,7 @@ class uvm_object_rgy(object):
                 )
 
                 obj_t.fields.append(field)
+                obj_t.field_m[field.name] = field
                 
             count += 1
 

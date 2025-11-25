@@ -1,9 +1,10 @@
 
 import ctypes
-from typing import Generic, TypeVar, List
+from typing import Generic, TypeVar, List, Optional
 from ...decorators import api, imp, exp
 from ..object import uvm_object as uvm_object_p
 from ..visitor import uvm_visitor
+from .object_type import UvmObjectType
 
 @api
 class uvm_object(uvm_object_p):
@@ -24,7 +25,8 @@ class uvm_object(uvm_object_p):
     """
 
     def __init__(self):
-        self._pack = None
+        super().__init__()
+        self._uvm_obj_t : Optional[UvmObjectType] = None
         pass
 
     # def __getattr__(self, name):
@@ -35,6 +37,29 @@ class uvm_object(uvm_object_p):
 
     def __del__(self):
         print("__del__", flush=True)
+
+    def __getattr__(self, name):
+        obj_t = object.__getattribute__(self, "_uvm_obj_t")
+        if name in obj_t.field_m.keys():
+            pack = self.pack()
+            return getattr(pack, name)
+        else:
+            raise AttributeError("Field %s not found in %s (%s)" % (
+                name, 
+                str(self),
+                ",".join([f.name for f in obj_t.fields])))
+        
+    def __setattr__(self, name: str, value):
+        try:
+            obj_t = object.__getattribute__(self, "_uvm_obj_t")
+        except:
+            obj_t = None
+        if name in ("_uvm_obj_t",) or obj_t is None or name not in obj_t.field_m.keys():
+            object.__setattr__(self, name, value)
+        else:
+            pack = self.pack()
+            setattr(pack, name, value)
+            self.unpack(pack)
 
     def randomize(self) -> None:
         """
@@ -152,7 +177,7 @@ class uvm_object(uvm_object_p):
     def pack(self) -> object: 
         """Packs field values of the SystemVerilog object into a Python object"""
         data = self.pack_ints()
-        return getattr(self, "obj_t").unpack_ints(data)
+        return getattr(self, "_uvm_obj_t").unpack_ints(data)
         ...
 
     @imp
@@ -161,7 +186,7 @@ class uvm_object(uvm_object_p):
 
     def unpack(self, val : object):
         """Sets the field values of the SystemVerilog object from a Python object"""
-        data = getattr(self, "obj_t").pack_ints(val)
+        data = getattr(self, "_uvm_obj_t").pack_ints(val)
         self.unpack_ints(data)
         ...
 

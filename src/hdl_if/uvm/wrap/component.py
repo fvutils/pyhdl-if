@@ -101,7 +101,10 @@ class uvm_component(uvm_object_w):
                 cc = cast(uvm_component_p, c)
                 m[cc.get_name()] = cc
             self._child_m = m
-        return self._child_m[name]
+        if name in self._child_m.keys():
+            return self._child_m[name]
+        else:
+            return super().__getattr__(name)
 
     @imp
     def get_children(self) -> List[object]:

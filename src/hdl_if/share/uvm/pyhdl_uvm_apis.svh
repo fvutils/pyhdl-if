@@ -930,7 +930,40 @@ interface class uvm_cmdline_processor_exp_if;
 endclass
 
 interface class uvm_cmdline_processor_imp_if;
-    pure virtual function pyhdl_if::PyObject _get_plusargs();
+    pure virtual function pyhdl_if::PyObject get_plusargs();
+    pure virtual function void reseed();
+    pure virtual function bit _randomize();
+    pure virtual function string get_name();
+    pure virtual function void set_name(input string name);
+    pure virtual function longint get_inst_id();
+    pure virtual function string get_type_name();
+    pure virtual function pyhdl_if::PyObject create(input string name);
+    pure virtual function pyhdl_if::PyObject clone();
+    pure virtual function void print();
+    pure virtual function string convert2string();
+    pure virtual function void record();
+    pure virtual function void copy(input pyhdl_if::PyObject rhs);
+    pure virtual function bit compare(input pyhdl_if::PyObject rhs);
+    pure virtual function void set_int_local(
+        input string name,
+        input longint value
+    );
+
+    pure virtual function void set_string_local(
+        input string name,
+        input string value
+    );
+
+    pure virtual function void set_object_local(
+        input string name,
+        input pyhdl_if::PyObject value
+    );
+
+    pure virtual function longint get_inst_count();
+    pure virtual function string sprint();
+    pure virtual function string get_full_name();
+    pure virtual function pyhdl_if::PyObject pack_ints();
+    pure virtual function void unpack_ints(input pyhdl_if::PyObject data);
 endclass
 
 class uvm_cmdline_processor_exp_impl implements uvm_cmdline_processor_exp_if;
@@ -1049,10 +1082,123 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
         pyhdl_if::PyObject __ret = pyhdl_if::None;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
-            "_get_plusargs": begin
+            "get_plusargs": begin
                 pyhdl_if::PyObject __rval;
-                __rval = m_impl._get_plusargs();
+                __rval = m_impl.get_plusargs();
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "reseed": begin
+                m_impl.reseed();
+                __ret = pyhdl_if::None;
+            end
+            "_randomize": begin
+                bit __rval;
+                __rval = m_impl._randomize();
+                __ret = pyhdl_if::PyLong_FromLong(longint'(__rval));
+            end
+            "get_name": begin
+                string __rval;
+                __rval = m_impl.get_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "set_name": begin
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                m_impl.set_name(__name);
+                __ret = pyhdl_if::None;
+            end
+            "get_inst_id": begin
+                longint __rval;
+                __rval = m_impl.get_inst_id();
+                __ret = pyhdl_if::PyLong_FromLong(__rval);
+            end
+            "get_type_name": begin
+                string __rval;
+                __rval = m_impl.get_type_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "create": begin
+                pyhdl_if::PyObject __rval;
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = m_impl.create(__name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "clone": begin
+                pyhdl_if::PyObject __rval;
+                __rval = m_impl.clone();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "print": begin
+                m_impl.print();
+                __ret = pyhdl_if::None;
+            end
+            "convert2string": begin
+                string __rval;
+                __rval = m_impl.convert2string();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "record": begin
+                m_impl.record();
+                __ret = pyhdl_if::None;
+            end
+            "copy": begin
+                pyhdl_if::PyObject __rhs = (pyhdl_if::PyTuple_GetItem(args, 0));
+                m_impl.copy(__rhs);
+                __ret = pyhdl_if::None;
+            end
+            "compare": begin
+                bit __rval;
+                pyhdl_if::PyObject __rhs = (pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = m_impl.compare(__rhs);
+                __ret = pyhdl_if::PyLong_FromLong(longint'(__rval));
+            end
+            "set_int_local": begin
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                m_impl.set_int_local(
+                    __name,
+                    __value);
+                __ret = pyhdl_if::None;
+            end
+            "set_string_local": begin
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                string __value = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
+                m_impl.set_string_local(
+                    __name,
+                    __value);
+                __ret = pyhdl_if::None;
+            end
+            "set_object_local": begin
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                pyhdl_if::PyObject __value = (pyhdl_if::PyTuple_GetItem(args, 1));
+                m_impl.set_object_local(
+                    __name,
+                    __value);
+                __ret = pyhdl_if::None;
+            end
+            "get_inst_count": begin
+                longint __rval;
+                __rval = m_impl.get_inst_count();
+                __ret = pyhdl_if::PyLong_FromLong(__rval);
+            end
+            "sprint": begin
+                string __rval;
+                __rval = m_impl.sprint();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "get_full_name": begin
+                string __rval;
+                __rval = m_impl.get_full_name();
+                __ret = pyhdl_if::PyUnicode_FromString(__rval);
+            end
+            "pack_ints": begin
+                pyhdl_if::PyObject __rval;
+                __rval = m_impl.pack_ints();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "unpack_ints": begin
+                pyhdl_if::PyObject __data = (pyhdl_if::PyTuple_GetItem(args, 0));
+                m_impl.unpack_ints(__data);
+                __ret = pyhdl_if::None;
             end
             default: begin
                 $display("Fatal: unsupported method call %0s", method);
@@ -1431,6 +1577,7 @@ interface class uvm_object_rgy_exp_if;
 endclass
 
 interface class uvm_object_rgy_imp_if;
+    pure virtual function pyhdl_if::PyObject clp();
     pure virtual function string _get_type_dump();
     pure virtual function pyhdl_if::PyObject create_by_name(input string name);
 endclass
@@ -1562,6 +1709,11 @@ class uvm_object_rgy_imp_impl #(type ImpT=uvm_object_rgy_imp_if) implements pyhd
         pyhdl_if::PyObject __ret = pyhdl_if::None;
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
+            "clp": begin
+                pyhdl_if::PyObject __rval;
+                __rval = m_impl.clp();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             "_get_type_dump": begin
                 string __rval;
                 __rval = m_impl._get_type_dump();

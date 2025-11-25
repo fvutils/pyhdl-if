@@ -6,7 +6,7 @@ class pyhdl_uvm_cmdline_processor extends pyhdl_uvm_object;
         super.new(clp);
     endfunction
 
-    virtual function pyhdl_if::PyObject _get_plusargs();
+    virtual function pyhdl_if::PyObject get_plusargs();
         uvm_cmdline_processor clp;
         string plusargs[$];
         py_list ret = new();

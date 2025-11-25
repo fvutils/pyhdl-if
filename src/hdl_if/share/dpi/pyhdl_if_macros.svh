@@ -20,5 +20,11 @@
         $display x ; \
     end
 
+`define PYHDL_IF_ERROR(x) \
+    $write("PyHDL-IF Error: "); \
+    $display x ;
+
+`define STACKTRACE $stacktrace
+
 
 `endif /* INCLUDED_PYHDL_IF_MACROS_SVH */
