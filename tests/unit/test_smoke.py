@@ -40,12 +40,12 @@ def test_smoke(pyhdl_dvflow, hdl_if_env):
                                    include=[
                                        "wb_init_bfm.sv", 
                                        "call_sv_bfm.sv"],
-                                   type="systemVerilogSource",
-                                   elabargs=args)
+                                   type="systemVerilogSource")
 
     sim_img = pyhdl_dvflow.mkTask("hdlsim.%s.SimImage" % pyhdl_dvflow.sim,
                         top=["call_sv_bfm"],
-                        needs=[hdl_if_pkg, gen_api, hdl_if_dpi, test_sv])
+                        needs=[hdl_if_pkg, gen_api, hdl_if_dpi, test_sv],
+                        elabargs=args)
     
     sim_run = pyhdl_dvflow.mkTask(
         "hdlsim.%s.SimRun" % pyhdl_dvflow.sim,
