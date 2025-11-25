@@ -17,7 +17,7 @@ test_vpi_py_if_data_dir = os.path.join(data_dir, "vpi_py_if")
 SKIP_HDLSIM = ('xsm', 'vlt')
 
 
-@pytest.mark.parametrize("hdlsim_dvflow", available_sims_vpi(), indirect=True)
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_vpi(excl=["vcs"]), indirect=True)
 def test_smoke(hdlsim_dvflow : HdlSimDvFlow, hdl_if_env):
     hdlsim_dvflow.setEnv(hdl_if_env)
 

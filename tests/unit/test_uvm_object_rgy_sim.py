@@ -26,6 +26,8 @@ def test_object_registry_smoke(pyhdl_dvflow, hdl_if_env):
     env["PYTHONPATH"] = os.path.join(uvm_obj_rgy_data_dir, "smoke") + os.pathsep + env["PYTHONPATH"]
     pyhdl_dvflow.setEnv(env)
 
+    args = ["-timescale=1ps/1ps"] if pyhdl_dvflow.sim == "vcs" else []
+
     hdl_if_uvm = pyhdl_dvflow.mkTask("pyhdl-if.UVMPkg")
     hdl_if_dpi = pyhdl_dvflow.mkTask("pyhdl-if.DpiLib")
 
@@ -39,7 +41,8 @@ def test_object_registry_smoke(pyhdl_dvflow, hdl_if_env):
     
     sim_img = pyhdl_dvflow.mkTask("hdlsim.%s.SimImage" % pyhdl_dvflow.sim,
                                   needs=[uvm_lib, hdl_if_uvm, hdl_if_dpi, uvm_env],
-                                  top=["tb_top"])
+                                  top=["tb_top"],
+                                  elabargs=args)
     
     sim_run = pyhdl_dvflow.mkTask("hdlsim.%s.SimRun" % pyhdl_dvflow.sim,
                                   needs=[sim_img],
