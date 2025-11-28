@@ -1,10 +1,15 @@
+import logging
 import os
 import sys
 from dv_flow.mgr import TaskRunCtxt, TaskDataInput, TaskDataResult, FileSet
 
+_log = logging.getLogger("hdl-if.APIGenSV")
+
 async def APIGenSV(runner, input) -> None:
 
     env = runner.env.copy()
+
+    _log.debug("Initial PYTHONPATH: %s" % env.get("PYTHONPATH", "<unset>"))
 
     if input.params.pythonpath:
         for path in input.params.pythonpath:
@@ -12,6 +17,8 @@ async def APIGenSV(runner, input) -> None:
                 env["PYTHONPATH"] = path
             else:
                 env["PYTHONPATH"] += os.pathsep + path
+
+    _log.debug("Final PYTHONPATH: %s" % env.get("PYTHONPATH", "<unset>"))
 
     status = 0
     

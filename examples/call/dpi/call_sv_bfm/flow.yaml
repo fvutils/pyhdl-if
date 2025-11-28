@@ -1,0 +1,47 @@
+
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json"
+
+package:
+  name: hdl_if.examples.call_sv_bfm
+  with:
+    sim:
+      type: str 
+      value: "vlt"
+
+
+  tasks:
+  - name: local-pythonpath
+    uses: std.SetEnv
+    with:
+      setenv:
+        PYTHONPATH: ${{ rootdir }}
+  - name: api-gen-hvlsrc
+    uses: pyhdl-if.APIGenSV
+    needs: [local-pythonpath]
+    with:
+      pkgname: call_sv_bfm_pkg
+      modules: 
+      - call_sv_bfm
+
+  - name: example-hvlsrc
+    uses: std.FileSet 
+    with:
+      type: systemVerilogSource
+      incdirs: ["."]
+      include:
+      - wb_init_bfm.sv
+      - call_sv_bfm.sv
+
+  - name: sim-img
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs: 
+    - pyhdl-if.DpiLib
+    - pyhdl-if.SvPkg
+    - api-gen-hvlsrc
+    - example-hvlsrc
+    with:
+      top: [call_sv_bfm]
+
+  - name: sim-run
+    needs: [sim-img]
+    uses: hdlsim.${{ sim }}.SimRun
