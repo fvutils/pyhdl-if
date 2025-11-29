@@ -15,7 +15,7 @@ test_smoke_str_data_dir = os.path.join(data_dir, "test_smoke_str")
 
 # Verilator has recently started omitting SV Export tasks 
 # for this test. 
-@pytest.mark.parametrize("pyhdl_dvflow", available_sims_dpi(excl=('vlt',)), indirect=True)
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_dpi(), indirect=True)
 def test_smoke(pyhdl_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = test_smoke_data_dir + os.pathsep + env["PYTHONPATH"]

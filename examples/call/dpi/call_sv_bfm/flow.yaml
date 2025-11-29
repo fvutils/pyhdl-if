@@ -7,15 +7,21 @@ package:
     sim:
       type: str 
       value: "vlt"
+    debug:
+      type: int
+      value: 0
 
 
   tasks:
   - name: local-pythonpath
     uses: std.SetEnv
+    desc: Adds example directory to PYTHONPATH
     with:
-      setenv:
+      prepend_path:
         PYTHONPATH: ${{ rootdir }}
+
   - name: api-gen-hvlsrc
+    desc: Generates SV interface code for the SV/Python API
     uses: pyhdl-if.APIGenSV
     needs: [local-pythonpath]
     with:
@@ -24,6 +30,7 @@ package:
       - call_sv_bfm
 
   - name: example-hvlsrc
+    desc: Sources for the example
     uses: std.FileSet 
     with:
       type: systemVerilogSource
@@ -33,6 +40,7 @@ package:
       - call_sv_bfm.sv
 
   - name: sim-img
+    desc: Compiles/elaborates the simulation image
     uses: "hdlsim.${{ sim }}.SimImage"
     needs: 
     - pyhdl-if.DpiLib
@@ -43,5 +51,10 @@ package:
       top: [call_sv_bfm]
 
   - name: sim-run
+    desc: Runs simulation
     needs: [sim-img]
     uses: hdlsim.${{ sim }}.SimRun
+    with:
+      plusargs:
+      - pyhdl.debug=${{ debug }}
+

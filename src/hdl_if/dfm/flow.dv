@@ -36,7 +36,6 @@ package:
       filename:
         desc: name of the output file
         type: str
-        value: api.sv
       pkgname:
         desc: Of the package
         type: str

@@ -47,7 +47,7 @@ module call_sv_bfm;
     );
 
     initial begin
-        automatic Test test;
+        automatic Test_exp_impl test;
 
         pyhdl_if_start();
 

@@ -26,7 +26,7 @@ async def APIGenSV(runner, input) -> None:
         sys.executable,
         '-m', 'hdl_if',
         'api-gen-sv',
-        '--deprecated'
+#        '--deprecated'
     ]
 
     for m in input.params.modules:
@@ -34,8 +34,14 @@ async def APIGenSV(runner, input) -> None:
 
     if input.params.pkgname:
         cmd.extend(['--package', input.params.pkgname])
-    
+
     filename = input.params.filename
+
+    if filename.strip() == "":
+        if input.params.pkgname.strip() != "":
+            filename = input.params.pkgname.strip() + ".sv"
+        else:
+            filename = "pyhdl_api_pkg.sv"
 
     cmd.extend(['-o', os.path.join(input.rundir, filename)])
 

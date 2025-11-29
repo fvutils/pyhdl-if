@@ -59,8 +59,8 @@ package:
       src: pypi
     - name: packaging
       src: pypi
-    - name: cocotb
-      src: pypi
+        #    - name: cocotb
+        #      src: pypi
     - name: doxygen-filter-sv
       url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
     - name: uvm

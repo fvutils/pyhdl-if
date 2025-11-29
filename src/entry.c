@@ -448,9 +448,6 @@ lib_h_t find_config_python_lib(const char *python) {
 
             putenv(strdup("PYTHON="));
             putenv(strdup("PYTHONHOME="));
-        } else {
-            // Default to whatever is in the path
-            python = "python3";
         }
 
         // Now, add the new Python interpreter to the PATH
@@ -473,6 +470,9 @@ lib_h_t find_config_python_lib(const char *python) {
             free(python_dir);
         }
 
+    } else {
+        // Default to whatever is in the path
+        python = "python3";
     }
 
     args[0] = python;
