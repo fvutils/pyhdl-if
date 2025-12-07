@@ -183,22 +183,12 @@ echo "Note: Extracting verilator..."
 tar -xzf "${tmp_dir}/verilator.tar.gz" -C ${tools_dir}
 rm -rf "${tmp_dir}"
 
-echo "Note: Downloading UVM library..."
-tmp_dir=$(mktemp -d)
-curl -LsSf https://www.accellera.org/images/downloads/standards/uvm/Accellera-1800.2-2017-1.0.tar.gz -o "${tmp_dir}/uvm.tar.gz"
-
-echo "Note: Extracting UVM..."
-mkdir -p ${tools_dir}/uvm
-tar -xzf "${tmp_dir}/uvm.tar.gz" -C ${tools_dir}/uvm --strip-components=1
-rm -rf "${tmp_dir}"
-
 echo "Note: Adding setup script"
 
 # Create setup.sh script
 cat > ${tools_dir}/setup.sh << EOF
 #!/bin/bash
 export PATH="${tools_dir}/verilator/bin:${tools_dir}/bin:\${PATH}"
-export UVM_HOME="${tools_dir}/uvm"
 source ${tools_dir}/venv/bin/activate
 EOF
 
@@ -206,7 +196,6 @@ EOF
 cat > ${tools_dir}/setup.csh << EOF
 #!/bin/csh
 setenv PATH "${tools_dir}/verilator/bin:${tools_dir}/bin:\${PATH}"
-setenv UVM_HOME "${tools_dir}/uvm"
 source ${tools_dir}/venv/bin/activate.csh
 EOF
 

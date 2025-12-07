@@ -9,7 +9,7 @@ package:
       # - mti - Mentor/Siemens Questa (Modelsim)
       # - vcs - Synopsys VCS
       # - xcm - Cadence Xcellium
-      value: "Unspecified"
+      value: "vlt"
 
   tasks:
   - name: src
@@ -17,7 +17,12 @@ package:
     with:
       type: systemVerilogSource
       include: [top_pkg.sv, top.sv]
-
+  - name: pythonpath
+    uses: std.SetEnv
+    with:
+      prepend_path: 
+        PYTHONPATH: ${{ srcdir }}
+  
   - name: sim-img
     desc: Builds the simulation image
     uses: "hdlsim.${{ sim }}.SimImage"
@@ -27,16 +32,17 @@ package:
     - src
     with:
       top: [top]
+        #      args: "--debug --gdbbt"
 
   - name: sim-run
     uses: "hdlsim.${{ sim }}.SimRun"
-    needs: [sim-img, pyhdl-if.DpiLib]
+    needs: [pythonpath, sim-img, pyhdl-if.DpiLib]
     with:
       #      args: 
       #- "-valgrind --tool=memcheck"
       plusargs: 
       - UVM_TESTNAME=base_test
-      - pyhdl.python=${{ rootdir }}/../../packages/python/bin/python
+        #      - pyhdl.python=${{ rootdir }}/../../packages/python/bin/python
       - pyhdl.debug=0
 
 

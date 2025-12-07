@@ -25,8 +25,15 @@ jobs:
         export PATH=$(pwd)/packages/python/bin:${PATH}
         export PATH=$(pwd)/packages/verilator/bin:${PATH}
         export PATH=$(pwd)/packages/iverilog/bin:${PATH}
-        PYTEST_FV_HDLSIM=vlt ./packages/python/bin/python3 -m pytest ./tests/unit
-        PYTEST_FV_HDLSIM=ivl ./packages/python/bin/python3 -m pytest ./tests/unit
+        ./packages/python/bin/pip install pytest-json-ctrf
+        mkdir -p ctrf
+        PYTEST_FV_HDLSIM=vlt ./packages/python/bin/python3 -m pytest ./tests/unit --ctrf ctrf/ctrf-report-vlt.json || true
+        PYTEST_FV_HDLSIM=ivl ./packages/python/bin/python3 -m pytest ./tests/unit --ctrf ctrf/ctrf-report-ivl.json || true
+    - name: Publish Test Results
+      uses: ctrf-io/github-test-reporter@v1
+      with:
+        report-path: 'ctrf/*.json'
+      if: always()
 #        rm ivpm.yaml
 #        export PATH=$(pwd)/py/bin:${PATH}
 #        ./py/bin/pip install dist/*.whl

@@ -54,15 +54,15 @@ class pyhdl_uvm_object;
     endfunction
 
     virtual function void set_int_local(string name, longint unsigned value);
-        m_uvm_obj .set_int_local(name, value);
+//        m_uvm_obj .set_int_local(name, value);
     endfunction
 
     virtual function void set_string_local(string name, string value);
-        m_uvm_obj .set_string_local(name, value);
+//        m_uvm_obj .set_string_local(name, value);
     endfunction
 
     virtual function void set_object_local(string name, PyObject value);
-        m_uvm_obj .set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
+//        m_uvm_obj .set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
     endfunction
 
     virtual function bit compare(PyObject rhs);

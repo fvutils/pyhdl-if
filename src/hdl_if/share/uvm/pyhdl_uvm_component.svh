@@ -44,7 +44,7 @@ class pyhdl_uvm_component extends pyhdl_uvm_object;
         uvm_component comp;
 
         $cast(comp, m_uvm_obj);
-        has = comp.get_config_object(name, obj, clone);
+        has = uvm_config_db #(uvm_object)::get(comp, name, "", obj);
 
         if (has && obj != null) begin
             py_obj = new(pyhdl_uvm_object_rgy::inst().wrap(obj));

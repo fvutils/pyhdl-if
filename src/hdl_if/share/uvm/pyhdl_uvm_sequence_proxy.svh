@@ -13,7 +13,7 @@ class pyhdl_uvm_sequence_proxy #(
         string PyClass="")
     extends uvm_sequence #(.REQ(REQ), .RSP(RSP))
     implements pyhdl_uvm_sequence_proxy_if;
-    typedef pyhdl_uvm_sequence_proxy #(.REQ(REQ), .RSP(RSP), .PyClass(PyClass)) this_t;
+    typedef pyhdl_uvm_sequence_proxy #(.REQ(REQ), .RSP(RSP), .UserDataT(UserDataT), .PyClass(PyClass)) this_t;
     `uvm_object_param_utils(this_t);
 
     typedef pyhdl_uvm_sequence_proxy_helper #(.REQ(REQ), .RSP(RSP)) helper_t;
@@ -97,7 +97,7 @@ class pyhdl_uvm_sequence_proxy #(
 endclass
 
 class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ)
-        extends uvm_sequence_proxy_imp_impl #(pyhdl_uvm_sequence_proxy_helper #(REQ,RSP)) 
+        extends uvm_sequence_proxy_imp_impl #(pyhdl_uvm_sequence_proxy_helper #(REQ,REQ)) 
         implements pyhdl_uvm_object_if;
     uvm_sequence_base               m_proxy;
     uvm_sequence_proxy_exp_impl     m_exp;

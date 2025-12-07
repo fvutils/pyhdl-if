@@ -1,13 +1,23 @@
 # PyHDL-IF - A Python Interface to HDL Simulators
 
+PyHDL-IF implements several interfaces between Python and 
+hardware description languages, with a current focus on SystemVerilog.
+- Start Python behavior from SystemVerilog/UVM, and interact with UVM classes
+- Call SystemVerilog functions and tasks from Python, and invoke Python methods from SystemVerilog
+- Use the Python C API, and a SystemVerilog convenience API, to call Python
+
 ## Installing PyHDL-IF
-As an end user, the easiest way to install PyHDL-IF is via `pip`:
+Installing PyHDL-IF in your own Python virtual environment is easy:
 
 ```
 % pip install pyhdl-if
 ```
 
 Binary wheels are currently available for Linux x86_64 platforms.
+
+# Running Examples
+See [Examples.md](examples/Examples.md) for instructions on how to run examples.
+
 
 ## Setting up a Development Environment
 

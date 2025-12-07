@@ -52,7 +52,7 @@ package:
 
   - name: sim-run
     desc: Runs simulation
-    needs: [sim-img]
+    needs: [local-pythonpath, sim-img]
     uses: hdlsim.${{ sim }}.SimRun
     with:
       plusargs:
