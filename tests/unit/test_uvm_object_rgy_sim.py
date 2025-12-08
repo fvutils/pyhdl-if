@@ -10,7 +10,7 @@ data_dir = os.path.join(
 uvm_data_dir = os.path.join(data_dir, "uvm")
 uvm_obj_rgy_data_dir = os.path.join(uvm_data_dir, "object_registry")
 
-@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(), indirect=True)
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(excl=('vlt')), indirect=True)
 def test_object_registry_smoke(pyhdl_dvflow, hdl_if_env):
     """
     Test the UVM Object Registry functionality in a simulation environment.

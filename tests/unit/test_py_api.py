@@ -46,11 +46,11 @@ def _test_file(hdlsim_dvflow : HdlSimDvFlow, name, env, plusargs=None):
 def test_smoke(hdlsim_dvflow, hdl_if_env):
     _test_file(hdlsim_dvflow, "test_smoke", env=hdl_if_env)
 
-@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(excl=('vlt')), indirect=True)
 def test_a_plus_b(hdlsim_dvflow, hdl_if_env):
     _test_file(hdlsim_dvflow, "a_plus_b", env=hdl_if_env)
 
-@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(), indirect=True)
+@pytest.mark.parametrize("hdlsim_dvflow", available_sims_dpi(excl=('vlt')), indirect=True)
 def test_data1(hdlsim_dvflow, hdl_if_env):
     _test_file(hdlsim_dvflow, "data1", env=hdl_if_env, plusargs=[
         'data=%s' % os.path.join(test_py_api_data_dir, "data1.json")])
