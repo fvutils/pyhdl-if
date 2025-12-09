@@ -6,8 +6,12 @@
     class pyhdl_``t``_w extends t``_imp_impl #(pyhdl_``t) implements pyhdl_uvm_object_if; \
     \
         function new(uvm_object obj); \
+`ifdef VCS \
+            super.new(pyhdl_``t::new(obj)); \
+`else \
             pyhdl_``t impl = new(obj); \
             super.new(impl); \
+`endif \
         endfunction \
     \
         virtual function uvm_object get_object(); \
