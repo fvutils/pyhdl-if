@@ -84,15 +84,19 @@ package:
       src: pypi
     - name: pytest-dfm
       url: https://github.com/dv-flow/pytest-dfm.git
+      dep-set: default-dev
     - name: dv-flow-libhdlsim
       url: https://github.com/dv-flow/dv-flow-libhdlsim.git
+      dep-set: default-dev
     - name: dv-flow-mgr
       url: https://github.com/dv-flow/dv-flow-mgr.git
-      branch: mballance/taskdeps
+      dep-set: default-dev
     - name: pytypeworks
       url: https://github.com/mballance-utils/pytypeworks.git
+      dep-set: default-dev
     - name: pyvsc-dataclasses
       url: https://github.com/vsc-tools/pyvsc-dataclasses.git
+      dep-set: default-dev
     - name: pcpp
       src: pypi
     - name: cxxheaderparser
