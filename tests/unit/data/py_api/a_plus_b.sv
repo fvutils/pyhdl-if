@@ -6,7 +6,7 @@ module a_plus_b;
         py_object a_plus_b, foo;
         py_tuple args;
         PyObject ret_o;
-        int ret;
+        automatic int ret;
 
         $display("-- 1");
 	    py_gil_enter();
@@ -24,6 +24,7 @@ module a_plus_b;
             $display("foo: %0p", foo.borrow());
         end
 
+/*
         Py_IncRef(foo.obj);
 
         args = py_tuple::mk_init('{py_from_int(5), py_from_int(13)});
@@ -31,13 +32,15 @@ module a_plus_b;
         $display("args.borrow: %0p", args.borrow());
 
         ret_o = PyObject_Call(foo.obj, args.borrow(), null);
-/*
         ret_o = foo.call(py_tuple::mk_init('{
             py_from_int(5), py_from_int(13)}));
-//        ret = foo.call('{py_from_long(5), py_from_long(13)}).to_int();
+ */
+        ret = foo.call(py_tuple::mk_init('{py_from_long(5), py_from_long(13)})).to_int();
 
+	/*
         $display("-- 5");
         ret = ret_o.to_int();
+	 */
 
         $display("-- 6");
 
@@ -46,7 +49,6 @@ module a_plus_b;
         $display("-- 6");
 
         $display("-- 7");
- */
 
         begin
             int fp = $fopen("status.txt", "w");
