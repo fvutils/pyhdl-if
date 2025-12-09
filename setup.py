@@ -77,6 +77,7 @@ setup_args = dict(
   package_data = {
       'hdl_if': [
           'share/dpi/*',
+          'share/uvm/*',
           'share/vpi/*',
           'share/*',
           'dfm/flow.dv'

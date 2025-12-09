@@ -11,7 +11,6 @@ package:
       type: int
       value: 0
 
-
   tasks:
   - name: local-pythonpath
     uses: std.SetEnv
@@ -20,6 +19,12 @@ package:
       prepend_path:
         PYTHONPATH: ${{ rootdir }}
 
+  - name: defines
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [defines.v]
+  
   - name: api-gen-hvlsrc
     desc: Generates SV interface code for the SV/Python API
     uses: pyhdl-if.APIGenSV
@@ -43,6 +48,7 @@ package:
     desc: Compiles/elaborates the simulation image
     uses: "hdlsim.${{ sim }}.SimImage"
     needs: 
+    - defines
     - pyhdl-if.DpiLib
     - pyhdl-if.SvPkg
     - api-gen-hvlsrc

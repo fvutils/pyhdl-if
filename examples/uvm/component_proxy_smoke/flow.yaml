@@ -12,6 +12,11 @@ package:
       value: "vlt"
 
   tasks:
+  - name: defines
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [defines.v]
   - name: src
     uses: std.FileSet
     with:
@@ -27,6 +32,7 @@ package:
     desc: Builds the simulation image
     uses: "hdlsim.${{ sim }}.SimImage"
     needs: 
+    - defines
     - "hdlsim.${{ sim }}.SimLibUVM"
     - pyhdl-if.UVMPkg
     - src
