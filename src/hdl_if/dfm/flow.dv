@@ -26,6 +26,8 @@ package:
 
   - name: APIGenSV
     desc: Generates a SystemVerilog API from the Python API
+    consumes:
+    - { type: std.SetEnv }
     with:
       inline:
         desc: Run the generator in-line 
@@ -34,7 +36,6 @@ package:
       filename:
         desc: name of the output file
         type: str
-        value: api.sv
       pkgname:
         desc: Of the package
         type: str

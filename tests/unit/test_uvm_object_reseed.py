@@ -7,7 +7,7 @@ data_dir = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "data", "uvm", "object_reseed")
 
-@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(), indirect=True)
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(excl=('vlt')), indirect=True)
 def test_smoke(pyhdl_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = data_dir + os.pathsep + env["PYTHONPATH"]

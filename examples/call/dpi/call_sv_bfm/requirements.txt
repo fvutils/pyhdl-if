@@ -1,5 +1,0 @@
-
-pyhdl-if
-dv-flow-mgr
-dv-flow-libhdlsim
-

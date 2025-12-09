@@ -20,13 +20,30 @@ jobs:
         ./packages/python/bin/python3 -m build -n
         ls src
     - name: Run tests
+      id: run_tests
       run: |
         export PYTHONPATH=$(pwd)/src:${PYTHONPATH}
         export PATH=$(pwd)/packages/python/bin:${PATH}
         export PATH=$(pwd)/packages/verilator/bin:${PATH}
         export PATH=$(pwd)/packages/iverilog/bin:${PATH}
-        PYTEST_FV_HDLSIM=vlt ./packages/python/bin/python3 -m pytest ./tests/unit
-        PYTEST_FV_HDLSIM=ivl ./packages/python/bin/python3 -m pytest ./tests/unit
+        ./packages/python/bin/pip install pytest-json-ctrf
+        mkdir -p ctrf
+        exit_code=0
+        PYTEST_FV_HDLSIM=vlt ./packages/python/bin/python3 -m pytest ./tests/unit --ctrf ctrf/ctrf-report-vlt.json || exit_code=$?
+        PYTEST_FV_HDLSIM=ivl ./packages/python/bin/python3 -m pytest ./tests/unit --ctrf ctrf/ctrf-report-ivl.json || exit_code=$?
+        echo "test_exit_code=$exit_code" >> $GITHUB_OUTPUT
+    - name: Publish Test Results
+      uses: ctrf-io/github-test-reporter@v1
+      with:
+        report-path: 'ctrf/*.json'
+      if: always()
+    - name: Check test results
+      if: always()
+      run: |
+        if [ "${{ steps.run_tests.outputs.test_exit_code }}" != "0" ]; then
+          echo "Tests failed with exit code ${{ steps.run_tests.outputs.test_exit_code }}"
+          exit 1
+        fi
 #        rm ivpm.yaml
 #        export PATH=$(pwd)/py/bin:${PATH}
 #        ./py/bin/pip install dist/*.whl

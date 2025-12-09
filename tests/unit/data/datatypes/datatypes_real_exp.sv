@@ -8,7 +8,7 @@ module top;
     import datatypes_real_exp_pkg::*;
 
     initial begin
-        automatic RealExp real_exp = new();
+        automatic RealExp_exp_impl real_exp = new();
         automatic int i, j;
         automatic real result;
         automatic int status = 0, fp;

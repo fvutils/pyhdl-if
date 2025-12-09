@@ -6,7 +6,7 @@ from . import pyhdl_dvflow, hdl_if_env, available_sims_uvm
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(THIS_DIR, "data", "uvm", "component", "smoke")
 
-@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(), indirect=True)
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(excl=('vlt')), indirect=True)
 def test_smoke(pyhdl_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = DATA_DIR + os.pathsep + env.get("PYTHONPATH", "")

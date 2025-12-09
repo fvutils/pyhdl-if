@@ -34,7 +34,8 @@ package smoke_pkg;
     function void build_phase(uvm_phase phase);
         my_obj obj = my_obj::type_id::create();
 
-        set_config_object("*", "MY_CONFIG", obj);
+//        set_config_object("*", "MY_CONFIG", obj);
+        uvm_config_db #(uvm_object)::set(this, "*", "MY_CONFIG", obj);
 
         m_proxy = pyhdl_uvm_component_proxy::type_id::create("m_proxy", this);
         m_proxy.pyclass = "pycomp::PyComp";

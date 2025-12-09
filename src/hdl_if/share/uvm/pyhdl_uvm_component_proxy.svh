@@ -176,22 +176,22 @@ class pyhdl_uvm_component_proxy_helper
     endfunction
 
     virtual function void set_int_local(string name, int value);
-        m_proxy.set_int_local(name, value);
+//        m_proxy.set_int_local(name, value);
     endfunction
 
     virtual function void set_string_local(string name, string value);
-        m_proxy.set_string_local(name, value);
+//        m_proxy.set_string_local(name, value);
     endfunction
 
     virtual function void set_object_local(string name, PyObject value);
-        m_proxy.set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
+//        m_proxy.set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
     endfunction
 
     virtual function PyObject get_config_object(string name, bit clone=0);
         py_tuple ret;
         uvm_object obj;
         py_object py_obj;
-        bit has = m_proxy.get_config_object(name, obj);
+        bit has = 0; //uvm_config_db #(uvm_object)::get(m_proxy, name, obj);
         py_object py_has;
 
         if (has && obj != null) begin

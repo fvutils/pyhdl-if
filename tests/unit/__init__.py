@@ -23,7 +23,7 @@ def available_sims_vpi(incl=None, excl=None):
 def available_sims_uvm(incl=None, excl=None):
     if incl is None:
         # TODO: control via env var?
-        incl = ["mti", "vcs", "xcm"]
+        incl = ["mti", "vcs", "vlt", "xcm"]
 
     return hdlsim_available_sims(incl, excl)
 

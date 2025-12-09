@@ -84,7 +84,12 @@ module WishboneInitiatorBFM(
         bfm_ack = 1'b0;
     endtask
 
-    class WishboneInitiatorImpl extends WishboneInitiator;
+    class WishboneInitiatorImpl extends WishboneInitiator_imp_impl #(WishboneInitiatorImpl);
+
+        function new();
+            super.new(this);
+        endfunction
+
         virtual task write(int unsigned addr, int unsigned data);
             $display("write");
             $display("--> write");

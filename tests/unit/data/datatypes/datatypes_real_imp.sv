@@ -2,7 +2,13 @@
 package datatypes_real_imp;
     import datatypes_real_imp_pkg::*;
 
-    class RealImpImpl extends RealImp;
+    class RealImpImpl extends RealImp_imp_impl #(RealImpImpl);
+        RealImp_exp_impl exp;
+
+        function new();
+            super.new(this);
+            exp = new(m_obj);
+        endfunction
         function real add(real a, real b);
             return a+b;
         endfunction
@@ -19,7 +25,7 @@ module top;
         automatic int status = 0, fp;
 
         $display("Hello World!");
-        status = real_imp.test();
+        status = real_imp.exp.test();
 
         fp = $fopen("status.txt", "w");
         if (status == 0) begin
