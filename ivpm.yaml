@@ -72,6 +72,45 @@ package:
         #    - name: uvm
         #      url: https://www.accellera.org/images/downloads/standards/uvm/Accellera-1800.2-2017-1.0.tar.gz
         #      cache: true
+  - name: default-ci
+    deps:
+    - name: pytest
+      src: pypi
+    - name: cython
+      src: pypi
+    - name: build
+      src: pypi
+    - name: setuptools_scm
+      src: pypi
+    - name: pytest-dfm
+      url: https://github.com/dv-flow/pytest-dfm.git
+    - name: dv-flow-libhdlsim
+      url: https://github.com/dv-flow/dv-flow-libhdlsim.git
+    - name: dv-flow-mgr
+      url: https://github.com/dv-flow/dv-flow-mgr.git
+      branch: mballance/taskdeps
+    - name: pytypeworks
+      url: https://github.com/mballance-utils/pytypeworks.git
+    - name: pyvsc-dataclasses
+      url: https://github.com/vsc-tools/pyvsc-dataclasses.git
+    - name: pcpp
+      src: pypi
+    - name: cxxheaderparser
+      src: pypi
+    - name: sphinx
+      src: pypi
+    - name: breathe
+      src: pypi
+    - name: sphinx-rtd-theme
+      src: pypi
+    - name: cairosvg
+      src: pypi
+    - name: sphinx-argparse
+      src: pypi
+    - name: packaging
+      src: pypi
+    - name: doxygen-filter-sv
+      url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
 
   env:
     - name: PATH
