@@ -15,3 +15,10 @@ class uvm_component(uvm_object):
 
     @abc.abstractmethod
     async def run_phase(self, phase : object): ...
+
+    @abc.abstractmethod
+    def create_object(self, requested_type_name : str, name : str = "") -> uvm_object: ...
+
+    @abc.abstractmethod
+    def create_component(self, requested_type_name : str, name : str) -> uvm_object: ...
+

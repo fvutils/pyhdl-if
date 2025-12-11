@@ -137,5 +137,13 @@ class uvm_component(uvm_object_w):
         """
         ...
 
+    @imp
+    def create_object(self, requested_type_name : str, name : str = "") -> uvm_object: 
+        ...
+
+    @imp
+    def create_component(self, requested_type_name : str, name : str) -> uvm_object: 
+        ...
+
     def accept(self, v : uvm_visitor):
         v.visit_component(self)

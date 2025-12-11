@@ -55,6 +55,26 @@ class pyhdl_uvm_component extends pyhdl_uvm_object;
         return py_tuple::mk_init({py_has, py_obj}).borrow();
     endfunction
 
+    virtual function PyObject create_object(string requested_type_name, string name="");
+        uvm_component comp;
+        uvm_object obj;
+
+        $cast(comp, m_uvm_obj);
+        obj = comp.create_object(requested_type_name, name);
+
+        return pyhdl_uvm_object_rgy::inst().wrap(obj);
+    endfunction
+
+    virtual function PyObject create_component(string requested_type_name, string name);
+        uvm_component comp;
+        uvm_component child_comp;
+
+        $cast(comp, m_uvm_obj);
+        child_comp = comp.create_component(requested_type_name, name);
+
+        return pyhdl_uvm_object_rgy::inst().wrap(child_comp);
+    endfunction
+
 
 endclass
 

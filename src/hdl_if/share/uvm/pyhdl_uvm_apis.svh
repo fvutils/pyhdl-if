@@ -300,6 +300,16 @@ interface class uvm_component_imp_if;
         input bit clone
     );
 
+    pure virtual function pyhdl_if::PyObject create_object(
+        input string requested_type_name,
+        input string name
+    );
+
+    pure virtual function pyhdl_if::PyObject create_component(
+        input string requested_type_name,
+        input string name
+    );
+
     pure virtual function void reseed();
     pure virtual function bit _randomize();
     pure virtual function string get_name();
@@ -474,6 +484,24 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
                     __clone);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
+            "create_object": begin
+                pyhdl_if::PyObject __rval;
+                string __requested_type_name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
+                __rval = m_impl.create_object(
+                    __requested_type_name,
+                    __name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "create_component": begin
+                pyhdl_if::PyObject __rval;
+                string __requested_type_name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
+                __rval = m_impl.create_component(
+                    __requested_type_name,
+                    __name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
             "reseed": begin
                 m_impl.reseed();
                 __ret = pyhdl_if::None;
@@ -615,6 +643,16 @@ interface class uvm_analysis_port_proxy_imp_if;
     pure virtual function pyhdl_if::PyObject get_config_object(
         input string name,
         input bit clone
+    );
+
+    pure virtual function pyhdl_if::PyObject create_object(
+        input string requested_type_name,
+        input string name
+    );
+
+    pure virtual function pyhdl_if::PyObject create_component(
+        input string requested_type_name,
+        input string name
     );
 
     pure virtual function void reseed();
@@ -794,6 +832,24 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
                 __rval = m_impl.get_config_object(
                     __name,
                     __clone);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "create_object": begin
+                pyhdl_if::PyObject __rval;
+                string __requested_type_name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
+                __rval = m_impl.create_object(
+                    __requested_type_name,
+                    __name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "create_component": begin
+                pyhdl_if::PyObject __rval;
+                string __requested_type_name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
+                __rval = m_impl.create_component(
+                    __requested_type_name,
+                    __name);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             "reseed": begin
@@ -1249,6 +1305,16 @@ interface class uvm_component_proxy_imp_if;
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject get_parent();
     pure virtual function pyhdl_if::PyObject get_children();
+    pure virtual function pyhdl_if::PyObject create_object(
+        input string requested_type_name,
+        input string name
+    );
+
+    pure virtual function pyhdl_if::PyObject create_component(
+        input string requested_type_name,
+        input string name
+    );
+
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
@@ -1493,6 +1559,24 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
             "get_children": begin
                 pyhdl_if::PyObject __rval;
                 __rval = m_impl.get_children();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "create_object": begin
+                pyhdl_if::PyObject __rval;
+                string __requested_type_name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
+                __rval = m_impl.create_object(
+                    __requested_type_name,
+                    __name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "create_component": begin
+                pyhdl_if::PyObject __rval;
+                string __requested_type_name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 1));
+                __rval = m_impl.create_component(
+                    __requested_type_name,
+                    __name);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             "_randomize": begin

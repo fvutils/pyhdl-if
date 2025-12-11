@@ -248,4 +248,18 @@ class pyhdl_uvm_component_proxy_helper
     virtual function void unpack_ints(PyObject data);
     endfunction
 
+    virtual function PyObject create_object(string requested_type_name, string name="");
+        uvm_object obj;
+
+        obj = m_proxy.create_object(requested_type_name, name);
+        return pyhdl_uvm_object_rgy::inst().wrap(obj);
+    endfunction
+
+    virtual function PyObject create_component(string requested_type_name, string name);
+        uvm_object obj;
+
+        obj = m_proxy.create_component(requested_type_name, name);
+        return pyhdl_uvm_object_rgy::inst().wrap(obj);
+    endfunction
+
 endclass
