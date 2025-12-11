@@ -129,5 +129,13 @@ class uvm_component_proxy(uvm_component_w):
             return self._impl.copy(rhs)
         return None
 
+    @imp
+    def create_object(self, requested_type_name : str, name : str = "") -> uvm_object: 
+        ...
+
+    @imp
+    def create_component(self, requested_type_name : str, name : str) -> uvm_object: 
+        ...
+
     def accept(self, v : uvm_visitor):
         pass
