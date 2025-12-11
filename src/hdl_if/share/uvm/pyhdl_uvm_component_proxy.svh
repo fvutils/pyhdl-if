@@ -252,14 +252,24 @@ class pyhdl_uvm_component_proxy_helper
         uvm_object obj;
 
         obj = m_proxy.create_object(requested_type_name, name);
-        return pyhdl_uvm_object_rgy::inst().wrap(obj);
+
+        if (obj != null) begin
+            return pyhdl_uvm_object_rgy::inst().wrap(obj);
+        end else begin
+            return None;
+        end
     endfunction
 
     virtual function PyObject create_component(string requested_type_name, string name);
         uvm_object obj;
 
         obj = m_proxy.create_component(requested_type_name, name);
-        return pyhdl_uvm_object_rgy::inst().wrap(obj);
+
+        if (obj != null) begin
+            return pyhdl_uvm_object_rgy::inst().wrap(obj);
+        end else begin
+            return None;
+        end
     endfunction
 
 endclass
