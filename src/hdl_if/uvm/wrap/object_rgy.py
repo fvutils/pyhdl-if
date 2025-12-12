@@ -111,11 +111,19 @@ class uvm_object_rgy(object):
     @imp
     def clp(self) -> uvm_cmdline_processor: ...
 
-    def populate_fields(self, obj_t: UvmObjectType, layout: str) -> None:
+    def populate_fields(self, obj_t: UvmObjectType, layout: str, obj_type_cache: dict = None) -> None:
         """
         Parse the layout string (from obj.sprint()) and populate the fields list.
-        Sets can_pack to False if any field has unknown size.
+        Sets can_pack to False if any field has unknown size (for INT fields).
+        For OBJ fields, attempts to resolve the nested object type.
+        
+        Args:
+            obj_t: The UvmObjectType to populate
+            layout: Sprint output string to parse
+            obj_type_cache: Optional dict mapping type names to UvmObjectType instances
         """
+        if obj_type_cache is None:
+            obj_type_cache = {}
 
         if not layout:
             return
@@ -146,10 +154,33 @@ class uvm_object_rgy(object):
 
                 # Process field tokens: [field_name, type, size, ...]
                 field_name = tokens[0]
+                field_type = tokens[1]
 
-                # Unknown/unsupported size on field line disables packing
+                # Check if this is an object-type field
+                # Object fields in UVM sprint output typically have type "object" or a custom class name
+                # and size "-"
                 if tokens[2] == "-":
-                    obj_t.can_pack = False
+                    # This could be an object field - check if we can resolve its type
+                    # The field_type token contains the SV class name
+                    sanitized_type = self._sanitize_field_name(field_type)
+                    
+                    # Try to find or create the object type
+                    nested_obj_type = obj_type_cache.get(sanitized_type)
+                    
+                    if nested_obj_type is not None:
+                        # We have type info for this object field
+                        field = UvmFieldType(
+                            name=field_name,
+                            kind=UvmFieldKind.OBJ,
+                            size=-1,  # Objects don't have a fixed size in the same sense
+                            is_signed=False,
+                            obj_type=nested_obj_type
+                        )
+                        obj_t.fields.append(field)
+                        obj_t.field_m[field.name] = field
+                    else:
+                        # Unknown object type - disable packing
+                        obj_t.can_pack = False
                     count += 1
                     continue
 

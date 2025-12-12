@@ -37,23 +37,73 @@ class UvmObjectType(object):
 
     def _total_pack_bits(self) -> int:
         """
-        Computes the total number of bits required to pack all INT fields.
+        Computes the total number of bits required to pack all fields.
+        For OBJ fields, includes 4-bit header plus recursively computed object bits.
         Raises if any INT field has unknown/invalid size.
         """
         total = 0
         for f in self.fields:
-            if f.kind != UvmFieldKind.INT:
-                raise NotImplementedError("Only INT fields are supported by pack_ints/unpack_ints")
-            if f.size is None or f.size <= 0:
-                raise ValueError(f"Invalid size for field '{f.name}': {f.size}")
-            total += f.size
+            if f.kind == UvmFieldKind.INT:
+                if f.size is None or f.size <= 0:
+                    raise ValueError(f"Invalid size for field '{f.name}': {f.size}")
+                total += f.size
+            elif f.kind == UvmFieldKind.OBJ:
+                # 4-bit null/non-null header
+                total += 4
+                # If object type is known, add its total bits (non-null case)
+                if f.obj_type is not None:
+                    total += f.obj_type._total_pack_bits()
+            else:
+                raise NotImplementedError(f"Unsupported field kind: {f.kind}")
         return total
+
+    def _pack_bits(self, data_obj: object, bits: List[int]) -> None:
+        """
+        Internal helper: packs fields from data_obj into the bits list (MSB-first).
+        Handles INT and OBJ fields recursively.
+        """
+        for f in self.fields:
+            attr = self._sanitize_field_name(f.name)
+            if not hasattr(data_obj, attr):
+                raise AttributeError(f"Data object missing attribute for field '{f.name}' (attr='{attr}')")
+
+            v = getattr(data_obj, attr)
+
+            if f.kind == UvmFieldKind.INT:
+                size = f.size
+                if size is None or size <= 0:
+                    raise ValueError(f"Invalid size for field '{f.name}': {size}")
+                if not isinstance(v, int):
+                    raise TypeError(f"Field '{f.name}' value must be int, got {type(v)!r}")
+
+                # Mask to width (two's complement for negative values handled by masking)
+                mask = (1 << size) - 1
+                v_masked = v & mask
+
+                # Append bits MSB -> LSB
+                for i in range(size - 1, -1, -1):
+                    bits.append((v_masked >> i) & 1)
+
+            elif f.kind == UvmFieldKind.OBJ:
+                # Pack 4-bit header: 0 for null, 0xF for non-null
+                if v is None:
+                    # null object: pack 4 zero bits
+                    bits.extend([0, 0, 0, 0])
+                else:
+                    # non-null object: pack 0xF (4 one bits), then recursively pack object
+                    bits.extend([1, 1, 1, 1])
+                    if f.obj_type is None:
+                        raise ValueError(f"Object field '{f.name}' has no obj_type defined")
+                    f.obj_type._pack_bits(v, bits)
+            else:
+                raise NotImplementedError(f"Unsupported field kind for packing: {f.kind}")
 
     def pack_ints(self, data_obj: object) -> List[int]:
         """
-        Packs INT fields from the provided data object into a list of 32-bit ints.
+        Packs fields from the provided data object into a list of 32-bit ints.
         Semantics mirror UVM uvm_object::pack_ints + uvm_packer.get_ints with big_endian=1:
         - Fields are appended MSB-first into a bitstream.
+        - For OBJ fields, a 4-bit header (0=null, 0xF=non-null) is packed, then object fields recursively.
         - The bitstream is chunked into 32-bit words.
         - Each 32-bit word is bit-reversed before being emitted (matching get_ints big_endian behavior).
         - The last partial word is zero-padded; significant bits end up in the MSB positions of the returned int.
@@ -67,28 +117,7 @@ class UvmObjectType(object):
 
         # Build MSB-first bitstream from fields
         bits: List[int] = []
-        for f in self.fields:
-            if f.kind != UvmFieldKind.INT:
-                raise NotImplementedError(f"Unsupported field kind for packing: {f.kind}")
-            size = f.size
-            if size is None or size <= 0:
-                raise ValueError(f"Invalid size for field '{f.name}': {size}")
-
-            attr = self._sanitize_field_name(f.name)
-            if not hasattr(data_obj, attr):
-                raise AttributeError(f"Data object missing attribute for field '{f.name}' (attr='{attr}')")
-
-            v = getattr(data_obj, attr)
-            if not isinstance(v, int):
-                raise TypeError(f"Field '{f.name}' value must be int, got {type(v)!r}")
-
-            # Mask to width (two's complement for negative values handled by masking)
-            mask = (1 << size) - 1 if size < 1024*1024 else (1 << size) - 1  # Python int is unbounded; keep simple
-            v_masked = v & mask
-
-            # Append bits MSB -> LSB
-            for i in range(size - 1, -1, -1):
-                bits.append((v_masked >> i) & 1)
+        self._pack_bits(data_obj, bits)
 
         if not bits:
             return []
@@ -118,12 +147,68 @@ class UvmObjectType(object):
 
         return out
 
+    def _unpack_bits(self, bits: List[int], offset: int, data: object) -> int:
+        """
+        Internal helper: unpacks fields from bits starting at offset into data object.
+        Handles INT and OBJ fields recursively.
+        Returns the new offset after unpacking all fields.
+        """
+        for f in self.fields:
+            attr = self._sanitize_field_name(f.name)
+
+            if f.kind == UvmFieldKind.INT:
+                size = f.size
+                if size is None or size <= 0:
+                    raise ValueError(f"Invalid size for field '{f.name}': {size}")
+
+                seg = bits[offset:offset + size]
+                offset += size
+
+                # Convert MSB-first segment to integer
+                val = 0
+                for b in seg:
+                    val = (val << 1) | (1 if b else 0)
+
+                # Interpret signed if requested (two's complement)
+                if f.is_signed and size > 0:
+                    sign_bit = 1 << (size - 1)
+                    if val & sign_bit:
+                        val -= (1 << size)
+
+                setattr(data, attr, val)
+
+            elif f.kind == UvmFieldKind.OBJ:
+                # Read 4-bit header
+                header_bits = bits[offset:offset + 4]
+                offset += 4
+                header_val = 0
+                for b in header_bits:
+                    header_val = (header_val << 1) | (1 if b else 0)
+
+                if header_val == 0:
+                    # null object
+                    setattr(data, attr, None)
+                else:
+                    # non-null object: recursively unpack
+                    if f.obj_type is None:
+                        raise ValueError(f"Object field '{f.name}' has no obj_type defined")
+                    if f.obj_type.data_t is None:
+                        raise ValueError(f"Object field '{f.name}' obj_type has no data_t defined")
+                    child_data = f.obj_type.data_t()
+                    offset = f.obj_type._unpack_bits(bits, offset, child_data)
+                    setattr(data, attr, child_data)
+            else:
+                raise NotImplementedError(f"Unsupported field kind for unpacking: {f.kind}")
+
+        return offset
+
     def unpack_ints(self, intstream: List[int]) -> object:
         """
         Unpacks a list of 32-bit ints (as produced by pack_ints) into a new data_t instance.
         Mirrors UVM uvm_object::unpack_ints + uvm_packer.put_ints with big_endian=1:
         - Each 32-bit word is bit-reversed before appending to the bitstream.
         - Uses the exact field sizes in order to slice values MSB-first.
+        - For OBJ fields, reads 4-bit header (0=null, else non-null) then recursively unpacks.
         - Signed fields are interpreted in two's complement.
         Returns:
             data_t instance populated with unpacked field values.
@@ -145,37 +230,10 @@ class UvmObjectType(object):
                 word_bits[31 - j] = bj
             bits.extend(word_bits)
 
-        total = self._total_pack_bits()
-        if len(bits) < total:
-            raise ValueError(f"Insufficient bits in intstream: have {len(bits)}, need {total}")
-
         # Create target data object
         data = self.data_t()
 
-        # Slice and assign per field
-        offset = 0
-        for f in self.fields:
-            if f.kind != UvmFieldKind.INT:
-                raise NotImplementedError(f"Unsupported field kind for unpacking: {f.kind}")
-            size = f.size
-            if size is None or size <= 0:
-                raise ValueError(f"Invalid size for field '{f.name}': {size}")
-
-            seg = bits[offset:offset + size]
-            offset += size
-
-            # Convert MSB-first segment to integer
-            val = 0
-            for b in seg:
-                val = (val << 1) | (1 if b else 0)
-
-            # Interpret signed if requested (two's complement)
-            if f.is_signed and size > 0:
-                sign_bit = 1 << (size - 1)
-                if val & sign_bit:
-                    val -= (1 << size)
-
-            attr = self._sanitize_field_name(f.name)
-            setattr(data, attr, val)
+        # Unpack fields recursively
+        self._unpack_bits(bits, 0, data)
 
         return data
