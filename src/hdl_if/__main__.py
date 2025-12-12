@@ -38,6 +38,8 @@ def getparser():
     api_gen_sv.add_argument("-e", "--exclude",
         action="append",
         help="Specify a pattern for API exclusion")
+    api_gen_sv.add_argument("--follow-deps", action="store_true",
+        help="Also generate classes for API base classes (dependencies)")
     api_gen_sv.add_argument("-p", "--package",
         help="Place the generated class APIs in a package")
     api_gen_sv.add_argument("-o", "--output",
