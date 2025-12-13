@@ -28,6 +28,8 @@
 #include <poll.h>
 #include <spawn.h>
 #include <sys/wait.h>
+#include <sys/time.h>
+#include <sched.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -84,6 +86,40 @@ void *funcs[] = {
 
 void *get_dpiexport_funcs() {
     return funcs;
+}
+
+/*******************************************************************
+ * pyhdl_if_get_real_time_ms()
+ * 
+ * Returns the current real time in milliseconds since epoch.
+ * Used by the Python polling thread to measure real time elapsed.
+ *******************************************************************/
+long long pyhdl_if_get_real_time_ms(void) {
+#if defined(_WIN32)
+    FILETIME ft;
+    ULARGE_INTEGER uli;
+    GetSystemTimeAsFileTime(&ft);
+    uli.LowPart = ft.dwLowDateTime;
+    uli.HighPart = ft.dwHighDateTime;
+    // Convert from 100-nanosecond intervals since 1601 to milliseconds
+    return (long long)(uli.QuadPart / 10000ULL - 11644473600000ULL);
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (long long)tv.tv_sec * 1000LL + (long long)tv.tv_usec / 1000LL;
+#endif
+}
+
+/**
+ * Allows the SV poll loop to yield to other threads
+ */
+int pyhdl_if_sched_yield(void) {
+#if defined(_WIN32)
+    Sleep(0);
+    return 0;
+#else
+    return sched_yield();
+#endif
 }
 
 //typedef void *PyObject;

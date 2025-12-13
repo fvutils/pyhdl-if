@@ -28,7 +28,10 @@ function void pyhdl_call_if_invoke_hdl_t(
     PyObject        args);
     TaskCallClosure closure;
     automatic string local_name = PyUnicode_AsUTF8(method_name);
-    
+
+    // Note: py2sv_active is incremented when the closure actually runs,
+    // not when it's queued. This ensures accurate tracking for thread support.
+
     closure = new(
         __objects[obj_id],
         evt_obj,
