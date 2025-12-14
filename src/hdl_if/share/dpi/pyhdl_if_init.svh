@@ -18,6 +18,17 @@ function automatic bit __pyhdl_if_init();
         `PYHDL_IF_DEBUG(("Python interpreter specified as %0s", python));
     end
 
+    // Parse polling configuration plusargs
+    if ($value$plusargs("pyhdl.poll_upfront_count=%d", __py_poll_upfront_count)) begin
+        `PYHDL_IF_DEBUG(("Python poll upfront count set to %0d", __py_poll_upfront_count));
+    end
+    if ($value$plusargs("pyhdl.poll_sim_time=%d", __py_poll_sim_time)) begin
+        `PYHDL_IF_DEBUG(("Python poll sim time set to %0d", __py_poll_sim_time));
+    end
+    if ($value$plusargs("pyhdl.poll_real_time_ms=%d", __py_poll_real_time_ms)) begin
+        `PYHDL_IF_DEBUG(("Python poll real time set to %0d ms", __py_poll_real_time_ms));
+    end
+
     `PYHDL_IF_ENTER(("pyhdl_if_init"));
 
     if (pyhdl_if_dpi_entry(pyhdl_if_debug, python) != 1) begin

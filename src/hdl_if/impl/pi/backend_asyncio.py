@@ -20,6 +20,8 @@
 #*
 #****************************************************************************
 import asyncio
+import threading
+import time
 from hdl_if.backend import Backend
 
 class Event(asyncio.Event):
@@ -62,6 +64,9 @@ class BackendAsyncio(Backend):
     def idle(self):
         self._loop.call_soon(self.__soon_cb)
         self._loop.run_forever()
+        if threading.active_count() > 1:
+            # Yield to other threads
+            time.sleep(0.0)
 
     def callCallback(self, cb):
         cb()

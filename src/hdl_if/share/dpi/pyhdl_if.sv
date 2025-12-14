@@ -67,6 +67,17 @@ package pyhdl_if;
     // 
     bit                                 prv_run_q_running = 0;
     mailbox #(PyHdlPiRunnable)          prv_run_q = new();
+
+    // Python polling configuration (configurable via plusargs)
+    int __py_poll_upfront_count = 10;      // +pyhdl.poll_upfront_count=N
+    int __py_poll_sim_time = 1000;         // +pyhdl.poll_sim_time=N (initial sim time units)
+    longint __py_poll_real_time_ms = 100;  // +pyhdl.poll_real_time_ms=N (target real time in ms)
+
+    // DPI import for getting real time in milliseconds
+    import "DPI-C" function longint pyhdl_if_get_real_time_ms();
+
+    import "DPI-C" function int pyhdl_if_sched_yield();
+
     task automatic __pyhdl_pi_if_run();
         forever begin
             automatic PyHdlPiRunnable runnable;
@@ -77,6 +88,57 @@ package pyhdl_if;
                     runnable.run();
                 end
             join_none
+        end
+    endtask
+
+    // Background polling thread for Python event loop
+    task automatic __pyhdl_py_poll_thread();
+        longint last_poll_real_time;
+        longint current_real_time;
+        longint elapsed;
+        int sim_wait;
+        int min_sim_wait;
+        PyGILState_STATE state;
+
+        // Initialize timing - minimum wait is the initial configured value
+        min_sim_wait = __py_poll_sim_time;
+        sim_wait = __py_poll_sim_time;
+
+        state = PyGILState_Ensure();
+        last_poll_real_time = pyhdl_if_get_real_time_ms();
+        PyGILState_Release(state);
+
+        forever begin
+            // Wait simulation time
+            #(sim_wait);
+
+            state = PyGILState_Ensure();
+
+            // Get current real time
+            current_real_time = pyhdl_if_get_real_time_ms();
+            elapsed = current_real_time - last_poll_real_time;
+
+            // Pump the Python event loop
+            pyhdl_pi_if_idle();
+
+            // Adjust next simulation wait based on real-time performance
+            // Goal: poll approximately every __py_poll_real_time_ms of real time
+            if (elapsed > __py_poll_real_time_ms * 2) begin
+                // Real time is passing much faster than sim time - decrease wait
+                sim_wait = sim_wait / 2;
+                if (sim_wait < min_sim_wait) sim_wait = min_sim_wait;
+            end else if (elapsed == 0) begin
+                // Sim time is passing much faster than real time - increase wait significantly
+                sim_wait = sim_wait * 4;
+            end else if (elapsed < __py_poll_real_time_ms / 2) begin
+                // Sim time is passing faster than real time - increase wait
+                sim_wait = sim_wait * 2;
+            end
+
+            last_poll_real_time = current_real_time;
+
+            PyGILState_Release(state);
+            void'(pyhdl_if_sched_yield());
         end
     endtask
 
@@ -93,6 +155,7 @@ package pyhdl_if;
             prv_run_q_running = 1;
             fork
                 __pyhdl_pi_if_run();
+                __pyhdl_py_poll_thread();
             join_none
         end
     endfunction
@@ -112,6 +175,7 @@ package pyhdl_if;
     // Allows the Python environment to process events
     function automatic void pyhdl_pi_if_idle();
         PyObject args, idle_h, backend_m, backend_c, inst_m;
+        `PYHDL_IF_DEBUG(("--> pyhdl_pi_if_idle"));
         if (__backend == null) begin
             backend_m = PyImport_ImportModule("hdl_if.backend");
             backend_c = PyObject_GetAttrString(backend_m, "Backend");
@@ -124,6 +188,7 @@ package pyhdl_if;
         idle_h = PyObject_GetAttrString(__backend, "idle");
         void'(pyhdl_pi_if_HandleErr(PyObject_Call(idle_h, args, null)));
         Py_DecRef(args);
+        `PYHDL_IF_DEBUG(("<-- pyhdl_pi_if_idle"));
     endfunction
 
     function automatic PyObject pyhdl_pi_if_getBackend();
@@ -180,7 +245,7 @@ package pyhdl_if;
     endfunction
 
     /****************************************************************
-     * PyHDL-IF Call 
+     * PyHDL-IF Call
      ****************************************************************/
     typedef interface class ICallApi;
 
@@ -189,6 +254,14 @@ package pyhdl_if;
     ICallApi            __objects[];
     semaphore           __callsem[];
     PyObject            __callsem_res[];
+
+    // Call balance tracking for Python thread support
+    // - sv2py_active: count of active SV->Python async calls waiting for completion
+    // - py2sv_active: count of active Python->SV blocking calls in progress
+    int __sv2py_call = 0;
+    int __sv2py_resp = 0;
+    int __py2sv_call = 0;
+    int __py2sv_resp = 0;
 
     // Empty base class
     class CallEmptyBase;
