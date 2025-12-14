@@ -112,15 +112,265 @@ the unique identifier for the SystemVerilog object.</p>
 </section>
 <section id="calling-a-python-method-from-systemverilog">
 <h3>Calling a Python Method from SystemVerilog<a class="headerlink" href="#calling-a-python-method-from-systemverilog" title="Link to this heading"></a></h3>
+<p>Synchronous Python methods (functions) are called from SystemVerilog using
+<cite>pyhdl_if_invokePyFunc</cite>. This function:</p>
+<ol class="arabic simple">
+<li><p>Acquires the Python GIL via <cite>PyGILState_Ensure</cite></p></li>
+<li><p>Retrieves the <cite>_proxy</cite> attribute from the Python object</p></li>
+<li><p>Calls <cite>invoke_py_f</cite> on the proxy with the method name and arguments</p></li>
+<li><p>Releases the GIL and returns the result</p></li>
+</ol>
+<p>Since Python functions are non-blocking, the call completes synchronously
+within the SystemVerilog function context.</p>
 </section>
 <section id="calling-a-python-async-method-from-systemverilog">
 <h3>Calling a Python Async Method from SystemVerilog<a class="headerlink" href="#calling-a-python-async-method-from-systemverilog" title="Link to this heading"></a></h3>
+<p>Calling an async Python method from a SystemVerilog task is more complex
+because it requires bridging the SystemVerilog simulation thread with
+Python’s asyncio event loop. The mechanism works as follows:</p>
+<ol class="arabic simple">
+<li><p><strong>SV Task calls `pyhdl_if_invokePyTask`</strong>: This allocates a semaphore ID
+using <cite>pyhdl_if_allocSem</cite> to track the call’s completion.</p></li>
+<li><p><strong>Invoke Python proxy</strong>: The task retrieves the <cite>_proxy</cite> attribute from
+the Python object and calls <cite>invoke_py_t</cite> with the semaphore ID, method
+name, and arguments.</p></li>
+<li><p><strong>Python creates async task</strong>: <cite>CallProxyDPI.invoke_py_t</cite> retrieves the
+target method and calls <cite>Backend.mkTask()</cite> with <cite>invoke_py_t_wrap()</cite>.
+This schedules the coroutine on the asyncio event loop.</p></li>
+<li><p><strong>Run event loop</strong>: <cite>Backend.idle()</cite> is called, which runs the asyncio
+event loop until the next stopping point via <cite>run_forever()</cite> and
+<cite>call_soon(stop)</cite>.</p></li>
+<li><p><strong>SV waits on semaphore</strong>: Back in SystemVerilog, <cite>pyhdl_if_waitSem</cite>
+blocks on the semaphore, waiting for the Python async method to complete.</p></li>
+<li><p><strong>Python method completes</strong>: When the async method finishes,
+<cite>invoke_py_t_wrap</cite> calls <cite>response_py_t</cite> on the endpoint.</p></li>
+<li><p><strong>Signal completion</strong>: <cite>HdlCallEndpointDPI.response_py_t</cite> calls the DPI
+export function <cite>pyhdl_call_if_response_py_t</cite>, which calls
+<cite>pyhdl_if_setSem</cite> to put the result in the semaphore array and signal
+the semaphore.</p></li>
+<li><p><strong>SV task resumes</strong>: The semaphore unblocks, <cite>pyhdl_if_waitSem</cite> returns
+the result, and the SystemVerilog task continues.</p></li>
+</ol>
 </section>
 <section id="calling-a-systemverilog-function-from-python">
 <h3>Calling a SystemVerilog Function from Python<a class="headerlink" href="#calling-a-systemverilog-function-from-python" title="Link to this heading"></a></h3>
+<p>Python code calls SystemVerilog functions through the <cite>CallProxyDPI</cite> class:</p>
+<ol class="arabic simple">
+<li><p><strong>Python calls `invoke_hdl_f`</strong>: The proxy’s <cite>invoke_hdl_f</cite> method is
+called with the method name and arguments.</p></li>
+<li><p><strong>DPI call to SV</strong>: <cite>HdlCallEndpointDPI.invoke_hdl_f</cite> uses ctypes to
+call the DPI export function <cite>pyhdl_call_if_invoke_hdl_f</cite> directly.</p></li>
+<li><p><strong>SV function dispatch</strong>: The exported function looks up the SV object
+by <cite>obj_id</cite> in the <cite>__objects</cite> array and calls <cite>invokeFunc</cite> on the
+<cite>ICallApi</cite> interface.</p></li>
+<li><p><strong>Result returned</strong>: The function result is returned through DPI back
+to Python.</p></li>
+</ol>
+<p>This is a straightforward synchronous call since SystemVerilog functions
+cannot consume simulation time.</p>
 </section>
 <section id="calling-a-systemverilog-task-from-python">
 <h3>Calling a SystemVerilog Task from Python<a class="headerlink" href="#calling-a-systemverilog-task-from-python" title="Link to this heading"></a></h3>
+<p>Calling a SystemVerilog task from Python requires special handling because
+SV tasks can consume simulation time, while Python async methods expect to
+await completion. The mechanism works as follows:</p>
+<ol class="arabic simple">
+<li><p><strong>Python calls `invoke_hdl_t`</strong>: This is an async method on
+<cite>CallProxyDPI</cite>. It creates an asyncio Event object via <cite>Backend.mkEvent()</cite>
+to track completion.</p></li>
+<li><p><strong>DPI call to queue task</strong>: <cite>HdlCallEndpointDPI.invoke_hdl_t</cite> calls
+the DPI export <cite>pyhdl_call_if_invoke_hdl_t</cite> with the object ID, event
+object, method name, and arguments.</p></li>
+<li><p><strong>Create TaskCallClosure</strong>: The SV function creates a <cite>TaskCallClosure</cite>
+object that implements <cite>PyHdlPiRunnable</cite>. This closure captures the
+target object, event, method name, and arguments.</p></li>
+<li><p><strong>Queue for execution</strong>: The closure is passed to
+<cite>pyhdl_pi_if_queue_runnable</cite>, which adds it to the <cite>prv_run_q</cite> mailbox.</p></li>
+<li><p><strong>Python awaits event</strong>: Back in Python, <cite>invoke_hdl_t</cite> awaits the
+event with <cite>res = await evt.wait()</cite>.</p></li>
+<li><p><strong>SV event loop executes task</strong>: The <cite>__pyhdl_pi_if_run</cite> task
+continuously pulls runnables from the mailbox and forks them for
+execution. This allows multiple SV tasks to run concurrently.</p></li>
+<li><p><strong>TaskCallClosure runs</strong>: The closure’s <cite>run</cite> task:</p>
+<ol class="loweralpha simple">
+<li><p>Acquires the Python GIL</p></li>
+<li><p>Calls <cite>invokeTask</cite> on the <cite>ICallApi</cite> interface to execute the
+actual SystemVerilog task</p></li>
+<li><p>Retrieves the <cite>set</cite> method from the Python event object</p></li>
+<li><p>Calls <cite>evt.set(result)</cite> to signal completion with the return value</p></li>
+<li><p>Releases the GIL</p></li>
+</ol>
+</li>
+<li><p><strong>Event signaled</strong>: The <cite>Event.set()</cite> method stores the result value
+and signals the asyncio event, also calling <cite>Backend.idle()</cite> to
+advance the Python event loop.</p></li>
+<li><p><strong>Python resumes</strong>: The awaiting coroutine receives the result from
+<cite>evt.wait()</cite> and continues execution.</p></li>
+</ol>
+</section>
+<section id="key-design-elements">
+<h3>Key Design Elements<a class="headerlink" href="#key-design-elements" title="Link to this heading"></a></h3>
+<p><strong>SV Event Loop</strong>: The <cite>__pyhdl_pi_if_run</cite> task runs as a forever loop,
+pulling runnables from a mailbox and forking each one. This is essential
+because it allows Python-initiated tasks to execute within the simulation
+time domain while the Python event loop remains responsive.</p>
+<p><strong>Semaphore Pool</strong>: For SV-to-Python async calls, a pool of semaphores
+(<cite>__callsem</cite>) tracks pending calls. Each call allocates a semaphore ID,
+and completion signals that specific semaphore.</p>
+<p><strong>Event Objects</strong>: For Python-to-SV task calls, Python’s asyncio Event
+objects are passed to SystemVerilog. The SV task closure holds a reference
+and calls the event’s <cite>set</cite> method when complete.</p>
+<p><strong>GIL Management</strong>: Both directions carefully manage Python’s Global
+Interpreter Lock (GIL) using <cite>PyGILState_Ensure</cite> and <cite>PyGILState_Release</cite>
+to ensure thread safety when crossing the Python/C/SV boundary.</p>
+<p><strong>Backend Abstraction</strong>: The <cite>Backend</cite> class abstracts the asyncio
+operations, allowing different backends (asyncio, cocotb) while maintaining
+the same call semantics.</p>
+</section>
+<section id="python-thread-support">
+<h3>Python Thread Support<a class="headerlink" href="#python-thread-support" title="Link to this heading"></a></h3>
+<p>PyHDL-IF supports Python threads that need to call back into SystemVerilog
+tasks. This is useful when integrating with Python libraries that use
+threading for blocking I/O or compute-intensive operations.</p>
+<p>The challenge with threads is that:</p>
+<ol class="arabic simple">
+<li><p>Python threads need the GIL (Global Interpreter Lock) to execute Python code</p></li>
+<li><p>The asyncio event loop runs in the main thread</p></li>
+<li><p>SystemVerilog tasks execute in the simulation thread</p></li>
+<li><p>A thread calling <cite>run_coroutine_threadsafe()</cite> schedules work but blocks
+waiting for the result</p></li>
+</ol>
+<p>The solution involves a two-part approach: an up-front event loop pump when
+invoking async methods, and a background polling thread for ongoing
+asynchronous Python activity.</p>
+<section id="up-front-event-loop-pump">
+<h4>Up-Front Event Loop Pump<a class="headerlink" href="#up-front-event-loop-pump" title="Link to this heading"></a></h4>
+<p>When SystemVerilog calls a Python async method via <code class="docutils literal notranslate"><span class="pre">pyhdl_if_invokePyTask</span></code>,
+the implementation pumps the Python event loop up to a configurable number of
+times (default: 10) <em>before</em> advancing simulation time. This allows threaded
+Python code to initiate callbacks into SystemVerilog without any simulation
+time passing:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="c1">// Pump event loop up-front to allow threads to initiate SV callbacks</span>
+<span class="k">repeat</span><span class="w"> </span><span class="p">(</span><span class="n">__py_poll_upfront_count</span><span class="p">)</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">    </span><span class="n">pyhdl_pi_if_idle</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">__callsem</span><span class="p">[</span><span class="n">id</span><span class="p">].</span><span class="n">try_get</span><span class="p">())</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">        </span><span class="c1">// Early completion - no time advanced</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>This is critical because:</p>
+<ol class="arabic simple">
+<li><p>Threaded Python code typically calls back into SV very quickly</p></li>
+<li><p>We don’t want to advance simulation time during this initial setup phase</p></li>
+<li><p>Most SV→Python→SV round-trips complete within a few event loop iterations</p></li>
+</ol>
+</section>
+<section id="background-polling-thread">
+<h4>Background Polling Thread<a class="headerlink" href="#background-polling-thread" title="Link to this heading"></a></h4>
+<p>For ongoing asynchronous Python activity (such as user interactions or
+background I/O), a separate SystemVerilog thread polls the Python event
+loop at regular intervals. This polling thread:</p>
+<ol class="arabic simple">
+<li><p>Starts automatically when <code class="docutils literal notranslate"><span class="pre">pyhdl_if_start()</span></code> is called</p></li>
+<li><p>Adjusts its simulation-time wait based on real-time elapsed since last poll</p></li>
+<li><p>Targets a configurable real-time interval (default: 100ms)</p></li>
+</ol>
+<p>The polling algorithm uses adaptive timing:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">forever</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">    </span><span class="c1">// Wait simulation time</span>
+<span class="w">    </span><span class="p">#(</span><span class="n">__py_poll_sim_time</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Get current real time and compare to target</span>
+<span class="w">    </span><span class="n">current_real_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_real_time_ms</span><span class="p">();</span>
+<span class="w">    </span><span class="n">elapsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">current_real_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">last_poll_real_time</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Pump the Python event loop</span>
+<span class="w">    </span><span class="n">pyhdl_pi_if_idle</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// Adjust next simulation wait based on real-time performance</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">elapsed</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">target_real_time_ms</span><span class="p">)</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">        </span><span class="c1">// Real time is passing faster than sim time - decrease wait</span>
+<span class="w">        </span><span class="n">__py_poll_sim_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">__py_poll_sim_time</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="k">end</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">elapsed</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">target_real_time_ms</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">        </span><span class="c1">// Sim time is passing faster than real time - increase wait</span>
+<span class="w">        </span><span class="n">__py_poll_sim_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">__py_poll_sim_time</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">    </span><span class="k">end</span>
+
+<span class="w">    </span><span class="n">last_poll_real_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">current_real_time</span><span class="p">;</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>This adaptive approach ensures responsive Python interaction regardless of
+simulation speed.</p>
+</section>
+<section id="configuration-plusargs">
+<h4>Configuration Plusargs<a class="headerlink" href="#configuration-plusargs" title="Link to this heading"></a></h4>
+<p>The polling behavior is configurable via plusargs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">+pyhdl.poll_upfront_count=N</span></code>: Number of event loop iterations before
+advancing simulation time (default: 10)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">+pyhdl.poll_sim_time=N</span></code>: Initial simulation time in time units between
+background polls (default: 1000)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">+pyhdl.poll_real_time_ms=N</span></code>: Target real-time interval in milliseconds
+between background polls (default: 100)</p></li>
+</ul>
+</section>
+<section id="wait-semaphore-implementation">
+<h4>Wait Semaphore Implementation<a class="headerlink" href="#wait-semaphore-implementation" title="Link to this heading"></a></h4>
+<p>The wait semaphore implementation uses a two-phase approach to balance
+performance with thread support:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="c1">// Phase 1: Up-front pump (no simulation time advancement)</span>
+<span class="c1">// Fast path for pure asyncio calls</span>
+<span class="k">repeat</span><span class="w"> </span><span class="p">(</span><span class="n">__py_poll_upfront_count</span><span class="p">)</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">    </span><span class="n">pyhdl_pi_if_idle</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">__callsem</span><span class="p">[</span><span class="n">id</span><span class="p">].</span><span class="n">try_get</span><span class="p">())</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">        </span><span class="c1">// Early completion - no time advanced</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1">// Phase 2: Slower path for threaded calls</span>
+<span class="c1">// Release GIL and wait to allow Python threads to run</span>
+<span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">__callsem</span><span class="p">[</span><span class="n">id</span><span class="p">].</span><span class="n">try_get</span><span class="p">())</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">    </span><span class="n">PyGILState_Release</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
+<span class="w">    </span><span class="p">#(</span><span class="n">__py_poll_sim_time</span><span class="p">);</span>
+<span class="w">    </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyGILState_Ensure</span><span class="p">();</span>
+<span class="w">    </span><span class="n">pyhdl_pi_if_idle</span><span class="p">();</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>This design ensures:</p>
+<ol class="arabic simple">
+<li><p>Pure asyncio calls complete with no simulation time advancement</p></li>
+<li><p>Threaded calls (via <code class="docutils literal notranslate"><span class="pre">run_coroutine_threadsafe</span></code>) get OS scheduler time</p></li>
+<li><p>The GIL is released to allow Python threads to run</p></li>
+</ol>
+<p><strong>Using asyncio.to_thread</strong>: Python code that needs to run blocking work
+in a thread while calling back to SystemVerilog should use
+<code class="docutils literal notranslate"><span class="pre">asyncio.to_thread()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@hif</span><span class="o">.</span><span class="n">api</span>
+<span class="k">class</span> <span class="nc">MyTest</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="nd">@hif</span><span class="o">.</span><span class="n">exp</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bfm</span><span class="p">):</span>
+        <span class="c1"># Get event loop reference for thread</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">blocking_work</span><span class="p">():</span>
+            <span class="c1"># Schedule SV call from thread</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run_coroutine_threadsafe</span><span class="p">(</span>
+                <span class="n">bfm</span><span class="o">.</span><span class="n">some_task</span><span class="p">(),</span> <span class="n">loop</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">30.0</span><span class="p">)</span>
+
+        <span class="c1"># Run blocking work in thread</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="n">blocking_work</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">asyncio.to_thread()</span></code> keeps the main async method suspended,
+allowing the polling loop to pump the event loop and process the thread’s
+scheduled coroutines.</p>
+</section>
 </section>
 </section>
 <section id="systemverilog-api-classes">
