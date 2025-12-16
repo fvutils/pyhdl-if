@@ -1,3 +1,23 @@
+/**
+ * pyhdl_uvm_component_proxy.svh
+ *
+ * Copyright 2024 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author: 
+ */
 
 typedef class pyhdl_uvm_component;
 typedef class pyhdl_uvm_component_proxy_helper;
@@ -116,13 +136,13 @@ class pyhdl_uvm_component_proxy_helper
         impl_o = PyObject_Call(cls, args, null);
         if (impl_o == null) begin
             PyErr_Print();
-            $display("Fatal Error: Failed to construct user class %0s", clsname);
+            `PYHDL_IF_FATAL(("Failed to construct user class %0s", clsname))
             $finish;
         end
 
         if (PyObject_SetAttrString(m_obj, "_impl", impl_o) != 0) begin
             PyErr_Print();
-            $display("Fatal Error: Failed to set _impl on proxy wrapper");
+            `PYHDL_IF_FATAL(("Failed to set _impl on proxy wrapper"))
             $finish;
         end
     endfunction

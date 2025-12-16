@@ -1,3 +1,23 @@
+/**
+ * pyhdl_uvm_object_type.svh
+ *
+ * Copyright 2024 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author: 
+ */
 
 class pyhdl_uvm_object_type;
     pyhdl_uvm_object_type       subtypes[$];
@@ -12,18 +32,18 @@ class pyhdl_uvm_object_type;
     endfunction
 
     virtual function pyhdl_uvm_object_if create(uvm_object obj);
-        $display("Fatal: pyhdl_uvm_object_type base::create called", name);
+        `PYHDL_IF_FATAL(("pyhdl_uvm_object_type base::create called", name))
         return null;
     endfunction
 
     virtual function int subtype_subclasses(ref pyhdl_uvm_object_type types[$], uvm_object obj);
         types = {};
         foreach (subtypes[i]) begin
-            $display("%0s: issubclass(%0s)",
+            `PYHDL_IF_DEBUG(("%0s: issubclass(%0s)",
                 subtypes[i].name,
-                obj.get_type_name());
+                obj.get_type_name()))
             if (subtypes[i].issubclass(obj)) begin
-                $display("issubtype");
+                `PYHDL_IF_DEBUG(("issubtype"))
                 types.push_back(subtypes[i]);
             end
         end

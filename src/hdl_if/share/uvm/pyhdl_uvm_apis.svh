@@ -1,3 +1,24 @@
+/**
+ * pyhdl_uvm_apis.svh
+ *
+ * Copyright 2024 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author: 
+ */
+
 interface class uvm_object_exp_if;
 endclass
 
@@ -59,7 +80,7 @@ class uvm_object_exp_impl implements uvm_object_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -68,7 +89,7 @@ class uvm_object_exp_impl implements uvm_object_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -77,7 +98,7 @@ class uvm_object_exp_impl implements uvm_object_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_object");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_object"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -119,7 +140,7 @@ class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::IC
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -128,7 +149,7 @@ class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::IC
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -137,7 +158,7 @@ class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::IC
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_object");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_object"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -267,7 +288,7 @@ class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::IC
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -282,7 +303,7 @@ class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::IC
         retval = pyhdl_if::None;
         case (method)
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -366,7 +387,7 @@ class uvm_component_exp_impl implements uvm_component_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -375,7 +396,7 @@ class uvm_component_exp_impl implements uvm_component_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -384,7 +405,7 @@ class uvm_component_exp_impl implements uvm_component_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_component");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_component"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -426,7 +447,7 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -435,7 +456,7 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -444,7 +465,7 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_component");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_component"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -611,7 +632,7 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -626,7 +647,7 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
         retval = pyhdl_if::None;
         case (method)
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -711,7 +732,7 @@ class uvm_analysis_port_proxy_exp_impl implements uvm_analysis_port_proxy_exp_if
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -720,7 +741,7 @@ class uvm_analysis_port_proxy_exp_impl implements uvm_analysis_port_proxy_exp_if
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -729,7 +750,7 @@ class uvm_analysis_port_proxy_exp_impl implements uvm_analysis_port_proxy_exp_if
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_analysis_port_proxy");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_analysis_port_proxy"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -771,7 +792,7 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -780,7 +801,7 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -789,7 +810,7 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_analysis_port_proxy");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_analysis_port_proxy"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -961,7 +982,7 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -976,7 +997,7 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
         retval = pyhdl_if::None;
         case (method)
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -1044,7 +1065,7 @@ class uvm_cmdline_processor_exp_impl implements uvm_cmdline_processor_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1053,7 +1074,7 @@ class uvm_cmdline_processor_exp_impl implements uvm_cmdline_processor_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1062,7 +1083,7 @@ class uvm_cmdline_processor_exp_impl implements uvm_cmdline_processor_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_cmdline_processor");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_cmdline_processor"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1104,7 +1125,7 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1113,7 +1134,7 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1122,7 +1143,7 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_cmdline_processor");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_cmdline_processor"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1257,7 +1278,7 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -1272,7 +1293,7 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
         retval = pyhdl_if::None;
         case (method)
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -1360,7 +1381,7 @@ class uvm_component_proxy_exp_impl implements uvm_component_proxy_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1369,7 +1390,7 @@ class uvm_component_proxy_exp_impl implements uvm_component_proxy_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1378,7 +1399,7 @@ class uvm_component_proxy_exp_impl implements uvm_component_proxy_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_component_proxy");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_component_proxy"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1446,7 +1467,7 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1455,7 +1476,7 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1464,7 +1485,7 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_component_proxy");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_component_proxy"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1635,7 +1656,7 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -1650,7 +1671,7 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
         retval = pyhdl_if::None;
         case (method)
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -1688,7 +1709,7 @@ class uvm_object_rgy_exp_impl implements uvm_object_rgy_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1697,7 +1718,7 @@ class uvm_object_rgy_exp_impl implements uvm_object_rgy_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1706,7 +1727,7 @@ class uvm_object_rgy_exp_impl implements uvm_object_rgy_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_object_rgy");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_object_rgy"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1759,7 +1780,7 @@ class uvm_object_rgy_imp_impl #(type ImpT=uvm_object_rgy_imp_if) implements pyhd
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1768,7 +1789,7 @@ class uvm_object_rgy_imp_impl #(type ImpT=uvm_object_rgy_imp_if) implements pyhd
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1777,7 +1798,7 @@ class uvm_object_rgy_imp_impl #(type ImpT=uvm_object_rgy_imp_if) implements pyhd
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_object_rgy");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_object_rgy"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1810,7 +1831,7 @@ class uvm_object_rgy_imp_impl #(type ImpT=uvm_object_rgy_imp_if) implements pyhd
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -1825,7 +1846,7 @@ class uvm_object_rgy_imp_impl #(type ImpT=uvm_object_rgy_imp_if) implements pyhd
         retval = pyhdl_if::None;
         case (method)
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -1898,7 +1919,7 @@ class uvm_reg_exp_impl implements uvm_reg_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1907,7 +1928,7 @@ class uvm_reg_exp_impl implements uvm_reg_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1916,7 +1937,7 @@ class uvm_reg_exp_impl implements uvm_reg_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_reg");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_reg"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1958,7 +1979,7 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1967,7 +1988,7 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -1976,7 +1997,7 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_reg");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_reg"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2121,7 +2142,7 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -2158,7 +2179,7 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
                 retval = pyhdl_if::PyLong_FromLong(longint'(__retval));
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -2228,7 +2249,7 @@ class uvm_reg_block_exp_impl implements uvm_reg_block_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2237,7 +2258,7 @@ class uvm_reg_block_exp_impl implements uvm_reg_block_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2246,7 +2267,7 @@ class uvm_reg_block_exp_impl implements uvm_reg_block_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_reg_block");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_reg_block"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2288,7 +2309,7 @@ class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2297,7 +2318,7 @@ class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2306,7 +2327,7 @@ class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_reg_block");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_reg_block"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2451,7 +2472,7 @@ class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -2466,7 +2487,7 @@ class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_
         retval = pyhdl_if::None;
         case (method)
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -2537,7 +2558,7 @@ class uvm_reg_field_exp_impl implements uvm_reg_field_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2546,7 +2567,7 @@ class uvm_reg_field_exp_impl implements uvm_reg_field_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2555,7 +2576,7 @@ class uvm_reg_field_exp_impl implements uvm_reg_field_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_reg_field");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_reg_field"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2597,7 +2618,7 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2606,7 +2627,7 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2615,7 +2636,7 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_reg_field");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_reg_field"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2755,7 +2776,7 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -2785,7 +2806,7 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
                 retval = (__retval==null)?pyhdl_if::None:__retval;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -2833,7 +2854,7 @@ class uvm_sequence_proxy_exp_impl implements uvm_sequence_proxy_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2842,7 +2863,7 @@ class uvm_sequence_proxy_exp_impl implements uvm_sequence_proxy_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2851,7 +2872,7 @@ class uvm_sequence_proxy_exp_impl implements uvm_sequence_proxy_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_sequence_proxy");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_sequence_proxy"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2900,7 +2921,7 @@ class uvm_sequence_proxy_imp_impl #(type ImpT=uvm_sequence_proxy_imp_if) impleme
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2909,7 +2930,7 @@ class uvm_sequence_proxy_imp_impl #(type ImpT=uvm_sequence_proxy_imp_if) impleme
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2918,7 +2939,7 @@ class uvm_sequence_proxy_imp_impl #(type ImpT=uvm_sequence_proxy_imp_if) impleme
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_sequence_proxy");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_sequence_proxy"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -2988,7 +3009,7 @@ class uvm_sequence_proxy_imp_impl #(type ImpT=uvm_sequence_proxy_imp_if) impleme
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -3015,7 +3036,7 @@ class uvm_sequence_proxy_imp_impl #(type ImpT=uvm_sequence_proxy_imp_if) impleme
                 state = pyhdl_if::PyGILState_Ensure(); // Reacquire the GIL after invoking the task
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask
@@ -3092,7 +3113,7 @@ class uvm_phase_exp_impl implements uvm_phase_exp_if;
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -3101,7 +3122,7 @@ class uvm_phase_exp_impl implements uvm_phase_exp_if;
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -3110,7 +3131,7 @@ class uvm_phase_exp_impl implements uvm_phase_exp_if;
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_phase");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_phase"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -3152,7 +3173,7 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
 
         if (__cls_m == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find module %%s", modname);
+            `PYHDL_IF_FATAL(("Failed to find module %%s", modname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -3161,7 +3182,7 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
         __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
         if (__cls_t == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to find class %%s", clsname);
+            `PYHDL_IF_FATAL(("Failed to find class %%s", clsname))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -3170,7 +3191,7 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
         __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
         if (__obj == null) begin
             pyhdl_if::PyErr_Print();
-            $display("Fatal Error: Failed to construct class uvm_phase");
+            `PYHDL_IF_FATAL(("Failed to construct class uvm_phase"))
             $finish;
             pyhdl_if::PyGILState_Release(state);
             return null;
@@ -3316,7 +3337,7 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
                 __ret = pyhdl_if::None;
             end
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
         pyhdl_if::PyGILState_Release(state);
@@ -3331,7 +3352,7 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
         retval = pyhdl_if::None;
         case (method)
             default: begin
-                $display("Fatal: unsupported method call %0s", method);
+                `PYHDL_IF_FATAL(("unsupported method call %0s", method))
             end
         endcase
     endtask

@@ -1,3 +1,23 @@
+/**
+ * pyhdl_uvm_sequence_proxy.svh
+ *
+ * Copyright 2024 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author: 
+ */
 
 typedef class pyhdl_uvm_sequence_proxy_helper;
 typedef class pyhdl_uvm_object_rgy;
@@ -66,7 +86,7 @@ class pyhdl_uvm_sequence_proxy #(
 
         modname = pyclass.substr(0, i);
 
-        $display("modname=%0s clsname=%0s", modname, clsname);
+        `PYHDL_IF_DEBUG(("modname=%0s clsname=%0s", modname, clsname))
 
         mod = PyImport_ImportModule(modname);
         if (mod == null) begin
@@ -115,13 +135,13 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
         impl_o = PyObject_Call(cls, args, null);
         if (impl_o == null) begin
             PyErr_Print();
-            $display("Fatal Error: Failed to construct user class %0s", clsname);
+            `PYHDL_IF_FATAL(("Failed to construct user class %0s", clsname))
             $finish;
         end
 
         if (PyObject_SetAttrString(m_obj, "_impl", impl_o) != 0) begin
             PyErr_Print();
-            $display("Fatal Error: Failed to set _impl on proxy wrapper");
+            `PYHDL_IF_FATAL(("Failed to set _impl on proxy wrapper"))
             $finish;
         end
     endfunction
@@ -135,7 +155,7 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
     endfunction
 
     virtual function string get_name();
-        $display("get_name");
+        `PYHDL_IF_DEBUG(("get_name"))
         return m_proxy.get_name();
     endfunction
 
@@ -202,7 +222,7 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
     virtual function PyObject _get_sequencer();
         pyhdl_uvm_sequence_proxy_if proxy;
         $cast (proxy, m_proxy);
-        $display("-- _get_sequencer");
+        `PYHDL_IF_DEBUG(("-- _get_sequencer"))
         return pyhdl_uvm_object_rgy::inst().wrap(proxy._get_sequencer());
     endfunction
 
@@ -232,7 +252,7 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
         if ($cast(uvm_item, item_o)) begin
             m_proxy.start_item(uvm_item);
         end else begin
-            $display("Fatal: can't cast back to a sequence item");
+            `PYHDL_IF_FATAL(("can't cast back to a sequence item"))
         end
     endtask
 
@@ -244,7 +264,7 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
         if ($cast(uvm_item, item_o)) begin
             m_proxy.finish_item(uvm_item);
         end else begin
-            $display("Fatal: can't cast back to a sequence item");
+            `PYHDL_IF_FATAL(("can't cast back to a sequence item"))
         end
     endtask
 

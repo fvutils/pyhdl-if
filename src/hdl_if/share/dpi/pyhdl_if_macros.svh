@@ -24,6 +24,11 @@
     $write("PyHDL-IF Error: "); \
     $display x ;
 
+`define PYHDL_IF_FATAL(x) \
+    $write("PyHDL-IF Fatal: "); \
+    $display x ; \
+    $finish
+
 `define STACKTRACE $stacktrace
 
 

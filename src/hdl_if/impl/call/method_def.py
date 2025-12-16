@@ -19,8 +19,9 @@
 #*     Author: 
 #*
 #****************************************************************************
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from enum import Enum, auto
+import inspect
 
 class MethodKind(Enum):
     ImpTask = auto()
@@ -30,6 +31,9 @@ class MethodKind(Enum):
     Imp = auto()
     Exp = auto()
 
+# Sentinel value to indicate no default
+_NO_DEFAULT = inspect.Parameter.empty
+
 class MethodDef(object):
 
     def __init__(self, 
@@ -37,11 +41,14 @@ class MethodDef(object):
                  T,
                  name : str,
                  rtype,
-                 params : List[Tuple[str, object]]):
+                 params : List[Tuple[str, object]],
+                 defaults : List[Any] = None):
         self._kind = kind
         self._name = name
         self._rtype = rtype
         self._params = params
+        # defaults is a list parallel to params; each element is either a value or _NO_DEFAULT
+        self._defaults = defaults if defaults is not None else [_NO_DEFAULT] * len(params)
         pass
 
     @property
@@ -59,6 +66,10 @@ class MethodDef(object):
     @property
     def params(self):
         return self._params
+
+    @property
+    def defaults(self):
+        return self._defaults
     
 
 

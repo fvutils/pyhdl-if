@@ -44,7 +44,12 @@ class MethodDecoratorImpl(object):
         else:
             rtype = None
 
+        # Use inspect.signature to get parameter info including defaults
+        sig = inspect.signature(T)
+        sig_params = list(sig.parameters.items())
+
         params = []
+        defaults = []
         for i in range(1,code.co_argcount):
             pname = code.co_varnames[i]
             if pname not in hints.keys():
@@ -52,6 +57,12 @@ class MethodDecoratorImpl(object):
                     T.__name__,
                     pname))
             params.append((pname, hints[pname]))
+            # Find the corresponding param in signature to get its default
+            sig_param = sig.parameters.get(pname)
+            if sig_param is not None and sig_param.default is not inspect.Parameter.empty:
+                defaults.append(sig_param.default)
+            else:
+                defaults.append(inspect.Parameter.empty)
 
         if self._kind in [MethodKind.Imp,MethodKind.Exp]:
             # Need to probe type
@@ -66,7 +77,7 @@ class MethodDecoratorImpl(object):
                 else:
                     self._kind = MethodKind.ExpFunc
 
-        md = MethodDef(self._kind, T, T.__name__, rtype, params)
+        md = MethodDef(self._kind, T, T.__name__, rtype, params, defaults)
         Ctor.inst().addMethodDef(md)
 
         if self._kind == MethodKind.ImpFunc:

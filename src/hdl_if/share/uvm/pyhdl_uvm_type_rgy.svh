@@ -1,3 +1,23 @@
+/**
+ * pyhdl_uvm_type_rgy.svh
+ *
+ * Copyright 2024 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author: 
+ */
 
 typedef class via_uvm_component_factory;
 typedef class via_uvm_object_factory;
@@ -34,9 +54,9 @@ class via_uvm_type_rgy;
         // save the message printed by factory.print()
         uvm_report_cb::add(null, catcher);
 
-        $display("--> print");
+        `PYHDL_IF_DEBUG(("--> print"))
         factory.print();
-        $display("<-- print\n%0s", catcher.factory_print);
+        `PYHDL_IF_DEBUG(("<-- print\n%0s", catcher.factory_print))
 
         uvm_report_cb::delete(null, catcher);
     endfunction
@@ -122,7 +142,7 @@ class via_uvm_type_rgy;
         string line;
         int count;
 
-//        $display("parse:\n%0s", layout);
+//        `PYHDL_IF_DEBUG(("parse:\n%0s", layout))
 
         // Split layout into lines
         while (layout != "") begin
@@ -163,7 +183,7 @@ class via_uvm_type_rgy;
                 // Ignore
             end else if (count == 1) begin
                 // Save type
-//                $display("Type: %0s", tokens[1]);
+//                `PYHDL_IF_DEBUG(("Type: %0s", tokens[1]))
             end else if (tokens.size() >= 3) begin
                 // Process tokens
                 string field_name = tokens[0];
@@ -179,7 +199,7 @@ class via_uvm_type_rgy;
                 // Create and add field
                 begin
                     via_field field = new(field_name, FIELD_KIND_INT, size, 0); // Assuming unsigned for now
-//                    $display("Field: %0s, %0d", field_name, size);
+//                    `PYHDL_IF_DEBUG(("Field: %0s, %0d", field_name, size))
                     t_if.m_fields.push_back(field);
                 end
             end

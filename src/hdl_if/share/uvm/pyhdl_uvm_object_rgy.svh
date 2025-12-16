@@ -1,3 +1,25 @@
+/**
+ * pyhdl_uvm_object_rgy.svh
+ *
+ * Copyright 2024 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author: 
+ */
+
+`include "pyhdl_if_macros.svh"
 
 typedef class pyhdl_uvm_object;
 typedef interface class pyhdl_uvm_object_if;
@@ -51,7 +73,7 @@ class pyhdl_uvm_object_type_rgy_p #(
         string classname,
         string basename);
         if (prv_inst != null) begin
-            $display("Fatal: multiple registration");
+            `PYHDL_IF_FATAL(("multiple registration"))
         end
         prv_inst = new(classname, basename);
         if (prv_inst.clstype != prv_inst.basetype) begin
@@ -101,8 +123,8 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
             obj_if = pyhdl_obj_t.create(obj);
 
             if (obj_if == null) begin
-                $display("Fatal: failed to create wrapper from previously-registered type %0s",
-                    pyhdl_obj_t.name);
+                `PYHDL_IF_FATAL(("failed to create wrapper from previously-registered type %0s",
+                    pyhdl_obj_t.name))
             end
 
             if (PyObject_SetAttrString(obj_if.get_pyobject(), "_uvm_obj_t", obj_t) != 0) begin
@@ -111,8 +133,8 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         end
 
         if (obj_if == null) begin
-            $display("Fatal: failed to create a wrapper for UVM object %0s (%0s)",
-                obj.get_name(), obj.get_type_name());
+            `PYHDL_IF_FATAL(("failed to create a wrapper for UVM object %0s (%0s)",
+                obj.get_name(), obj.get_type_name()))
         end
 
         m_obj_rgy[obj_if.get_pyobject()] = obj_if;
@@ -132,8 +154,8 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         end else if (m_obj_m.exists(obj)) begin
             ret = m_obj_m[obj];
         end else begin
-            $display("Fatal: Object is not registered");
-            $stacktrace;
+            `PYHDL_IF_FATAL(("Object is not registered"))
+            `STACKTRACE;
         end
         return ret;
     endfunction
@@ -154,39 +176,39 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         py_gil_enter();
 
         if (!m_clstype_root.issubclass(obj)) begin
-            $display("Fatal: obj must always be a subclass of base");
+            `PYHDL_IF_FATAL(("obj must always be a subclass of base"))
         end
         pyhdl_obj_t = m_clstype_root;
 
         foreach (pyhdl_obj_t.subtypes[i]) begin
-            $display("Subtype: %0s", pyhdl_obj_t.subtypes[i].name);
+            `PYHDL_IF_DEBUG(("Subtype: %0s", pyhdl_obj_t.subtypes[i].name))
         end
 
         while (pyhdl_obj_t.subtype_subclasses(subtypes, obj) == 1) begin
             pyhdl_super_t = pyhdl_obj_t.name;
             pyhdl_obj_t = subtypes[0];
-            $display("Found: %0s", pyhdl_obj_t.name);
+            `PYHDL_IF_DEBUG(("Found: %0s", pyhdl_obj_t.name))
         end
 
         if (subtypes.size() > 0) begin
-            $display("Fatal: found multiple matches");
+            `PYHDL_IF_FATAL(("found multiple matches"))
         end
 
         if (pyhdl_obj_t == null) begin
-            $display("Fatal: Failed to find a type for object %0s (%0s)",
-                obj.get_name(), obj.get_type_name());
+            `PYHDL_IF_FATAL(("Failed to find a type for object %0s (%0s)",
+                obj.get_name(), obj.get_type_name()))
         end else begin
-//            $display("Found type %0s", pyhdl_obj_t.name);
+//            `PYHDL_IF_DEBUG(("Found type %0s", pyhdl_obj_t.name))
         end
 
-        $display("obj.type: %0s ; pyhdl_obj_t: %0s", obj.get_type_name(), pyhdl_obj_t.name);
+        `PYHDL_IF_DEBUG(("obj.type: %0s ; pyhdl_obj_t: %0s", obj.get_type_name(), pyhdl_obj_t.name))
 
         m_type2factory_m[obj_t] = pyhdl_obj_t;
 
         obj_if = pyhdl_obj_t.create(obj);
 
         if (obj_if == null) begin
-            $display("Fatal: type %0s returned a null obj_if", pyhdl_obj_t.name);
+            `PYHDL_IF_FATAL(("type %0s returned a null obj_if", pyhdl_obj_t.name))
         end
 
         py_obj_t = py_object::mk(m_exp.mk(obj_if.get_pyobject()));
@@ -229,13 +251,13 @@ class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rg
         uvm_factory factory = uvm_factory::get();
         uvm_object obj;
         uvm_component comp;
-        $display("name: %0s", name);
+        `PYHDL_IF_DEBUG(("name: %0s", name))
         obj = factory.create_object_by_name(name);
         if (obj == null) begin
             uvm_phase phase = new();
             comp = factory.create_component_by_name(name, "", "", null);
             comp.build_phase(phase);
-            $display("comp: %0p", comp);
+            `PYHDL_IF_DEBUG(("comp: %0p", comp))
             obj = comp;
         end
         return pyhdl_uvm_object_rgy::inst().wrap(obj);
