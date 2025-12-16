@@ -91,4 +91,4 @@ class pyhdl_uvm_reg extends pyhdl_uvm_object;
 
 endclass
 
-`pyhdl_uvm_type_utils(uvm_reg, uvm_object)
+`pyhdl_uvm_type_utils(uvm_reg, pyhdl_uvm_reg, uvm_object, pyhdl_uvm_object)

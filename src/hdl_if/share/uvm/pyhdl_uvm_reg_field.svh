@@ -51,4 +51,4 @@ class pyhdl_uvm_reg_field extends pyhdl_uvm_object;
 
 endclass
 
-`pyhdl_uvm_type_utils(uvm_reg_field, uvm_object)
+`pyhdl_uvm_type_utils(uvm_reg_field, pyhdl_uvm_reg_field, uvm_object, pyhdl_uvm_object)

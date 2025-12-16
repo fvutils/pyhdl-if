@@ -44,5 +44,5 @@ class pyhdl_uvm_cmdline_processor extends pyhdl_uvm_object;
 
 endclass
 
-`pyhdl_uvm_type_utils(uvm_cmdline_processor, uvm_object)
+`pyhdl_uvm_type_utils(uvm_cmdline_processor, pyhdl_uvm_cmdline_processor, uvm_object, pyhdl_uvm_object)
 

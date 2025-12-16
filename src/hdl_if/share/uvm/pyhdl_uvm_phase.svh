@@ -46,4 +46,4 @@ class pyhdl_uvm_phase extends pyhdl_uvm_object;
     endfunction
 endclass
 
-`pyhdl_uvm_type_utils(uvm_phase, uvm_object)
+`pyhdl_uvm_type_utils(uvm_phase, pyhdl_uvm_phase, uvm_object, pyhdl_uvm_object)

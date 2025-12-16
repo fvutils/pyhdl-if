@@ -78,7 +78,7 @@ class pyhdl_uvm_analysis_port_proxy extends pyhdl_uvm_component;
     endfunction
 
 endclass
-`pyhdl_uvm_type_utils(uvm_analysis_port_proxy, uvm_component)
+`pyhdl_uvm_type_utils(uvm_analysis_port_proxy, pyhdl_uvm_analysis_port_proxy, uvm_component, pyhdl_uvm_component)
 
 class pyhdl_uvm_analysis_imp #(type T=int) extends uvm_subscriber #(T);
     typedef pyhdl_uvm_analysis_imp #(T) this_t;

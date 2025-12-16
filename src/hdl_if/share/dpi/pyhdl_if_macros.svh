@@ -27,7 +27,7 @@
 `define PYHDL_IF_FATAL(x) \
     $write("PyHDL-IF Fatal: "); \
     $display x ; \
-    $finish
+    $finish ;
 
 `define STACKTRACE $stacktrace
 

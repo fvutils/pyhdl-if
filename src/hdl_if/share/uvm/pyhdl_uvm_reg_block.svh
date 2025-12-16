@@ -63,4 +63,4 @@ class pyhdl_uvm_reg_block extends pyhdl_uvm_object;
 
 endclass
 
-`pyhdl_uvm_type_utils(uvm_reg_block, uvm_object)
+`pyhdl_uvm_type_utils(uvm_reg_block, pyhdl_uvm_reg_block, uvm_object, pyhdl_uvm_object)

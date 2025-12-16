@@ -76,12 +76,16 @@ int pyhdl_pi_if_RegisterTimeCB();
 int pyhdl_call_if_invoke_hdl_f(void);
 int pyhdl_call_if_invoke_hdl_t(void);
 int pyhdl_call_if_response_py_t(void);
+long long pyhdl_if_get_real_time_ms(void);
+int pyhdl_if_sched_yield(void);
 
 void *funcs[] = {
     &pyhdl_pi_if_RegisterTimeCB,
     &pyhdl_call_if_invoke_hdl_f,
     &pyhdl_call_if_invoke_hdl_t,
     &pyhdl_call_if_response_py_t,
+    &pyhdl_if_get_real_time_ms,
+    &pyhdl_if_sched_yield,
 };
 
 void *get_dpiexport_funcs() {

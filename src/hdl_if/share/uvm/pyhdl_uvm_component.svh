@@ -98,4 +98,4 @@ class pyhdl_uvm_component extends pyhdl_uvm_object;
 
 endclass
 
-`pyhdl_uvm_type_utils(uvm_component, uvm_object)
+`pyhdl_uvm_type_utils(uvm_component, pyhdl_uvm_component, uvm_object, pyhdl_uvm_object)

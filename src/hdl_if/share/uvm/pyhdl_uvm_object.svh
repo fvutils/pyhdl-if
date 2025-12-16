@@ -135,5 +135,5 @@ class pyhdl_uvm_object;
 
 endclass
 
-`pyhdl_uvm_type_utils(uvm_object, uvm_object)
+`pyhdl_uvm_type_utils(uvm_object, pyhdl_uvm_object, uvm_object, pyhdl_uvm_object)
 
