@@ -80,9 +80,9 @@ class PyObjectStringTest(uvm_component_impl):
         str_y.set_value("Value Y")
         str_z.set_value("Value Z")
         
-        map_obj.set("key_x", str_x)
-        map_obj.set("key_y", str_y)
-        map_obj.set("key_z", str_z)
+        map_obj.insert("key_x", str_x)
+        map_obj.insert("key_y", str_y)
+        map_obj.insert("key_z", str_z)
         
         assert map_obj.has_key("key_x")
         assert map_obj.has_key("key_y")
@@ -96,6 +96,38 @@ class PyObjectStringTest(uvm_component_impl):
         assert retrieved_y.get_value() == "Value Y"
         assert retrieved_z.get_value() == "Value Z"
         print("✓ Successfully used uvm_object_string in a map", flush=True)
+        
+        # Test __str__ and __repr__ support
+        print("Testing __str__ and __repr__ support...", flush=True)
+        
+        test_obj = rgy.create_by_name("uvm_object_string", "test_str_repr")
+        test_obj.set_value("Test String Value")
+        
+        # Test __str__
+        str_result = str(test_obj)
+        assert str_result == "Test String Value", f"Expected 'Test String Value', got '{str_result}'"
+        print(f"✓ __str__ returns: '{str_result}'", flush=True)
+        
+        # Test __repr__
+        repr_result = repr(test_obj)
+        assert "uvm_object_string" in repr_result, f"__repr__ should contain 'uvm_object_string', got '{repr_result}'"
+        assert "Test String Value" in repr_result, f"__repr__ should contain the value, got '{repr_result}'"
+        print(f"✓ __repr__ returns: {repr_result}", flush=True)
+        
+        # Test with empty string
+        empty_obj = rgy.create_by_name("uvm_object_string", "empty_str_repr")
+        empty_str = str(empty_obj)
+        assert empty_str == "", f"Expected empty string, got '{empty_str}'"
+        print(f"✓ __str__ correctly handles empty string", flush=True)
+        
+        # Test with special characters
+        special_obj = rgy.create_by_name("uvm_object_string", "special_str_repr")
+        special_obj.set_value("Special: @#$%^&*()")
+        special_str = str(special_obj)
+        assert special_str == "Special: @#$%^&*()", f"Expected 'Special: @#$%^&*()', got '{special_str}'"
+        print(f"✓ __str__ correctly handles special characters: '{special_str}'", flush=True)
+        
+        print("✓ All __str__ and __repr__ tests passed!", flush=True)
         
         print("✅ All uvm_object_string tests passed!", flush=True)
 

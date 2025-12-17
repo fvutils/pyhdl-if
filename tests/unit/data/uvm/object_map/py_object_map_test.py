@@ -87,6 +87,55 @@ class PyObjectMapTest(uvm_component_impl):
             assert retrieved.get_type_name() == "test_config_obj"
         print("✓ Successfully tested various key name formats", flush=True)
         
+        # Test __getitem__ and __setitem__ support
+        print("Testing __getitem__ and __setitem__ support...", flush=True)
+        
+        # Create new objects for dictionary-style access
+        dict_cfg1 = rgy.create_by_name("test_config_obj", "dict_cfg1")
+        dict_cfg2 = rgy.create_by_name("test_config_obj", "dict_cfg2")
+        dict_cfg1.set_int_local("cfg_value", 1000)
+        dict_cfg1.set_string_local("cfg_name", "Dict_Config_1")
+        dict_cfg2.set_int_local("cfg_value", 2000)
+        dict_cfg2.set_string_local("cfg_name", "Dict_Config_2")
+        
+        # Test __setitem__
+        map_obj["dict_key1"] = dict_cfg1
+        map_obj["dict_key2"] = dict_cfg2
+        print("✓ Used __setitem__ to add objects to map", flush=True)
+        
+        # Verify keys were added
+        assert map_obj.has_key("dict_key1"), "dict_key1 should exist"
+        assert map_obj.has_key("dict_key2"), "dict_key2 should exist"
+        
+        # Test __getitem__
+        retrieved_dict1 = map_obj["dict_key1"]
+        retrieved_dict2 = map_obj["dict_key2"]
+        assert retrieved_dict1 is not None
+        assert retrieved_dict2 is not None
+        assert retrieved_dict1.get_type_name() == "test_config_obj"
+        assert retrieved_dict2.get_type_name() == "test_config_obj"
+        print(f"✓ Used __getitem__ to retrieve objects: {retrieved_dict1.get_name()}, {retrieved_dict2.get_name()}", flush=True)
+        
+        # Test __getitem__ with non-existent key (should raise KeyError)
+        try:
+            _ = map_obj["nonexistent_key"]
+            assert False, "Should have raised KeyError for non-existent key"
+        except KeyError as e:
+            print(f"✓ __getitem__ correctly raises KeyError for non-existent key: {e}", flush=True)
+        
+        # Test updating existing key with __setitem__
+        dict_cfg_updated = rgy.create_by_name("test_config_obj", "dict_cfg_updated")
+        dict_cfg_updated.set_int_local("cfg_value", 5000)
+        dict_cfg_updated.set_string_local("cfg_name", "Dict_Config_Updated")
+        map_obj["dict_key1"] = dict_cfg_updated
+        
+        retrieved_after_update = map_obj["dict_key1"]
+        assert retrieved_after_update is not None
+        assert retrieved_after_update.get_type_name() == "test_config_obj"
+        print(f"✓ Successfully updated key using __setitem__: {retrieved_after_update.get_type_name()}", flush=True)
+        
+        print("✓ All __getitem__ and __setitem__ tests passed!", flush=True)
+        
         print("✅ All uvm_object_map tests passed!", flush=True)
 
     def connect_phase(self, phase):

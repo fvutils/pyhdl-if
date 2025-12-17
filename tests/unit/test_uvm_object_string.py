@@ -71,5 +71,6 @@ def test_uvm_object_string(pyhdl_dvflow, hdl_if_env):
     assert "Successfully tested" in simlog and "different string values" in simlog, "String variety test failed"
     assert "Successfully used uvm_object_string in a list" in simlog, "List integration failed"
     assert "Successfully used uvm_object_string in a map" in simlog, "Map integration failed"
+    assert "All __str__ and __repr__ tests passed!" in simlog, "__str__ and __repr__ tests failed"
 
     pass

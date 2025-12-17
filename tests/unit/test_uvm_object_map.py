@@ -74,5 +74,6 @@ def test_uvm_object_map(pyhdl_dvflow, hdl_if_env):
     assert "Retrieved objects from map" in simlog, "Failed to retrieve objects from map"
     assert "All objects verified correctly" in simlog, "Objects not verified correctly"
     assert "Successfully updated existing key" in simlog, "Failed to update existing key"
+    assert "All __getitem__ and __setitem__ tests passed!" in simlog, "__getitem__ and __setitem__ tests failed"
 
     pass

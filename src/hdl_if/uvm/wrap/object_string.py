@@ -36,3 +36,21 @@ class uvm_object_string(uvm_object):
             val: The string value to store
         """
         pass
+
+    def __str__(self) -> str:
+        """
+        String representation of the uvm_object_string.
+        
+        Returns:
+            The string value stored in this object
+        """
+        return self.get_value()
+
+    def __repr__(self) -> str:
+        """
+        Detailed string representation of the uvm_object_string.
+        
+        Returns:
+            A representation showing the type and value
+        """
+        return f"uvm_object_string('{self.get_value()}')"
