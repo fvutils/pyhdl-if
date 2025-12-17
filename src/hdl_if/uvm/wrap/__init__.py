@@ -4,6 +4,9 @@ from .cmdline_processor import uvm_cmdline_processor
 from .component import uvm_component
 from .component_proxy import uvm_component_proxy
 from .object import uvm_object
+from .object_list import uvm_object_list
+from .object_map import uvm_object_map
+from .object_string import uvm_object_string
 from .object_type import UvmObjectType, UvmFieldKind, UvmFieldType
 from .object_rgy import uvm_object_rgy
 from .reg import uvm_reg

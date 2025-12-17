@@ -20,6 +20,7 @@
  */
 
 `include "uvm_macros.svh"
+`include "pyhdl_if_macros.svh"
 `include "pyhdl_uvm_macros.svh"
 
 package pyhdl_uvm;
@@ -38,6 +39,9 @@ package pyhdl_uvm;
     `include "pyhdl_uvm_cmdline_processor.svh"
     `include "pyhdl_uvm_component.svh"
     `include "pyhdl_uvm_component_proxy.svh"
+    `include "pyhdl_uvm_object_list.svh"
+    `include "pyhdl_uvm_object_map.svh"
+    `include "pyhdl_uvm_object_string.svh"
     `include "pyhdl_uvm_object_rgy.svh"
     `include "pyhdl_uvm_sequence_proxy.svh"
     `include "pyhdl_uvm_phase.svh"
