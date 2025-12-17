@@ -18,7 +18,7 @@ def test_uvm_object_map(pyhdl_dvflow, hdl_if_env):
     This test runs a UVM simulation that:
     1. Creates a uvm_object_map instance
     2. Tests has_key() for non-existent keys (should return False)
-    3. Adds multiple UVM objects to the map using set(key, obj)
+    3. Adds multiple UVM objects to the map using insert(key, obj)
     4. Tests has_key() for existing keys (should return True)
     5. Retrieves objects from the map using get(key)
     6. Verifies that all object data is preserved correctly

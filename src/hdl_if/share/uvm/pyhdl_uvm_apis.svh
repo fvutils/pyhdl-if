@@ -2133,10 +2133,10 @@ class uvm_object_map_imp_impl #(type ImpT=uvm_object_map_imp_if) implements pyhd
                 __rval = m_impl.get(__key);
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
-            "set": begin
+            "insert": begin
                 string __key = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
                 pyhdl_if::PyObject __obj = (pyhdl_if::PyTuple_GetItem(args, 1));
-                m_impl.set(
+                m_impl.insert(
                     __key,
                     __obj);
                 __ret = pyhdl_if::None;

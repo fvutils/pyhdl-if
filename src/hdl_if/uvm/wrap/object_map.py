@@ -44,9 +44,9 @@ class uvm_object_map(uvm_object):
         pass
 
     @imp
-    def set(self, key: str, obj: ctypes.c_void_p) -> None:
+    def insert(self, key: str, obj: ctypes.c_void_p) -> None:
         """
-        Set/update the object associated with the specified key.
+        Insert/update the object associated with the specified key.
         
         Args:
             key: The string key

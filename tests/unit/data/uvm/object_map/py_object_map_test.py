@@ -33,9 +33,9 @@ class PyObjectMapTest(uvm_component_impl):
         print("✓ has_key() correctly returns False for non-existent keys", flush=True)
         
         # Add objects to the map with string keys
-        map_obj.set("key1", cfg1)
-        map_obj.set("key2", cfg2)
-        map_obj.set("key3", cfg3)
+        map_obj.insert("key1", cfg1)
+        map_obj.insert("key2", cfg2)
+        map_obj.insert("key3", cfg3)
         print("✓ Added 3 objects to map with keys", flush=True)
         
         # Test has_key after adding (should be True)
@@ -67,7 +67,7 @@ class PyObjectMapTest(uvm_component_impl):
         cfg1_updated = rgy.create_by_name("test_config_obj", "cfg1_updated")
         cfg1_updated.set_int_local("cfg_value", 999)
         cfg1_updated.set_string_local("cfg_name", "Updated_A")
-        map_obj.set("key1", cfg1_updated)
+        map_obj.insert("key1", cfg1_updated)
         
         retrieved_updated = map_obj.get("key1")
         assert retrieved_updated is not None
@@ -80,7 +80,7 @@ class PyObjectMapTest(uvm_component_impl):
             obj = rgy.create_by_name("test_config_obj", f"obj_{i}")
             obj.set_int_local("cfg_value", i * 10)
             obj.set_string_local("cfg_name", f"Value_{i}")
-            map_obj.set(key, obj)
+            map_obj.insert(key, obj)
             assert map_obj.has_key(key), f"Key '{key}' should exist"
             retrieved = map_obj.get(key)
             assert retrieved is not None
