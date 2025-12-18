@@ -21,6 +21,12 @@ class uvm_object_string extends uvm_object;
         value = val;
     endfunction
 
+    static uvm_object_string mkd(string val);
+        ret = uvm_object_string::type_id::create();
+        ret.set_value(val);
+        return ret;
+    endfunction
+
 endclass
 
 class pyhdl_uvm_object_string extends pyhdl_uvm_object;

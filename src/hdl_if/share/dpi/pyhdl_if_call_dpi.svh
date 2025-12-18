@@ -28,6 +28,7 @@ function void pyhdl_call_if_invoke_hdl_t(
     PyObject        args);
     TaskCallClosure closure;
     automatic string local_name = PyUnicode_AsUTF8(method_name);
+    `PYHDL_IF_ENTER(("pyhdl_call_if_invoke_hdl_t(obj_id=%0d, method_name=%s, args=%p)", obj_id, method_name, args));
 
     // Note: py2sv_active is incremented when the closure actually runs,
     // not when it's queued. This ensures accurate tracking for thread support.
@@ -39,12 +40,15 @@ function void pyhdl_call_if_invoke_hdl_t(
         args);
 
     pyhdl_pi_if_queue_runnable(closure);
+    `PYHDL_IF_LEAVE(("pyhdl_call_if_invoke_hdl_t(obj_id=%0d, method_name=%s, args=%p)", obj_id, method_name, args));
 endfunction
 export "DPI-C" function pyhdl_call_if_invoke_hdl_t;
 
 function void pyhdl_call_if_response_py_t(
     int             sem_id,
     PyObject        res);
+    `PYHDL_IF_ENTER(("pyhdl_call_if_response_py_t(sem_id=%0d, res=%p)", sem_id, res));
     pyhdl_if_setSem(sem_id, res);
+    `PYHDL_IF_LEAVE(("pyhdl_call_if_response_py_t(sem_id=%0d, res=%p)", sem_id, res));
 endfunction
 export "DPI-C" function pyhdl_call_if_response_py_t;
