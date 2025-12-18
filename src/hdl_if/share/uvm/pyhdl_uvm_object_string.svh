@@ -22,7 +22,7 @@ class uvm_object_string extends uvm_object;
     endfunction
 
     static function uvm_object_string mk(string val);
-        ret = uvm_object_string::type_id::create();
+        uvm_object_string ret = uvm_object_string::type_id::create();
         ret.set_value(val);
         return ret;
     endfunction
