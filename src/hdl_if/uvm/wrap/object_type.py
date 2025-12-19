@@ -137,12 +137,8 @@ class UvmObjectType(object):
                 
                 size = f.size
                 
-                # If element size is unknown, try to infer it from the packed bits
-                # This happens when the queue was empty during initial introspection
+                # If element size is unknown, try to infer it from the data
                 if f.size_unknown or size is None or size <= 0:
-                    # We need to infer the size from SystemVerilog's packed data
-                    # For now, if we're packing from Python, we can't determine this
-                    # So we'll need to get it from an actual pack operation first
                     if len(v) == 0:
                         # Empty queue - just pack the length as 0
                         queue_len = 0
@@ -150,9 +146,21 @@ class UvmObjectType(object):
                             bits.append((queue_len >> i) & 1)
                         continue
                     else:
-                        # Non-empty queue but size unknown - this shouldn't happen
-                        # when packing from Python to SV, only when unpacking
-                        raise ValueError(f"Cannot pack queue field '{f.name}' with unknown element size and non-empty data")
+                        # Non-empty queue with unknown size - infer from data
+                        # Find the maximum value to determine required bits
+                        max_val = max(abs(x) for x in v)
+                        if max_val == 0:
+                            size = 1  # Need at least 1 bit
+                        else:
+                            # Calculate bits needed for maximum value
+                            size = max_val.bit_length()
+                            # For signed values, we might need an extra bit for sign
+                            if f.is_signed or any(x < 0 for x in v):
+                                size += 1
+                        # Update the field size now that we know it
+                        f.size = size
+                        f.size_unknown = False
+                        print(f"Inferred element size for queue field '{f.name}': {size} bits", flush=True)
                 
                 # Pack queue length as 32-bit unsigned integer
                 queue_len = len(v)
