@@ -226,6 +226,7 @@ class uvm_object_rgy(object):
         Builds a Python dataclass type with one field per entry in obj_t.fields.
         Returns the created type.
         Each field includes metadata: {"size": f.size, "signed": f.is_signed}.
+        For ENUM fields, includes enum_type_name in metadata.
         """
         fields_spec = []
         for f in obj_t.fields:
@@ -235,9 +236,16 @@ class uvm_object_rgy(object):
             elif f.kind == UvmFieldKind.STR:
                 ftype = str
                 default = ""
+            elif f.kind == UvmFieldKind.ENUM:
+                # Use the enum type if available, otherwise int
+                ftype = f.enum_type if f.enum_type is not None else int
+                default = 0
             elif f.kind == UvmFieldKind.OBJ:
                 ftype = (f.obj_type.data_t if (f.obj_type and f.obj_type.data_t is not None) else object)
                 default = None
+            elif f.kind == UvmFieldKind.QUEUE:
+                ftype = list
+                default = dc.field(default_factory=list)
             else:
                 ftype = object
                 default = None
@@ -249,10 +257,22 @@ class uvm_object_rgy(object):
                     ex_idx = i
                     break
 
+            # Build metadata
+            metadata = {"size": f.size, "signed": f.is_signed}
+            if f.kind == UvmFieldKind.ENUM and f.enum_type_name:
+                metadata["enum_type_name"] = f.enum_type_name
+
             if ex_idx == -1:
-                fields_spec.append((fname, ftype, dc.field(default=default, metadata={"size": f.size, "signed": f.is_signed})))
+                # For QUEUE fields, default is already a dc.field with default_factory
+                if f.kind == UvmFieldKind.QUEUE:
+                    fields_spec.append((fname, ftype, default))
+                else:
+                    fields_spec.append((fname, ftype, dc.field(default=default, metadata=metadata)))
             else:
-                fields_spec[ex_idx] = (fname, ftype, dc.field(default=default, metadata={"size": f.size, "signed": f.is_signed}))
+                if f.kind == UvmFieldKind.QUEUE:
+                    fields_spec[ex_idx] = (fname, ftype, default)
+                else:
+                    fields_spec[ex_idx] = (fname, ftype, dc.field(default=default, metadata=metadata))
 
         typename = obj_t.type_name or "UvmObjectData"
         try:

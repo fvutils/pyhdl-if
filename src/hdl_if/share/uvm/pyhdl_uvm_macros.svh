@@ -39,4 +39,41 @@
         base_t, \
         base_w_t``_w)::inst(`"uvm_t`", `"base_t`");
 
+/**
+ * Macro to register an enum type with the enum registry.
+ * This macro introspects the enum type and registers all enumerator names and values.
+ *
+ * Parameters:
+ * - enum_t: The enum type name
+ *
+ * Usage example:
+ *   typedef enum {RED, GREEN, BLUE} color_e;
+ *   `pyhdl_uvm_enum_utils(color_e)
+ */
+`define pyhdl_uvm_enum_utils(enum_t) \
+    class pyhdl_enum_``enum_t``_rgy; \
+        static bit __registered = register_enum(); \
+        \
+        static function bit register_enum(); \
+            pyhdl_uvm_enum_info info; \
+            enum_t e; \
+            string enum_str; \
+            \
+            info = new(`"enum_t`"); \
+            \
+            e = e.first(); \
+            do begin \
+                enum_str = e.name(); \
+                info.add_enumerator(enum_str, int'(e)); \
+                if (e == e.last()) break; \
+                e = e.next(); \
+            end while (1); \
+            \
+            pyhdl_uvm_enum_rgy::inst().register_enum(`"enum_t`", info); \
+            return 1; \
+        endfunction \
+    endclass \
+    \
+    bit __pyhdl_enum_``enum_t``_registered = pyhdl_enum_``enum_t``_rgy::__registered;
+
 `endif /* PYHDL_UVM_MACROS_SVH */

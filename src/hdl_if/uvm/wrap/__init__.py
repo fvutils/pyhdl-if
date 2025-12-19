@@ -3,6 +3,7 @@ from .analysis_port_proxy import uvm_analysis_port_proxy
 from .cmdline_processor import uvm_cmdline_processor
 from .component import uvm_component
 from .component_proxy import uvm_component_proxy
+from .enum_rgy import uvm_enum_rgy, UvmEnumRgy
 from .object import uvm_object
 from .object_list import uvm_object_list
 from .object_map import uvm_object_map

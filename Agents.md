@@ -23,3 +23,11 @@ Unit tests can be run using the following command:
 ```
 % PYTHONPATH=$(pwd)/src ./packages/python/bin/pytest -s tests/unit
 ```
+
+# Updating the Python/UVM API
+When changing the Python/UVM API, pyhdl_uvm_apis.svh must be re-generated.
+The following command does this:
+
+```
+% python -m hdl_if api-gen-sv -o src/hdl_if/share/uvm/pyhdl_uvm_apis.svh -m hdl_if.uvm.wrap
+```

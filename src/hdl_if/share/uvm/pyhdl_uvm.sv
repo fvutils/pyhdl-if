@@ -34,6 +34,7 @@ package pyhdl_uvm;
     `include "pyhdl_uvm_object_if.svh"
 
     `include "pyhdl_uvm_analysis_port.svh"
+    `include "pyhdl_uvm_enum_rgy.svh"
     `include "pyhdl_uvm_object.svh"
     `include "pyhdl_uvm_object_type.svh"
     `include "pyhdl_uvm_cmdline_processor.svh"

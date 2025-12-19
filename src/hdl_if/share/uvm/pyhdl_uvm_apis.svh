@@ -1656,6 +1656,205 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
     endtask
 endclass
 
+interface class uvm_enum_rgy_exp_if;
+    pure virtual function pyhdl_if::PyObject get_enum_type(input string type_name);
+    pure virtual function pyhdl_if::PyObject get_enum_types();
+    pure virtual function bit has_enum_type(input string type_name);
+endclass
+
+interface class uvm_enum_rgy_imp_if;
+    pure virtual function pyhdl_if::PyObject _get_enum_names(input string type_name);
+    pure virtual function pyhdl_if::PyObject _get_enum_values(input string type_name);
+    pure virtual function pyhdl_if::PyObject _get_enum_types();
+endclass
+
+class uvm_enum_rgy_exp_impl implements uvm_enum_rgy_exp_if;
+    pyhdl_if::PyObject m_obj;
+    function new(pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_enum_rgy");
+        m_obj = obj;
+        if (create && (m_obj == null)) begin
+            m_obj = create_pyobj();
+            if (m_obj != null) begin
+                pyhdl_if::pyhdl_if_connectObject(m_obj, null);
+            end
+        end else begin
+            m_obj = obj;
+        end
+    endfunction
+
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.enum_rgy", string clsname="uvm_enum_rgy");
+        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        __args = pyhdl_if::PyTuple_New(0);
+        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
+
+        if (__cls_m == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find module %%s", modname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
+        if (__cls_t == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find class %%s", clsname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
+        if (__obj == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to construct class uvm_enum_rgy");
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        pyhdl_if::PyGILState_Release(state);
+
+        return __obj;
+    endfunction
+
+
+    virtual function pyhdl_if::PyObject get_enum_type(input string type_name);
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyObject __ret;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
+        void'(pyhdl_if::PyTuple_SetItem(__args, 0, pyhdl_if::PyUnicode_FromString(type_name)));
+        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "get_enum_type", __args);
+        __ret = (__res);
+        pyhdl_if::PyGILState_Release(state);
+        return __ret;
+    endfunction
+    virtual function pyhdl_if::PyObject get_enum_types();
+        pyhdl_if::PyObject __res;
+        pyhdl_if::PyObject __ret;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(0);
+        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "get_enum_types", __args);
+        __ret = (__res);
+        pyhdl_if::PyGILState_Release(state);
+        return __ret;
+    endfunction
+    virtual function bit has_enum_type(input string type_name);
+        pyhdl_if::PyObject __res;
+        bit __ret;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        pyhdl_if::PyObject __args = pyhdl_if::PyTuple_New(1);
+        void'(pyhdl_if::PyTuple_SetItem(__args, 0, pyhdl_if::PyUnicode_FromString(type_name)));
+        __res = pyhdl_if::pyhdl_if_invokePyFunc(m_obj, "has_enum_type", __args);
+        __ret = pyhdl_if::py_as_bool(__res);
+        pyhdl_if::PyGILState_Release(state);
+        return __ret;
+    endfunction
+
+    function void callpy();
+        // Prepares arguments and calls Python object
+    endfunction
+endclass
+
+class uvm_enum_rgy_imp_impl #(type ImpT=uvm_enum_rgy_imp_if) implements pyhdl_if::ICallApi;
+    ImpT m_impl;
+    PyObject m_obj;
+    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_enum_rgy");
+        m_impl = impl;
+        if (obj == null && create) begin
+            // Create an instance of the Python class
+            m_obj = create_pyobj();
+        end else begin
+            m_obj = obj;
+        end
+        if (m_obj != null && m_impl != null) begin
+            pyhdl_if::pyhdl_if_connectObject(m_obj, this);
+        end
+    endfunction
+
+    static function pyhdl_if::PyObject create_pyobj(string modname="hdl_if.uvm.wrap.enum_rgy", string clsname="uvm_enum_rgy");
+        pyhdl_if::PyObject __args, __cls_m, __cls_t, __obj;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        __args = pyhdl_if::PyTuple_New(0);
+        __cls_m = pyhdl_if::PyImport_ImportModule(modname);
+
+        if (__cls_m == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find module %%s", modname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __cls_t = pyhdl_if::PyObject_GetAttrString(__cls_m, clsname);
+        if (__cls_t == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to find class %%s", clsname);
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        __obj = pyhdl_if::PyObject_Call(__cls_t, __args, null);
+        if (__obj == null) begin
+            pyhdl_if::PyErr_Print();
+            $display("Fatal Error: Failed to construct class uvm_enum_rgy");
+            $finish;
+            pyhdl_if::PyGILState_Release(state);
+            return null;
+        end
+
+        pyhdl_if::PyGILState_Release(state);
+
+        return __obj;
+    endfunction
+
+
+    virtual function pyhdl_if::PyObject invokeFunc(string method, pyhdl_if::PyObject args);
+        pyhdl_if::PyObject __ret = pyhdl_if::None;
+        pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
+        case (method)
+            "_get_enum_names": begin
+                pyhdl_if::PyObject __rval;
+                string __type_name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = m_impl._get_enum_names(__type_name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "_get_enum_values": begin
+                pyhdl_if::PyObject __rval;
+                string __type_name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
+                __rval = m_impl._get_enum_values(__type_name);
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            "_get_enum_types": begin
+                pyhdl_if::PyObject __rval;
+                __rval = m_impl._get_enum_types();
+                __ret = (__rval==null)?pyhdl_if::None:__rval;
+            end
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+        pyhdl_if::PyGILState_Release(state);
+        return __ret;
+    endfunction
+
+    virtual task invokeTask(
+        output pyhdl_if::PyObject retval,
+        inout pyhdl_if::PyGILState_STATE state,
+        input string method,
+        input pyhdl_if::PyObject args);
+        retval = pyhdl_if::None;
+        case (method)
+            default: begin
+                $display("Fatal: unsupported method call %0s", method);
+            end
+        endcase
+    endtask
+endclass
+
 interface class uvm_object_list_exp_if;
 endclass
 
@@ -1965,7 +2164,7 @@ endclass
 interface class uvm_object_map_imp_if;
     pure virtual function bit has_key(input string key);
     pure virtual function pyhdl_if::PyObject get(input string key);
-    pure virtual function void set(
+    pure virtual function void insert(
         input string key,
         input pyhdl_if::PyObject obj
     );
