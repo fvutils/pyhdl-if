@@ -14,8 +14,7 @@ class uvm_enum_rgy(object):
     
     @staticmethod
     def inst() -> uvm_enum_rgy:
-        if uvm_enum_rgy._inst is None:
-            uvm_enum_rgy._inst = uvm_enum_rgy()
+        assert uvm_enum_rgy._inst is not None
         return uvm_enum_rgy._inst
     
     @exp
