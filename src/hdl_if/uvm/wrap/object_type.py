@@ -19,6 +19,7 @@ class UvmFieldType(object):
     obj_type: Optional['uvm_object_type'] = None
     enum_type_name: Optional[str] = None  # For ENUM fields, the name of the enum type
     enum_type: Optional[Type] = None  # For ENUM fields, the Python IntEnum type
+    size_unknown: bool = False  # For QUEUE fields, True if element size needs to be determined from data
 
 @dc.dataclass
 class UvmObjectType(object):
@@ -135,8 +136,23 @@ class UvmObjectType(object):
                     raise TypeError(f"Queue field '{f.name}' value must be list, got {type(v)!r}")
                 
                 size = f.size
-                if size is None or size <= 0:
-                    raise ValueError(f"Invalid element size for queue field '{f.name}': {size}")
+                
+                # If element size is unknown, try to infer it from the packed bits
+                # This happens when the queue was empty during initial introspection
+                if f.size_unknown or size is None or size <= 0:
+                    # We need to infer the size from SystemVerilog's packed data
+                    # For now, if we're packing from Python, we can't determine this
+                    # So we'll need to get it from an actual pack operation first
+                    if len(v) == 0:
+                        # Empty queue - just pack the length as 0
+                        queue_len = 0
+                        for i in range(31, -1, -1):
+                            bits.append((queue_len >> i) & 1)
+                        continue
+                    else:
+                        # Non-empty queue but size unknown - this shouldn't happen
+                        # when packing from Python to SV, only when unpacking
+                        raise ValueError(f"Cannot pack queue field '{f.name}' with unknown element size and non-empty data")
                 
                 # Pack queue length as 32-bit unsigned integer
                 queue_len = len(v)
@@ -287,8 +303,6 @@ class UvmObjectType(object):
             elif f.kind == UvmFieldKind.QUEUE:
                 # Unpack queue: 32-bit size header, then elements
                 size = f.size
-                if size is None or size <= 0:
-                    raise ValueError(f"Invalid element size for queue field '{f.name}': {size}")
                 
                 # Unpack queue length (32-bit)
                 len_bits = bits[offset:offset + 32]
@@ -296,6 +310,43 @@ class UvmObjectType(object):
                 queue_len = 0
                 for b in len_bits:
                     queue_len = (queue_len << 1) | (1 if b else 0)
+                
+                # If element size is unknown and queue has elements, we need to infer it
+                if (f.size_unknown or size is None or size <= 0) and queue_len > 0:
+                    # Calculate total bits remaining for all fields after this one
+                    remaining_fields_bits = 0
+                    found_current = False
+                    for remaining_f in self.fields:
+                        if found_current:
+                            if remaining_f.kind == UvmFieldKind.INT or remaining_f.kind == UvmFieldKind.ENUM:
+                                if remaining_f.size and remaining_f.size > 0:
+                                    remaining_fields_bits += remaining_f.size
+                            elif remaining_f.kind == UvmFieldKind.OBJ:
+                                remaining_fields_bits += 4  # header
+                                if remaining_f.obj_type:
+                                    remaining_fields_bits += remaining_f.obj_type._total_pack_bits()
+                            elif remaining_f.kind == UvmFieldKind.QUEUE:
+                                remaining_fields_bits += 32  # size header, elements unknown
+                        if remaining_f.name == f.name:
+                            found_current = True
+                    
+                    # Calculate element size from available bits
+                    bits_available = len(bits) - offset - remaining_fields_bits
+                    if bits_available > 0 and queue_len > 0:
+                        size = bits_available // queue_len
+                        # Update the field's size now that we know it
+                        f.size = size
+                        f.size_unknown = False
+                    else:
+                        raise ValueError(f"Cannot determine element size for queue field '{f.name}': queue_len={queue_len}, bits_available={bits_available}")
+                
+                if size is None or size <= 0:
+                    if queue_len == 0:
+                        # Empty queue is OK
+                        setattr(data, attr, [])
+                        continue
+                    else:
+                        raise ValueError(f"Invalid element size for queue field '{f.name}': {size}")
                 
                 # Unpack each element
                 queue = []

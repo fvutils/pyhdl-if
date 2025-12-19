@@ -156,6 +156,30 @@ class uvm_object_rgy(object):
                 field_name = tokens[0]
                 field_type = tokens[1]
 
+                # Check if this is a queue/array field - UVM shows these as "da(integral)" or "da(...)"
+                if field_type.startswith("da("):
+                    # Dynamic array (queue) field
+                    # Size token is the number of elements currently in the queue
+                    try:
+                        num_elements = int(tokens[2])
+                    except (ValueError, IndexError):
+                        num_elements = 0
+                    
+                    # For queue fields, we need to determine element size
+                    # If queue is empty (0 elements), we mark size as unknown
+                    # and will determine it from actual data during pack/unpack
+                    field = UvmFieldType(
+                        name=field_name,
+                        kind=UvmFieldKind.QUEUE,
+                        size=-1,  # Element size unknown initially
+                        is_signed=False,  # Assuming unsigned for now
+                        size_unknown=True  # Will be determined from data
+                    )
+                    obj_t.fields.append(field)
+                    obj_t.field_m[field.name] = field
+                    count += 1
+                    continue
+
                 # Check if this is an object-type field
                 # Object fields in UVM sprint output typically have type "object" or a custom class name
                 # and size "-"
