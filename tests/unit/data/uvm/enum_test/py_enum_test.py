@@ -4,7 +4,7 @@ Python test script for enum registry integration test
 import hdl_if
 from hdl_if.uvm.wrap import uvm_enum_rgy
 
-def test_enum_registry():
+def run_enum_registry_test():
     """Test enum registry from Python side"""
     print("Python: Testing enum registry")
     
@@ -34,4 +34,4 @@ def test_enum_registry():
     print("Python: Enum registry tests complete")
 
 if __name__ == "__main__":
-    test_enum_registry()
+    run_enum_registry_test()
