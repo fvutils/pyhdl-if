@@ -104,7 +104,7 @@ class pyhdl_uvm_enum_rgy extends uvm_enum_rgy_imp_impl #(pyhdl_uvm_enum_rgy);
         return m_enum_m[type_name];
     endfunction
     
-    virtual function PyObject get_enum_names(string type_name);
+    virtual function PyObject _get_enum_names(string type_name);
         pyhdl_uvm_enum_info info;
         PyObject names_list;
         
@@ -124,7 +124,11 @@ class pyhdl_uvm_enum_rgy extends uvm_enum_rgy_imp_impl #(pyhdl_uvm_enum_rgy);
         return names_list;
     endfunction
     
-    virtual function PyObject get_enum_values(string type_name);
+    function PyObject get_enum_names(string type_name);
+        return _get_enum_names(type_name);
+    endfunction
+    
+    virtual function PyObject _get_enum_values(string type_name);
         pyhdl_uvm_enum_info info;
         PyObject values_list;
         
@@ -144,7 +148,11 @@ class pyhdl_uvm_enum_rgy extends uvm_enum_rgy_imp_impl #(pyhdl_uvm_enum_rgy);
         return values_list;
     endfunction
     
-    virtual function PyObject get_enum_types();
+    function PyObject get_enum_values(string type_name);
+        return _get_enum_values(type_name);
+    endfunction
+    
+    virtual function PyObject _get_enum_types();
         PyObject types_list;
         string type_names[$];
         int idx = 0;
@@ -162,6 +170,10 @@ class pyhdl_uvm_enum_rgy extends uvm_enum_rgy_imp_impl #(pyhdl_uvm_enum_rgy);
         end
         
         return types_list;
+    endfunction
+    
+    function PyObject get_enum_types();
+        return _get_enum_types();
     endfunction
     
     static function pyhdl_uvm_enum_rgy inst();
