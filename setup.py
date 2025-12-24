@@ -95,7 +95,6 @@ setup_args = dict(
   url = "https://github.com/fvutils/pyhdl-if",
   install_requires=[
     'pytypeworks',
-    'pyvsc-dataclasses'
   ],
   setup_requires=[
     'setuptools_scm',
