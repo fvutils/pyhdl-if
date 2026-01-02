@@ -19,7 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
-import typeworks
+from hdl_if.impl.typeinfo import TypeInfo
 from typing import List
 from hdl_if.tlm.tlm_method import TlmMethod
 from .model_info_tlm_if import ModelInfoTlmIF
@@ -27,7 +27,7 @@ from .model_info_tlm_if import ModelInfoTlmIF
 class TypeInfoTlmIF(object):
     ATTR_NAME = "_tlm_if_typeinfo"
 
-    def __init__(self, info : typeworks.TypeInfo):
+    def __init__(self, info : TypeInfo):
         self._base_init = None
         self._if_method_l : List[TlmMethod] = []
         pass
@@ -35,7 +35,7 @@ class TypeInfoTlmIF(object):
     @staticmethod
     def init(self, *args, **kwargs):
         print("init %s" % str(self))
-        tlm_if_ti = TypeInfoTlmIF.get(typeworks.TypeInfo.get(type(self)))
+        tlm_if_ti = TypeInfoTlmIF.get(TypeInfo.get(type(self)))
         self._model = ModelInfoTlmIF()
         tlm_if_ti._base_init(self, *args, **kwargs)
         

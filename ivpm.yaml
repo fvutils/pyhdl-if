@@ -12,8 +12,6 @@ package:
     deps:
     - name: pytest
       src: pypi
-    - name: pytypeworks
-      src: pypi
         #    - name: pyvsc-dataclasses
         #      src: pypi
     - name: fusesoc
@@ -36,12 +34,6 @@ package:
     - name: dv-flow-mgr
       url: https://github.com/dv-flow/dv-flow-mgr.git
       branch: mballance/taskdeps
-    - name: pytypeworks
-      url: https://github.com/mballance-utils/pytypeworks.git
-        #    - name: pyvsc-dataclasses
-        #      url: https://github.com/vsc-tools/pyvsc-dataclasses.git
-        #    - name: iverilog
-        #      url: https://github.com/pss-hands-on/iverilog-bin/releases/download/v12.0/iverilog-maylinux2014-12.0.tar.gz
     - name: verilator
       url: https://github.com/edapack/verilator-bin
       src: gh-rls
@@ -90,9 +82,6 @@ package:
       dep-set: default-dev
     - name: dv-flow-mgr
       url: https://github.com/dv-flow/dv-flow-mgr.git
-      dep-set: default-dev
-    - name: pytypeworks
-      url: https://github.com/mballance-utils/pytypeworks.git
       dep-set: default-dev
         #    - name: pyvsc-dataclasses
         #      url: https://github.com/vsc-tools/pyvsc-dataclasses.git

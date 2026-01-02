@@ -19,7 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
-from typeworks import TypeInfo
+from hdl_if.impl.typeinfo import TypeInfo
 from typing import List
 from hdl_if.impl.tlm.type_info_tlm_if import TypeInfoTlmIF
 from hdl_if.impl.tlm.stream import Stream

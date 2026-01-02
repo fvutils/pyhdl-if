@@ -19,18 +19,20 @@
 #*     Author: 
 #*
 #****************************************************************************
+from __future__ import annotations
+
 from typing import List
-from .api_def import ApiDef
 from .method_def import MethodDef
+
 
 class Ctor(object):
 
     _inst = None
 
     def __init__(self):
-        self.method_l : List[MethodDef] = []
+        self.method_l: List[MethodDef] = []
 
-    def addMethodDef(self, md):
+    def addMethodDef(self, md: MethodDef):
         self.method_l.append(md)
 
     def getMethodDefs(self) -> List[MethodDef]:
@@ -47,4 +49,3 @@ class Ctor(object):
         if cls._inst is None:
             cls._inst = Ctor()
         return cls._inst
-

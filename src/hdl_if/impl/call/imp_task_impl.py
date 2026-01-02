@@ -23,20 +23,19 @@ import inspect
 from hdl_if.call.call_proxy import CallProxy
 from .method_def import MethodDef
 
+
 class ImpTaskImpl(object):
 
-    def __init__(self, md : MethodDef):
+    def __init__(self, md: MethodDef):
         self._md = md
-        pass
 
     async def __call__(self, api_self, *args, **kwargs):
         if not hasattr(api_self, "_proxy") or getattr(api_self, "_proxy") is None:
             raise Exception("Class is not bound to an HDL object")
-        
-        # Build full argument list by combining provided args/kwargs with defaults
-        full_args = self._build_args(args, kwargs)
 
-        proxy : CallProxy = getattr(api_self, "_proxy") 
+        full_args = self._build_args(args, kwargs)
+        proxy: CallProxy = getattr(api_self, "_proxy")
+
         return await proxy.invoke_hdl_t(
             self._md.name,
             full_args
@@ -47,27 +46,21 @@ class ImpTaskImpl(object):
         params = self._md.params
         defaults = self._md.defaults
         n_params = len(params)
-        
-        # Start with provided positional args
+
         result = list(args)
-        
-        # Fill in the remaining parameters
+
         for i in range(len(result), n_params):
             pname = params[i][0]
             if pname in kwargs:
-                # Use the provided keyword argument
                 result.append(kwargs[pname])
             elif defaults[i] is not inspect.Parameter.empty:
-                # Use the default value
                 result.append(defaults[i])
             else:
                 raise TypeError(f"{self._md.name}() missing required argument: '{pname}'")
-        
-        # Check for unexpected keyword arguments
+
         param_names = {p[0] for p in params}
         for key in kwargs:
             if key not in param_names:
                 raise TypeError(f"{self._md.name}() got an unexpected keyword argument '{key}'")
-        
-        return tuple(result)
 
+        return tuple(result)

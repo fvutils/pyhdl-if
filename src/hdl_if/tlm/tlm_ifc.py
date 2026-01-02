@@ -38,6 +38,6 @@ class TlmIfc(TypeInfoTlmIF):
     @staticmethod
     def get(T) -> 'TlmIfc':
         """Return type-info for a """
-        from typeworks.impl.typeinfo import TypeInfo
+        from hdl_if.impl.typeinfo import TypeInfo
         return TypeInfoTlmIF.get(TypeInfo.get(T))
 

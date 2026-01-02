@@ -1,6 +1,6 @@
 import io
 import pytest
-from dv_flow.libhdlsim.pytest import hdlsim_dvflow, HdlSimDvFlow
+from dv_flow.libhdlsim.pytest import HdlSimDvFlow
 import os
 import sys
 

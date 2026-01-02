@@ -5,6 +5,8 @@ import platform
 
 from .hdl_services import HdlServices
 from .backend import Backend
+from .impl.decl_rgy import DeclRgy, MethodDecoratorBase, ClsDecoratorBase
+from .impl.typeinfo import TypeInfo
 from .decorators import *
 from .hdl_obj_rgy import *
 
