@@ -62,4 +62,7 @@ def hdlsim_dvflow(request, tmpdir):
 
     return ret
 
+# Alias for backward compatibility
+pyhdl_dvflow = hdlsim_dvflow
+
 
