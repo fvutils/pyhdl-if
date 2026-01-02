@@ -2,7 +2,7 @@
 import os
 import pytest
 from .test_base import *
-from dv_flow.libhdlsim.pytest import hdlsim_dvflow, HdlSimDvFlow
+from dv_flow.libhdlsim.pytest import HdlSimDvFlow
 from . import pyhdl_dvflow, hdl_if_env, available_sims_dpi
 
 

@@ -94,7 +94,6 @@ setup_args = dict(
   keywords = ["SystemVerilog", "Verilog", "VHDL", "RTL", "Python"],
   url = "https://github.com/fvutils/pyhdl-if",
   install_requires=[
-    'pytypeworks',
   ],
   setup_requires=[
     'setuptools_scm',

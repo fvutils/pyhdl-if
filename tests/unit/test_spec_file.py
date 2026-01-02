@@ -1,5 +1,7 @@
 
 import os
+import sys
+import json
 import pytest
 from .test_base import *
 from dv_flow.libhdlsim.pytest import HdlSimDvFlow
@@ -9,37 +11,41 @@ from . import pyhdl_dvflow, hdl_if_env, available_sims_dpi
 data_dir = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "data")
-test_threaded_data_dir = os.path.join(data_dir, "test_threaded")
-
+test_json_api_data_dir = os.path.join(data_dir, "test_json_api")
 
 @pytest.mark.parametrize("pyhdl_dvflow", available_sims_dpi(), indirect=True)
-def test_threaded(pyhdl_dvflow, hdl_if_env):
-    """Test Python threads calling back into SystemVerilog tasks"""
+def test_spec_file(pyhdl_dvflow, hdl_if_env):
+    """Test using spec as a file path instead of inline string."""
     env = hdl_if_env
-    env["PYTHONPATH"] = test_threaded_data_dir + os.pathsep + env["PYTHONPATH"]
+    env["PYTHONPATH"] = test_json_api_data_dir + os.pathsep + env["PYTHONPATH"]
     pyhdl_dvflow.setEnv(env)
 
-    print("test_threaded_data_dir: %s" % test_threaded_data_dir, flush=True)
+    print("test_json_api_data_dir: %s" % test_json_api_data_dir, flush=True)
 
     args = ["-timescale=1ps/1ps"] if pyhdl_dvflow.sim == "vcs" else []
 
     hdl_if_pkg = pyhdl_dvflow.mkTask("pyhdl-if.SvPkg")
     hdl_if_dpi = pyhdl_dvflow.mkTask("pyhdl-if.DpiLib")
 
+    # Use file path for spec
+    json_file = os.path.join(test_json_api_data_dir, "api_def.json")
+
     gen_api = pyhdl_dvflow.mkTask(
         "pyhdl-if.APIGenSV",
-        pkgname="threaded_test_pkg",
-        filename="threaded_test_pkg.sv",
-        modules=["threaded_test"],
-        pythonpath=[test_threaded_data_dir])
+        pkgname="call_json_bfm_pkg",
+        filename="call_json_bfm_pkg.sv",
+        spec=json_file,  # Use file path
+        pythonpath=[test_json_api_data_dir])
 
     test_sv = pyhdl_dvflow.mkTask("std.FileSet",
-                                   base=test_threaded_data_dir,
-                                   include=["counter_bfm.sv"],
+                                   base=test_json_api_data_dir,
+                                   include=[
+                                       "wb_init_bfm.sv", 
+                                       "call_json_bfm.sv"],
                                    type="systemVerilogSource")
 
     sim_img = pyhdl_dvflow.mkTask("hdlsim.%s.SimImage" % pyhdl_dvflow.sim,
-                        top=["counter_bfm"],
+                        top=["call_json_bfm"],
                         needs=[hdl_if_pkg, gen_api, hdl_if_dpi, test_sv],
                         elabargs=args)
     

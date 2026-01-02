@@ -28,7 +28,6 @@ def test_reqrsp_fifo_loopback(dirconfig):
     flow.sim.append_pathenv("PYTHONPATH", os.path.join(proj_dir, "packages/pyhdl-pi-if/python"))
     flow.sim.append_pathenv("PYTHONPATH", os.path.join(proj_dir, "packages/pyhdl-call-if/src"))
     flow.sim.append_pathenv("PYTHONPATH", os.path.join(proj_dir, "packages/pyvsc-dataclasses/src"))
-    flow.sim.append_pathenv("PYTHONPATH", os.path.join(proj_dir, "packages/pytypeworks/src"))
     flow.sim.append_pathenv("PYTHONPATH", data_dir)
 
     args = flow.sim.mkRunArgs(dirconfig.rundir())

@@ -22,36 +22,117 @@
 import fnmatch
 import importlib
 import os
+import json
 from hdl_if.impl.call.gen_sv_class import GenSVClass
 from hdl_if.impl.call.api_def_rgy import ApiDefRgy
+from hdl_if.impl.call.api_def_from_json import ApiDefFromJson
 
 class CmdApiGenSV(object):
 
     def __init__(self):
         pass
 
+    def _detect_spec_format(self, spec_str, spec_fmt=None):
+        """Detect the format of the API specification.
+        
+        Args:
+            spec_str: The specification string or filepath
+            spec_fmt: Explicitly specified format, or None for auto-detect
+            
+        Returns:
+            Format string: 'json', 'yaml', or 'toml'
+        """
+        if spec_fmt:
+            return spec_fmt.lower()
+        
+        # Check if it's a filepath
+        if os.path.exists(spec_str):
+            ext = os.path.splitext(spec_str)[1].lower()
+            if ext == '.json':
+                return 'json'
+            elif ext in ['.yaml', '.yml']:
+                return 'yaml'
+            elif ext == '.toml':
+                return 'toml'
+            else:
+                raise Exception(f"Unsupported spec file extension: {ext}")
+        
+        # Try to parse as JSON (inline string)
+        try:
+            json.loads(spec_str)
+            return 'json'
+        except json.JSONDecodeError:
+            pass
+        
+        raise Exception("Could not auto-detect spec format. Use --spec-fmt to specify.")
+
+    def _load_spec(self, spec, spec_fmt=None):
+        """Load API specification from string or file.
+        
+        Args:
+            spec: Specification string or filepath
+            spec_fmt: Format of the spec ('json', 'yaml', 'toml', or None for auto-detect)
+            
+        Returns:
+            List of ApiDef objects
+        """
+        fmt = self._detect_spec_format(spec, spec_fmt)
+        
+        # Load content (from file or use directly)
+        if os.path.exists(spec):
+            with open(spec, 'r') as f:
+                content = f.read()
+        else:
+            content = spec
+        
+        # Parse based on format
+        if fmt == 'json':
+            return ApiDefFromJson.parse(content)
+        elif fmt == 'yaml':
+            raise Exception("YAML format not yet implemented. Please use JSON for now.")
+        elif fmt == 'toml':
+            raise Exception("TOML format not yet implemented. Please use JSON for now.")
+        else:
+            raise Exception(f"Unsupported spec format: {fmt}")
+
     def __call__(self, args):
 
-        # First, load up the specified modules
-        if not hasattr(args, "module") or args.module is None or len(args.module) == 0:
-            raise Exception("Must specify modules to load")
+        # Check if API spec is provided
+        if hasattr(args, "spec") and args.spec is not None:
+            spec_fmt = getattr(args, "spec_fmt", None)
+            # Parse spec and register APIs
+            spec_apis = self._load_spec(args.spec, spec_fmt)
+            for api in spec_apis:
+                ApiDefRgy.inst().addApiDef(api)
+            apis = spec_apis
+        elif hasattr(args, "json") and args.json is not None:
+            # Legacy JSON support for backward compatibility
+            json_apis = ApiDefFromJson.parse(args.json)
+            for api in json_apis:
+                ApiDefRgy.inst().addApiDef(api)
+            apis = json_apis
+        else:
+            # Original module-loading logic
+            # First, load up the specified modules
+            if not hasattr(args, "module") or args.module is None or len(args.module) == 0:
+                raise Exception("Must specify modules to load or JSON API definitions")
 
-        loaded_modules = []
-        for m in args.module:
-            try:
-                importlib.import_module(m)
-                loaded_modules.append(m)
-            except ImportError as e:
-                raise Exception("Failed to import module \"%s\": %s" % (
-                    m, str(e)))
+            loaded_modules = []
+            for m in args.module:
+                try:
+                    importlib.import_module(m)
+                    loaded_modules.append(m)
+                except ImportError as e:
+                    raise Exception("Failed to import module \"%s\": %s" % (
+                        m, str(e)))
 
-        all_apis = ApiDefRgy.inst().getApis()
+            all_apis = ApiDefRgy.inst().getApis()
 
-        if len(all_apis) == 0:
-            raise Exception("No APIs defined")
+            if len(all_apis) == 0:
+                raise Exception("No APIs defined")
 
-        # Filter APIs to those from explicitly loaded modules
-        apis = self._filter_apis(all_apis, loaded_modules, args)
+            # Filter APIs to those from explicitly loaded modules
+            apis = self._filter_apis(all_apis, loaded_modules, args)
 
         if len(apis) == 0:
             raise Exception("No APIs matched from specified modules")

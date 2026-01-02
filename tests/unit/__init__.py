@@ -2,7 +2,7 @@ import os
 import pytest
 import sys
 
-from dv_flow.libhdlsim.pytest import hdlsim_dvflow, hdlsim_available_sims, HdlSimDvFlow
+from dv_flow.libhdlsim.pytest import hdlsim_available_sims, HdlSimDvFlow
 
 def available_sims_dpi(incl=None, excl=None):
     if excl is None:
@@ -45,7 +45,7 @@ def hdl_if_env():
     return env
 
 @pytest.fixture
-def pyhdl_dvflow(request, tmpdir):
+def hdlsim_dvflow(request, tmpdir):
     unit_tests_dir = os.path.dirname(os.path.abspath(__file__))
     pyhdl_if_dir = os.path.abspath(os.path.join(unit_tests_dir, "../../"))
 
@@ -53,8 +53,16 @@ def pyhdl_dvflow(request, tmpdir):
         request=request, 
         srcdir=os.path.dirname(request.fspath),
         tmpdir=tmpdir)
+    from dv_flow.mgr.package_provider_yaml import PackageProviderYaml
+
     ret.addPackage("via", os.path.join(pyhdl_if_dir, "packages/via/flow.dv"))
+    ret.addPackage("pyhdl-if", os.path.join(pyhdl_if_dir, "src/hdl_if/dfm/flow.dv"))
+    # pytest_dfm's ExtRgy stores addPackage entries in pkg_m; also add to _pkg_m for discovery
+    ret.ext_rgy._pkg_m["pyhdl-if"] = PackageProviderYaml(path=os.path.join(pyhdl_if_dir, "src/hdl_if/dfm/flow.dv"))
 
     return ret
+
+# Alias for backward compatibility
+pyhdl_dvflow = hdlsim_dvflow
 
 

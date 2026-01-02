@@ -28,6 +28,8 @@ package:
     desc: Generates a SystemVerilog API from the Python API
     consumes:
     - { type: std.SetEnv }
+    shell: pytask
+    run: hdl_if.dfm.api_gen_sv.APIGenSV
     with:
       inline:
         desc: Run the generator in-line 
@@ -46,6 +48,15 @@ package:
       modules:
         desc: List of Python modules to load
         type: list
-
-    shell: pytask
-    run: hdl_if.dfm.api_gen_sv.APIGenSV
+      spec:
+        desc: API specification (inline string or filepath)
+        type: str
+        value: ""
+      spec_fmt:
+        desc: Format of the spec (json, yaml, toml, or auto-detect)
+        type: str
+        value: ""
+      json_spec:
+        desc: (Deprecated) JSON string defining the API classes. Use 'spec' instead
+        type: str
+        value: ""
