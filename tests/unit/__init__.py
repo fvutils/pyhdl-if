@@ -45,7 +45,7 @@ def hdl_if_env():
     return env
 
 @pytest.fixture
-def pyhdl_dvflow(request, tmpdir):
+def hdlsim_dvflow(request, tmpdir):
     unit_tests_dir = os.path.dirname(os.path.abspath(__file__))
     pyhdl_if_dir = os.path.abspath(os.path.join(unit_tests_dir, "../../"))
 
