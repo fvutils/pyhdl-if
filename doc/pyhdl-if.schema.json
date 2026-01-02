@@ -1,0 +1,200 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/fvutils/pyhdl-if-pytest/pyhdl-if.schema.json",
+  "title": "PyHDL-IF API Definition",
+  "description": "Schema for defining HDL-IF API interfaces in JSON format",
+  "oneOf": [
+    {
+      "description": "Single API definition",
+      "$ref": "#/definitions/ApiDefinition"
+    },
+    {
+      "description": "Multiple API definitions",
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "Reference to this JSON schema"
+        },
+        "apis": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ApiDefinition"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["apis"],
+      "additionalProperties": false
+    },
+    {
+      "description": "Array of API definitions",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ApiDefinition"
+      },
+      "minItems": 1
+    }
+  ],
+  "definitions": {
+    "ApiDefinition": {
+      "type": "object",
+      "properties": {
+        "fullname": {
+          "type": "string",
+          "description": "Fully qualified name of the API class (e.g., 'module.ClassName')",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$",
+          "examples": ["mymodule.MyClass", "test.bfm.WishboneInitiator"]
+        },
+        "init_params": {
+          "type": "array",
+          "description": "Parameters for the __init__ constructor",
+          "items": {
+            "$ref": "#/definitions/Parameter"
+          },
+          "default": []
+        },
+        "methods": {
+          "type": "array",
+          "description": "Methods exposed by this API",
+          "items": {
+            "$ref": "#/definitions/Method"
+          },
+          "default": []
+        }
+      },
+      "required": ["fullname"],
+      "additionalProperties": false
+    },
+    "Parameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Parameter name",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+        },
+        "type": {
+          "$ref": "#/definitions/DataType"
+        }
+      },
+      "required": ["name", "type"],
+      "additionalProperties": false
+    },
+    "Method": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Method name",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+        },
+        "kind": {
+          "type": "string",
+          "description": "Method kind defining direction and synchronization",
+          "enum": ["imp_task", "imp_func", "exp_task", "exp_func", "imp", "exp"],
+          "default": "exp_func"
+        },
+        "params": {
+          "type": "array",
+          "description": "Method parameters",
+          "items": {
+            "$ref": "#/definitions/Parameter"
+          },
+          "default": []
+        },
+        "return_type": {
+          "description": "Return type of the method (omit or use 'void'/'None' for no return)",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/DataType"
+            },
+            {
+              "type": "string",
+              "enum": ["void", "None"]
+            }
+          ]
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "DataType": {
+      "type": "string",
+      "description": "Data type for parameters and return values",
+      "enum": [
+        "bool",
+        "byte",
+        "char",
+        "int8",
+        "int16",
+        "int32",
+        "int64",
+        "int",
+        "uint8",
+        "uint16",
+        "uint32",
+        "uint64",
+        "float",
+        "double",
+        "str",
+        "string",
+        "pyobject",
+        "object"
+      ]
+    }
+  },
+  "examples": [
+    {
+      "fullname": "mybfm.Counter",
+      "methods": [
+        {
+          "name": "increment",
+          "kind": "imp_func",
+          "return_type": "uint32"
+        },
+        {
+          "name": "reset",
+          "kind": "imp_func"
+        }
+      ]
+    },
+    {
+      "apis": [
+        {
+          "fullname": "mybfm.WishboneInitiator",
+          "methods": [
+            {
+              "name": "write",
+              "kind": "imp_task",
+              "params": [
+                {"name": "addr", "type": "uint32"},
+                {"name": "data", "type": "uint32"}
+              ]
+            },
+            {
+              "name": "read",
+              "kind": "imp_task",
+              "params": [
+                {"name": "addr", "type": "uint32"}
+              ],
+              "return_type": "uint32"
+            }
+          ]
+        },
+        {
+          "fullname": "mybfm.Test",
+          "methods": [
+            {
+              "name": "run",
+              "kind": "exp_task",
+              "params": [
+                {"name": "bfm", "type": "pyobject"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

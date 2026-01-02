@@ -26,8 +26,14 @@ def getparser():
         help="Generate one or more SV classes, optionally enclosed in a package")
     api_gen_sv.add_argument("-m", "--module",
         action="append",
-        required=True,
         help="Specify a Python module to load for API discovery")
+    api_gen_sv.add_argument("-s", "--spec",
+        help="Specify API specification (JSON string or filepath)")
+    api_gen_sv.add_argument("--spec-fmt",
+        choices=["json", "yaml", "toml"],
+        help="Format of the API specification (auto-detected if not specified)")
+    api_gen_sv.add_argument("-j", "--json",
+        help="(Deprecated) Specify JSON string defining the API classes. Use --spec instead")
     api_gen_sv.add_argument("-uvm", action="store_true",
         help="Generates UVM-friendly interface classes")
     api_gen_sv.add_argument("--deprecated", action="store_true",

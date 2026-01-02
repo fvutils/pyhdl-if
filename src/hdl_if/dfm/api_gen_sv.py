@@ -26,11 +26,28 @@ async def APIGenSV(runner, input) -> None:
         sys.executable,
         '-m', 'hdl_if',
         'api-gen-sv',
-#        '--deprecated'
     ]
 
-    for m in input.params.modules:
-        cmd.extend(['-m', m])
+    # Check for spec parameter (new way)
+    if hasattr(input.params, 'spec') and input.params.spec:
+        # Check if it's a filepath and validate extension
+        spec_value = input.params.spec
+        if os.path.exists(spec_value):
+            ext = os.path.splitext(spec_value)[1].lower()
+            if ext != '.json':
+                raise Exception(f"Spec filepath must have .json extension (got: {ext})")
+        cmd.extend(['-s', spec_value])
+        
+        # Add spec format if specified
+        if hasattr(input.params, 'spec_fmt') and input.params.spec_fmt:
+            cmd.extend(['--spec-fmt', input.params.spec_fmt])
+    # Check for legacy json_spec parameter
+    elif hasattr(input.params, 'json_spec') and input.params.json_spec:
+        cmd.extend(['-j', input.params.json_spec])
+    # Fall back to modules
+    else:
+        for m in input.params.modules:
+            cmd.extend(['-m', m])
 
     if input.params.pkgname:
         cmd.extend(['--package', input.params.pkgname])

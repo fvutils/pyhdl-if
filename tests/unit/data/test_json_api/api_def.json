@@ -1,0 +1,38 @@
+{
+    "$schema": "https://raw.githubusercontent.com/fvutils/pyhdl-if-pytest/main/doc/pyhdl-if.schema.json",
+    "apis": [
+        {
+            "fullname": "call_json_bfm.WishboneInitiator",
+            "methods": [
+                {
+                    "name": "write",
+                    "kind": "imp_task",
+                    "params": [
+                        {"name": "addr", "type": "uint32"},
+                        {"name": "data", "type": "uint32"}
+                    ]
+                },
+                {
+                    "name": "read",
+                    "kind": "imp_task",
+                    "params": [
+                        {"name": "addr", "type": "uint32"}
+                    ],
+                    "return_type": "uint32"
+                }
+            ]
+        },
+        {
+            "fullname": "call_json_bfm.Test",
+            "methods": [
+                {
+                    "name": "run",
+                    "kind": "exp_task",
+                    "params": [
+                        {"name": "bfm", "type": "pyobject"}
+                    ]
+                }
+            ]
+        }
+    ]
+}
