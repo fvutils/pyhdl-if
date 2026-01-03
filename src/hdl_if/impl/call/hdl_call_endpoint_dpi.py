@@ -22,6 +22,7 @@
 import ctypes
 from hdl_if.call.hdl_call_endpoint import HdlCallEndpoint
 from hdl_if import HdlServices
+from hdl_if.impl.output_flush import flush_output
 
 class HdlCallEndpointDPI(HdlCallEndpoint):
 
@@ -70,6 +71,7 @@ class HdlCallEndpointDPI(HdlCallEndpoint):
             print("Exception(__init__): %s" % str(e), flush=True)
         
     def invoke_hdl_f(self, obj_id : int, method_name : str, args : tuple):
+        flush_output()
         dpi = HdlServices.inst("dpi")
         ret = None
         try:
@@ -84,6 +86,7 @@ class HdlCallEndpointDPI(HdlCallEndpoint):
                      evt_obj,
                      method_name, 
                      args):
+        flush_output()
         dpi = HdlServices.inst("dpi")
         dpi.svSetScope(self.scope)
         self.pyhdl_call_if_invoke_hdl_t(
@@ -97,6 +100,7 @@ class HdlCallEndpointDPI(HdlCallEndpoint):
         try:
             dpi.svSetScope(self.scope)
             self.pyhdl_call_if_response_py_t(sem_id, res)
+            flush_output()
         except Exception as e:
             print("Exception(response_py): %s" % str(e), flush=True)
 
