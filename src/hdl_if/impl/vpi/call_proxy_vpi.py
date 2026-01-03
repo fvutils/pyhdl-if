@@ -23,6 +23,7 @@ import ctypes
 import hdl_if.impl.vpi.api as api
 from typing import Dict, List, Tuple
 from hdl_if.call.call_proxy import CallProxy
+from hdl_if.impl.output_flush import flush_output
 
 class CallProxyVPI(CallProxy):
 
@@ -52,6 +53,7 @@ class CallProxyVPI(CallProxy):
             self,
             method_name,
             args):
+        flush_output()
         from hdl_if.backend import Backend
         be = Backend.inst();
         evt = be.mkEvent()
