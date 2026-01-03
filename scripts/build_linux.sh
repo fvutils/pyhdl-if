@@ -1,6 +1,6 @@
 #!/bin/sh -x
 
-echo "BUILD_NUM=${BUILD_NUM}" >> src/hdl_if/__build_num__.py
+echo "BUILD_NUM=${BUILD_NUM}" > src/hdl_if/__build_num__.py
 ${IVPM_PYTHON} -m pip install ivpm cython
 if test $? -ne 0; then exit 1; fi
 
