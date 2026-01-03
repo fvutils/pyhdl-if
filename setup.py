@@ -16,8 +16,15 @@ try:
     sys.path.insert(0, os.path.join(proj_dir, "src"))
     from hdl_if.__build_num__ import BUILD_NUM
     version += ".%d" % BUILD_NUM
-except ImportError:
-    pass
+    print(f"Successfully loaded BUILD_NUM: {BUILD_NUM}, version: {version}")
+except ImportError as e:
+    print(f"Could not import BUILD_NUM: {e}")
+    import traceback
+    traceback.print_exc()
+except Exception as e:
+    print(f"Error loading BUILD_NUM: {e}")
+    import traceback
+    traceback.print_exc()
 
 isSrcBuild = False
 
