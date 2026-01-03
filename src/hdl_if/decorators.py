@@ -24,7 +24,14 @@ from __future__ import annotations
 import ctypes
 import functools
 import inspect
-from typing import Any, Callable, ParamSpec, TypeVar, overload, get_type_hints
+import sys
+from typing import Any, Callable, TypeVar, overload, get_type_hints
+
+# ParamSpec was added in Python 3.10
+if sys.version_info >= (3, 10):
+    from typing import ParamSpec
+else:
+    from typing_extensions import ParamSpec
 
 from .impl.call.api_def import ApiDef
 from .impl.call.api_def_rgy import ApiDefRgy
