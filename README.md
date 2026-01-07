@@ -5,6 +5,24 @@ hardware description languages, with a current focus on SystemVerilog.
 - Start Python behavior from SystemVerilog/UVM, and interact with UVM classes
 - Call SystemVerilog functions and tasks from Python, and invoke Python methods from SystemVerilog
 - Use the Python C API, and a SystemVerilog convenience API, to call Python
+- **Run async pytest tests from SystemVerilog testbenches**
+
+## Key Features
+
+### Pytest Runner
+Run async Python tests directly from SystemVerilog testbenches with pytest's assertion rewriting:
+
+```systemverilog
+module my_test;
+    initial begin
+        pyhdl_if::pyhdl_if_start();
+        pyhdl_if::pyhdl_pytest("tests/my_async_tests.py");
+        $finish;
+    end
+endmodule
+```
+
+See [doc/pytest_runner.md](doc/pytest_runner.md) for complete documentation and examples.
 
 ## Installing PyHDL-IF
 Installing PyHDL-IF in your own Python virtual environment is easy:

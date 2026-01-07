@@ -95,6 +95,12 @@ setup_args = dict(
   url = "https://github.com/fvutils/pyhdl-if",
   install_requires=[
   ],
+  extras_require={
+    'pytest' : [
+        'pytest',
+        'pytest-asyncio'
+    ]
+  },
   setup_requires=[
     'setuptools_scm',
     'cython',

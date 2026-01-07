@@ -21,6 +21,8 @@ package:
     deps:
     - name: pytest
       src: pypi
+    - name: pytest-asyncio
+      src: pypi
     - name: cython
       src: pypi
     - name: build

@@ -30,7 +30,14 @@ objects, where one object lives in Python, the other lives in HDL.
 TLM API
 *******
 The TLM interface implements a FIFO-based interface between Python and
-Bus Functional Models (BFMs). 
+Bus Functional Models (BFMs).
+
+Pytest Runner
+*************
+The pytest runner enables execution of async Python tests directly from 
+SystemVerilog testbenches. Tests benefit from pytest's assertion rewriting 
+for better error messages while running asynchronously within the HDL 
+simulation event loop. See :doc:`pytest_runner` for details. 
 
 Status and Roadmap
 ==================

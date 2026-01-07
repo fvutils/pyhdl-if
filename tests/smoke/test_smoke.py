@@ -20,40 +20,34 @@
 #*
 #****************************************************************************
 import os
+import sys
 import pytest
-import sysconfig
-from pytest_fv import *
-from ..util import Util
 
-def test_smoke(request):
-    utils = Util(request)
+# Import fixtures from the unit tests module
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from unit import pyhdl_dvflow, hdl_if_env, available_sims_dpi
 
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_dpi(incl=["vlt"]), indirect=True)
+def test_smoke(pyhdl_dvflow, hdl_if_env):
     testdir = os.path.dirname(os.path.abspath(__file__))
-    pyhdl_dir = os.path.abspath(os.path.join(testdir, "../.."))
-
-    fs = FuseSoc()
-    fs.add_library(os.path.join(pyhdl_dir, "packages/uvmf-core/uvmf_base_pkg"))
-    fs.add_library(os.path.join(pyhdl_dir, "src/hdl_call_if/share/sv"))
-    fs.add_library(testdir)
-
-    sim = HdlSim.create(testdir, "vlt")
-    sim.addFiles(fs.getFiles("smoke"))
-    sim.top.add("top")
-
-    libs = sysconfig.get_config_var("LIBS")
-    libdir = sysconfig.get_config_var("LIBDIR")
-    libpython = sysconfig.get_config_var("LDLIBRARY")
-
-    # LDLIBRARY
-    # LIBDIR
-    sim.dpi_libs.append(os.path.join(libdir, libpython))
-
-    sim.build()
-
-#    for key,val in sysconfig.get_config_vars().items():
-#        print("Elem: %s = %s" % (key, val))
-
-
-    args = sim.mkRunArgs(testdir)
-
-    sim.run(args)
+    
+    pyhdl_dvflow.setEnv(hdl_if_env)
+    
+    hdl_if_pkg = pyhdl_dvflow.mkTask("pyhdl-if.SvPkg")
+    hdl_if_dpi = pyhdl_dvflow.mkTask("pyhdl-if.DpiLib")
+    
+    test_sv = pyhdl_dvflow.mkTask("std.FileSet",
+                                   base=testdir,
+                                   include=["top.sv"],
+                                   type="systemVerilogSource")
+    
+    sim_img = pyhdl_dvflow.mkTask("hdlsim.%s.SimImage" % pyhdl_dvflow.sim,
+                                   top=["top"],
+                                   needs=[hdl_if_pkg, hdl_if_dpi, test_sv])
+    
+    sim_run = pyhdl_dvflow.mkTask("hdlsim.%s.SimRun" % pyhdl_dvflow.sim,
+                                   needs=[sim_img])
+    
+    status, out = pyhdl_dvflow.runTask(sim_run)
+    
+    assert status == 0, "Simulation failed"

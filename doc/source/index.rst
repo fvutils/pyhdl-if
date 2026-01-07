@@ -17,6 +17,7 @@ variety of abstraction levels.
    quickstart
    overview  
    sim_integ
+   pytest_runner
    uvm
    cmdref
    py_api
