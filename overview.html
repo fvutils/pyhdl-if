@@ -48,13 +48,15 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#procedural-interface-api">Procedural-Interface API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#call-interface-api">Call-Interface API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tlm-api">TLM API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tlm-api">TLM API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pytest-runner">Pytest Runner</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#status-and-roadmap">Status and Roadmap</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytest_runner.html">Pytest Runner</a></li>
 <li class="toctree-l1"><a class="reference internal" href="uvm.html">UVM Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="py_api.html">Python API</a></li>
@@ -112,6 +114,13 @@ objects, where one object lives in Python, the other lives in HDL.</p>
 <h2>TLM API<a class="headerlink" href="#tlm-api" title="Link to this heading"></a></h2>
 <p>The TLM interface implements a FIFO-based interface between Python and
 Bus Functional Models (BFMs).</p>
+</section>
+<section id="pytest-runner">
+<h2>Pytest Runner<a class="headerlink" href="#pytest-runner" title="Link to this heading"></a></h2>
+<p>The pytest runner enables execution of async Python tests directly from
+SystemVerilog testbenches. Tests benefit from pytest’s assertion rewriting
+for better error messages while running asynchronously within the HDL
+simulation event loop. See <a class="reference internal" href="pytest_runner.html"><span class="doc">Pytest Runner</span></a> for details.</p>
 <section id="status-and-roadmap">
 <h3>Status and Roadmap<a class="headerlink" href="#status-and-roadmap" title="Link to this heading"></a></h3>
 <p>PyHDL-IF is still under active development. The information here attempts

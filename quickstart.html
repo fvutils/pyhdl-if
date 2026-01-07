@@ -49,10 +49,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#installing-pyhdl-if-from-source">Installing PyHDL-IF from Source</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#running-pytest-tests-from-systemverilog">Running Pytest Tests from SystemVerilog</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytest_runner.html">Pytest Runner</a></li>
 <li class="toctree-l1"><a class="reference internal" href="uvm.html">UVM Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="py_api.html">Python API</a></li>
@@ -104,6 +106,25 @@ using the following command:</p>
 </pre></div>
 </div>
 </section>
+</section>
+<section id="running-pytest-tests-from-systemverilog">
+<h2>Running Pytest Tests from SystemVerilog<a class="headerlink" href="#running-pytest-tests-from-systemverilog" title="Link to this heading"></a></h2>
+<p>PyHDL-IF includes a pytest runner for executing async Python tests from
+SystemVerilog testbenches. First, ensure pytest is installed:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pytest
+</pre></div>
+</div>
+<p>Then, run tests from your SystemVerilog testbench:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">module</span><span class="w"> </span><span class="n">my_test</span><span class="p">;</span>
+<span class="w">    </span><span class="k">initial</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">        </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_if_start</span><span class="p">();</span>
+<span class="w">        </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_pytest</span><span class="p">(</span><span class="s">&quot;tests/my_async_tests.py&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">$</span><span class="n">finish</span><span class="p">;</span>
+<span class="w">    </span><span class="k">end</span>
+<span class="k">endmodule</span>
+</pre></div>
+</div>
+<p>For complete details, see <a class="reference internal" href="pytest_runner.html"><span class="doc">Pytest Runner</span></a>.</p>
 </section>
 </section>
 

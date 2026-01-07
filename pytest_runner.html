@@ -1,0 +1,405 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pytest Runner &mdash; PyHDL-IF  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="UVM Support" href="uvm.html" />
+    <link rel="prev" title="Simulator Integration" href="sim_integ.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyHDL-IF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pytest Runner</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#key-features">Key Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#simple-example">Simple Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-usage">Advanced Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#filtering-tests">Filtering Tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-a-specific-test">Running a Specific Test</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#systemverilog-task">SystemVerilog Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#python-api">Python API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#how-it-works">How It Works</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#assertion-rewriting-benefits">Assertion Rewriting Benefits</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#limitations">Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-output">Example Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pytest-not-found">pytest Not Found</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#event-loop-not-running">Event Loop Not Running</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#no-tests-collected">No Tests Collected</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="uvm.html">UVM Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sv_api.html">SystemVerilog API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyHDL-IF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Pytest Runner</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pytest_runner.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pytest-runner">
+<h1>Pytest Runner<a class="headerlink" href="#pytest-runner" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The PyHDL-IF pytest runner enables running async Python tests directly from SystemVerilog
+testbenches. This feature integrates pytest’s powerful test collection and assertion
+rewriting with PyHDL-IF’s async execution environment, allowing Python test code to interact
+seamlessly with HDL simulations.</p>
+<section id="key-features">
+<h3>Key Features<a class="headerlink" href="#key-features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Pytest Integration</strong>: Full pytest test collection with assertion rewriting for better error messages</p></li>
+<li><p><strong>Async Execution</strong>: Tests run asynchronously within the HDL simulation event loop</p></li>
+<li><p><strong>Flexible Test Selection</strong>: Filter tests using pytest’s <code class="docutils literal notranslate"><span class="pre">-k</span></code> option or specify individual tests</p></li>
+<li><p><strong>Environment Variable Expansion</strong>: Test paths automatically expand environment variables</p></li>
+<li><p><strong>Clear Reporting</strong>: Detailed test results with pass/fail status and error information</p></li>
+</ul>
+</section>
+<section id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pytest</span></code> package must be installed: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pytest</span></code></p></li>
+<li><p>Tests must be async functions (<code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span> <span class="pre">test_*</span></code>)</p></li>
+<li><p>Tests requiring fixtures are currently not supported</p></li>
+</ul>
+</section>
+</section>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h2>
+<section id="simple-example">
+<h3>Simple Example<a class="headerlink" href="#simple-example" title="Link to this heading"></a></h3>
+<p>From SystemVerilog, call the <code class="docutils literal notranslate"><span class="pre">pyhdl_pytest</span></code> task after initializing PyHDL-IF:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">module</span><span class="w"> </span><span class="n">my_test</span><span class="p">;</span>
+<span class="w">    </span><span class="k">initial</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">        </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_if_start</span><span class="p">();</span>
+<span class="w">        </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_pytest</span><span class="p">(</span><span class="s">&quot;tests/my_async_tests.py&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">$</span><span class="n">finish</span><span class="p">;</span>
+<span class="w">    </span><span class="k">end</span>
+<span class="k">endmodule</span>
+</pre></div>
+</div>
+<p>The corresponding Python test file would contain async test functions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/my_async_tests.py</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_simple_pass</span><span class="p">():</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="k">assert</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">10</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_with_computation</span><span class="p">():</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">+</span> <span class="mi">5</span>
+    <span class="k">assert</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">10</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="advanced-usage">
+<h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading"></a></h2>
+<section id="filtering-tests">
+<h3>Filtering Tests<a class="headerlink" href="#filtering-tests" title="Link to this heading"></a></h3>
+<p>Run specific tests using the filter parameter:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="c1">// Run only tests matching &quot;computation&quot;</span>
+<span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_pytest</span><span class="p">(</span>
+<span class="w">    </span><span class="p">.</span><span class="n">testpath</span><span class="p">(</span><span class="s">&quot;tests/my_tests.py&quot;</span><span class="p">),</span>
+<span class="w">    </span><span class="p">.</span><span class="n">filter</span><span class="p">(</span><span class="s">&quot;computation&quot;</span><span class="p">)</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+<p>Or use plusargs:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>simulator<span class="w"> </span>+pyhdl.pytest.testpath<span class="o">=</span>tests/my_tests.py<span class="w"> </span>+pyhdl.pytest.filter<span class="o">=</span>computation
+</pre></div>
+</div>
+</section>
+<section id="running-a-specific-test">
+<h3>Running a Specific Test<a class="headerlink" href="#running-a-specific-test" title="Link to this heading"></a></h3>
+<p>To run a single test by name:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_pytest</span><span class="p">(</span>
+<span class="w">    </span><span class="p">.</span><span class="n">testpath</span><span class="p">(</span><span class="s">&quot;tests/my_tests.py&quot;</span><span class="p">),</span>
+<span class="w">    </span><span class="p">.</span><span class="n">testname</span><span class="p">(</span><span class="s">&quot;test_specific_function&quot;</span><span class="p">)</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="environment-variables">
+<h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading"></a></h3>
+<p>Test paths support environment variable expansion:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_pytest</span><span class="p">(</span><span class="s">&quot;$PROJECT_ROOT/tests/my_tests.py&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h2>
+<section id="systemverilog-task">
+<h3>SystemVerilog Task<a class="headerlink" href="#systemverilog-task" title="Link to this heading"></a></h3>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">task</span><span class="w"> </span><span class="k">automatic</span><span class="w"> </span><span class="n">pyhdl_pytest</span><span class="p">(</span>
+<span class="w">    </span><span class="kt">string</span><span class="w"> </span><span class="n">testpath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">string</span><span class="w"> </span><span class="n">testname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">string</span><span class="w"> </span><span class="n">filter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>Parameters:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">testpath</span></code> (required): Path to test file or directory. Supports environment variable expansion.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">testname</span></code> (optional): Specific test function name to run</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filter</span></code> (optional): pytest <code class="docutils literal notranslate"><span class="pre">-k</span></code> filter expression for test selection</p></li>
+</ul>
+<p><strong>Plusargs:</strong></p>
+<p>Arguments can also be specified via plusargs (these override task parameters):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">+pyhdl.pytest.testpath=&lt;path&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">+pyhdl.pytest.testname=&lt;name&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">+pyhdl.pytest.filter=&lt;expr&gt;</span></code></p></li>
+</ul>
+<p><strong>Requirements:</strong></p>
+<p>Must call <code class="docutils literal notranslate"><span class="pre">pyhdl_if_start()</span></code> before using <code class="docutils literal notranslate"><span class="pre">pyhdl_pytest</span></code>.</p>
+</section>
+<section id="python-api">
+<h3>Python API<a class="headerlink" href="#python-api" title="Link to this heading"></a></h3>
+<p>The pytest runner can also be called directly from Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">hdl_if.pytest_runner</span> <span class="kn">import</span> <span class="n">run_pytest</span>
+
+<span class="c1"># Run tests asynchronously</span>
+<span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_pytest</span><span class="p">(</span>
+    <span class="n">testpath</span><span class="o">=</span><span class="s2">&quot;tests/my_tests.py&quot;</span><span class="p">,</span>
+    <span class="n">testname</span><span class="o">=</span><span class="s2">&quot;test_specific&quot;</span><span class="p">,</span>  <span class="c1"># optional</span>
+    <span class="n">filter_expr</span><span class="o">=</span><span class="s2">&quot;async&quot;</span>         <span class="c1"># optional</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Returns:</strong></p>
+<p>A dictionary containing test results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s1">&#39;passed&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s1">&#39;failed&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;errors&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;skipped&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;test_one&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;PASS&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;test_two&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;PASS&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;test_three&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;PASS&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="how-it-works">
+<h2>How It Works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h2>
+<p>The pytest runner uses a two-phase approach:</p>
+<ol class="arabic simple">
+<li><p><strong>Collection Phase</strong>: Uses <code class="docutils literal notranslate"><span class="pre">pytest.main(['--collect-only'])</span></code> with a custom plugin to discover
+tests. This enables pytest’s assertion rewriting, which provides detailed error messages
+(e.g., “assert 10 == 20” instead of just “AssertionError”).</p></li>
+<li><p><strong>Execution Phase</strong>: Directly awaits each collected async test function within PyHDL-IF’s
+event loop. This integrates seamlessly with the HDL simulation without blocking or
+creating event loop conflicts.</p></li>
+</ol>
+<p>This approach provides the benefits of pytest’s test infrastructure while maintaining full
+async integration with the HDL simulation environment.</p>
+<section id="assertion-rewriting-benefits">
+<h3>Assertion Rewriting Benefits<a class="headerlink" href="#assertion-rewriting-benefits" title="Link to this heading"></a></h3>
+<p>With pytest’s assertion rewriting, failed assertions provide detailed context:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span> <span class="nf">test_example</span><span class="p">():</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="k">assert</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span>  <span class="c1"># Fails with: &quot;AssertionError: assert 10 == 20&quot;</span>
+</pre></div>
+</div>
+<p>Without assertion rewriting, you would only see a generic <code class="docutils literal notranslate"><span class="pre">AssertionError</span></code> message.</p>
+</section>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading"></a></h2>
+<p>Current limitations of the pytest runner:</p>
+<ul class="simple">
+<li><p>Tests must be async functions (synchronous tests are skipped)</p></li>
+<li><p>Fixtures are not yet supported (tests requiring parameters are skipped)</p></li>
+<li><p>Only basic pytest features are available (no parametrize, marks, etc.)</p></li>
+<li><p>Test discovery follows pytest conventions (files/functions starting with <code class="docutils literal notranslate"><span class="pre">test_</span></code>)</p></li>
+</ul>
+</section>
+<section id="example-output">
+<h2>Example Output<a class="headerlink" href="#example-output" title="Link to this heading"></a></h2>
+<p>When running tests, you’ll see output like:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[PyHDL-IF Pytest] Starting pytest runner
+[PyHDL-IF Pytest]   testpath: tests/sample_async_tests.py
+[PyHDL-IF Pytest] pytest: 7.4.0
+[PyHDL-IF Pytest] Collecting tests with pytest...
+[PyHDL-IF Pytest] Collected 3 test(s)
+[PyHDL-IF Pytest] Running tests...
+======================================================================
+[PyHDL-IF Pytest] PASSED: test_simple_pass
+[PyHDL-IF Pytest] PASSED: test_with_computation
+[PyHDL-IF Pytest] PASSED: test_another_pass
+======================================================================
+[PyHDL-IF Pytest] Test Summary:
+[PyHDL-IF Pytest]   Total:   3
+[PyHDL-IF Pytest]   Passed:  3
+[PyHDL-IF Pytest]   Failed:  0
+[PyHDL-IF Pytest]   Errors:  0
+[PyHDL-IF Pytest]   Skipped: 0
+[PyHDL-IF Pytest] RESULT: PASSED
+</pre></div>
+</div>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<section id="pytest-not-found">
+<h3>pytest Not Found<a class="headerlink" href="#pytest-not-found" title="Link to this heading"></a></h3>
+<p>If you see an error about pytest not being installed:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[PyHDL-IF Pytest] ERROR: pytest is not installed
+</pre></div>
+</div>
+<p>Install pytest in your Python environment:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pytest
+</pre></div>
+</div>
+</section>
+<section id="event-loop-not-running">
+<h3>Event Loop Not Running<a class="headerlink" href="#event-loop-not-running" title="Link to this heading"></a></h3>
+<p>If you see:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[PyHDL-IF] Error: SV event loop is not running
+</pre></div>
+</div>
+<p>Make sure to call <code class="docutils literal notranslate"><span class="pre">pyhdl_if_start()</span></code> before <code class="docutils literal notranslate"><span class="pre">pyhdl_pytest()</span></code>:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">initial</span><span class="w"> </span><span class="k">begin</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_if_start</span><span class="p">();</span><span class="w">  </span><span class="c1">// Initialize first</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">pyhdl_pytest</span><span class="p">(</span><span class="s">&quot;tests/my_tests.py&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">$</span><span class="n">finish</span><span class="p">;</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+</section>
+<section id="no-tests-collected">
+<h3>No Tests Collected<a class="headerlink" href="#no-tests-collected" title="Link to this heading"></a></h3>
+<p>If pytest collects no tests, verify:</p>
+<ul class="simple">
+<li><p>Test file names start with <code class="docutils literal notranslate"><span class="pre">test_</span></code> or end with <code class="docutils literal notranslate"><span class="pre">_test.py</span></code></p></li>
+<li><p>Test function names start with <code class="docutils literal notranslate"><span class="pre">test_</span></code></p></li>
+<li><p>Test functions are async (<code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span></code>)</p></li>
+<li><p>The specified path is correct and accessible</p></li>
+</ul>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Organize Tests</strong>: Keep test files in a dedicated directory structure</p></li>
+<li><p><strong>Use Descriptive Names</strong>: Name test functions clearly to indicate what they test</p></li>
+<li><p><strong>Keep Tests Focused</strong>: Each test should verify one specific behavior</p></li>
+<li><p><strong>Leverage Assertions</strong>: Use Python’s assert statements for clear test conditions</p></li>
+<li><p><strong>Handle Async Properly</strong>: Ensure all async operations are properly awaited</p></li>
+<li><p><strong>Check Return Codes</strong>: Monitor the test summary to ensure all tests pass</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sim_integ.html" class="btn btn-neutral float-left" title="Simulator Integration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="uvm.html" class="btn btn-neutral float-right" title="UVM Support" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Matthew Ballance.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
