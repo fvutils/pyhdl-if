@@ -323,5 +323,7 @@ package pyhdl_if;
         return obj_h;
     endfunction
 
+    `include "pyhdl_if_pytest.svh"
+
 endpackage
 

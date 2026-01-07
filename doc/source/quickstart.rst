@@ -28,3 +28,27 @@ using the following command:
 
     % python3 setup.py build_ext --inplace
 
+Running Pytest Tests from SystemVerilog
+========================================
+
+PyHDL-IF includes a pytest runner for executing async Python tests from 
+SystemVerilog testbenches. First, ensure pytest is installed:
+
+.. code:: shell
+
+    % pip install pytest
+
+Then, run tests from your SystemVerilog testbench:
+
+.. code:: systemverilog
+
+    module my_test;
+        initial begin
+            pyhdl_if::pyhdl_if_start();
+            pyhdl_if::pyhdl_pytest("tests/my_async_tests.py");
+            $finish;
+        end
+    endmodule
+
+For complete details, see :doc:`pytest_runner`.
+
