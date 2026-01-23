@@ -8,14 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Overview &mdash; PyHDL-IF  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -57,6 +57,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytest_runner.html">Pytest Runner</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structs.html">Struct Type Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="uvm.html">UVM Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="py_api.html">Python API</a></li>
@@ -109,6 +110,9 @@ available in Python.</p></li>
 <h2>Call-Interface API<a class="headerlink" href="#call-interface-api" title="Link to this heading"></a></h2>
 <p>The <em>Call Interface</em> API enables users to create pairs of communicating
 objects, where one object lives in Python, the other lives in HDL.</p>
+<p>The Call Interface supports passing structured data between Python and
+SystemVerilog using <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code> types. This enables efficient
+interchange of complex data structures. See <a class="reference internal" href="structs.html"><span class="doc">Struct Type Support</span></a> for details.</p>
 </section>
 <section id="tlm-api">
 <h2>TLM API<a class="headerlink" href="#tlm-api" title="Link to this heading"></a></h2>

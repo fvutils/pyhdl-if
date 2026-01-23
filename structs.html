@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Struct Type Support &mdash; PyHDL-IF  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="UVM Support" href="uvm.html" />
+    <link rel="prev" title="Pytest Runner" href="pytest_runner.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyHDL-IF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytest_runner.html">Pytest Runner</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Struct Type Support</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#defining-struct-types">Defining Struct Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-structs-in-apis">Using Structs in APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-field-types">Supported Field Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generated-systemverilog-code">Generated SystemVerilog Code</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#typedef">Typedef</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conversion-functions">Conversion Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#using-structs-from-systemverilog">Using Structs from SystemVerilog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#packed-vs-unpacked-structs">Packed vs Unpacked Structs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#complete-example">Complete Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#limitations">Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="uvm.html">UVM Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sv_api.html">SystemVerilog API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyHDL-IF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Struct Type Support</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/structs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="struct-type-support">
+<h1>Struct Type Support<a class="headerlink" href="#struct-type-support" title="Link to this heading"></a></h1>
+<p>PyHDL-IF supports using Python <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code> types as function parameters
+and return types in API methods. This enables efficient passing of structured data
+between Python and SystemVerilog.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>When you define an API method that uses a struct type, PyHDL-IF automatically:</p>
+<ol class="arabic simple">
+<li><p>Generates a SystemVerilog <code class="docutils literal notranslate"><span class="pre">typedef</span> <span class="pre">struct</span></code> definition</p></li>
+<li><p>Creates bidirectional conversion functions between Python and SystemVerilog</p></li>
+<li><p>Handles the struct in method calls transparently</p></li>
+</ol>
+</section>
+<section id="defining-struct-types">
+<h2>Defining Struct Types<a class="headerlink" href="#defining-struct-types" title="Link to this heading"></a></h2>
+<p>Struct types are defined as Python classes inheriting from <code class="docutils literal notranslate"><span class="pre">ctypes.Structure</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ctypes</span> <span class="k">as</span> <span class="nn">ct</span>
+<span class="kn">import</span> <span class="nn">hdl_if</span> <span class="k">as</span> <span class="nn">hif</span>
+
+<span class="k">class</span> <span class="nc">Point</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_int32</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_int32</span><span class="p">),</span>
+    <span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">Color</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_uint8</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_uint8</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_uint8</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_uint8</span><span class="p">),</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="using-structs-in-apis">
+<h2>Using Structs in APIs<a class="headerlink" href="#using-structs-in-apis" title="Link to this heading"></a></h2>
+<p>Once defined, structs can be used as parameters and return types in API methods:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@hif</span><span class="o">.</span><span class="n">api</span>
+<span class="k">class</span> <span class="nc">GraphicsAPI</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="nd">@hif</span><span class="o">.</span><span class="n">imp</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">Point</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Called from SV to set a point&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@hif</span><span class="o">.</span><span class="n">imp</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">get_point</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Called from SV to get a point&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@hif</span><span class="o">.</span><span class="n">imp</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Color</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Called from SV to set a color&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+<section id="supported-field-types">
+<h2>Supported Field Types<a class="headerlink" href="#supported-field-types" title="Link to this heading"></a></h2>
+<p>PyHDL-IF supports all standard ctypes in struct fields:</p>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Type Mapping</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 30.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Python Type</p></th>
+<th class="head"><p>SystemVerilog Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_int8</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">byte</span></code></p></td>
+<td><p>Signed 8-bit integer</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_uint8</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">byte</span> <span class="pre">unsigned</span></code></p></td>
+<td><p>Unsigned 8-bit integer</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_int16</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">shortint</span></code></p></td>
+<td><p>Signed 16-bit integer</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_uint16</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">shortint</span> <span class="pre">unsigned</span></code></p></td>
+<td><p>Unsigned 16-bit integer</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_int32</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>Signed 32-bit integer</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_uint32</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">unsigned</span></code></p></td>
+<td><p>Unsigned 32-bit integer</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_int64</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">longint</span></code></p></td>
+<td><p>Signed 64-bit integer</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_uint64</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">longint</span> <span class="pre">unsigned</span></code></p></td>
+<td><p>Unsigned 64-bit integer</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_float</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">shortreal</span></code></p></td>
+<td><p>32-bit floating point</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_double</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">real</span></code></p></td>
+<td><p>64-bit floating point</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ctypes.c_bool</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">bit</span></code></p></td>
+<td><p>Boolean</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p>String type</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="generated-systemverilog-code">
+<h2>Generated SystemVerilog Code<a class="headerlink" href="#generated-systemverilog-code" title="Link to this heading"></a></h2>
+<p>For the <code class="docutils literal notranslate"><span class="pre">Point</span></code> example above, PyHDL-IF generates:</p>
+<section id="typedef">
+<h3>Typedef<a class="headerlink" href="#typedef" title="Link to this heading"></a></h3>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="k">packed</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">Point_t</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="conversion-functions">
+<h3>Conversion Functions<a class="headerlink" href="#conversion-functions" title="Link to this heading"></a></h3>
+<p><strong>Python to SystemVerilog:</strong></p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span><span class="n">Point_t</span><span class="w"> </span><span class="n">pyhdl_if_py_to_struct_Point</span><span class="p">(</span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyObject</span><span class="w"> </span><span class="n">py_obj</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Point_t</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyObject</span><span class="w"> </span><span class="n">__field_x</span><span class="p">,</span><span class="w"> </span><span class="n">__field_y</span><span class="p">;</span>
+<span class="w">    </span><span class="n">__field_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyObject_GetAttrString</span><span class="p">(</span><span class="n">py_obj</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;x&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">result</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">int</span><span class="p">&#39;(</span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyLong_AsLong</span><span class="p">(</span><span class="n">__field_x</span><span class="p">));</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">Py_DecRef</span><span class="p">(</span><span class="n">__field_x</span><span class="p">);</span>
+<span class="w">    </span><span class="n">__field_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyObject_GetAttrString</span><span class="p">(</span><span class="n">py_obj</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;y&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">result</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">int</span><span class="p">&#39;(</span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyLong_AsLong</span><span class="p">(</span><span class="n">__field_y</span><span class="p">));</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">Py_DecRef</span><span class="p">(</span><span class="n">__field_y</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="k">endfunction</span>
+</pre></div>
+</div>
+<p><strong>SystemVerilog to Python:</strong></p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyObject</span><span class="w"> </span><span class="n">pyhdl_if_struct_to_py_Point</span><span class="p">(</span><span class="n">Point_t</span><span class="w"> </span><span class="n">sv_struct</span><span class="p">);</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyObject</span><span class="w"> </span><span class="n">__module</span><span class="p">,</span><span class="w"> </span><span class="n">__class</span><span class="p">,</span><span class="w"> </span><span class="n">__args</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="n">__module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyImport_ImportModule</span><span class="p">(</span><span class="s">&quot;your_module&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">__class</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyObject_GetAttrString</span><span class="p">(</span><span class="n">__module</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Point&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">__args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyTuple_New</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="p">&#39;(</span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyTuple_SetItem</span><span class="p">(</span><span class="n">__args</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyLong_FromLong</span><span class="p">(</span><span class="kt">longint</span><span class="p">&#39;(</span><span class="n">sv_struct</span><span class="p">.</span><span class="n">x</span><span class="p">))));</span>
+<span class="w">    </span><span class="kt">void</span><span class="p">&#39;(</span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyTuple_SetItem</span><span class="p">(</span><span class="n">__args</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">          </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyLong_FromLong</span><span class="p">(</span><span class="kt">longint</span><span class="p">&#39;(</span><span class="n">sv_struct</span><span class="p">.</span><span class="n">y</span><span class="p">))));</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">PyObject_Call</span><span class="p">(</span><span class="n">__class</span><span class="p">,</span><span class="w"> </span><span class="n">__args</span><span class="p">,</span><span class="w"> </span><span class="k">null</span><span class="p">);</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">Py_DecRef</span><span class="p">(</span><span class="n">__args</span><span class="p">);</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">Py_DecRef</span><span class="p">(</span><span class="n">__class</span><span class="p">);</span>
+<span class="w">    </span><span class="n">pyhdl_if</span><span class="o">::</span><span class="n">Py_DecRef</span><span class="p">(</span><span class="n">__module</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="k">endfunction</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="using-structs-from-systemverilog">
+<h2>Using Structs from SystemVerilog<a class="headerlink" href="#using-structs-from-systemverilog" title="Link to this heading"></a></h2>
+<p>In your SystemVerilog testbench, implement the interface methods using the
+generated struct types:</p>
+<div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="kd">class</span><span class="w"> </span><span class="nc">GraphicsAPI_Impl</span><span class="w"> </span><span class="k">implements</span><span class="w"> </span><span class="n">graphics_api_pkg</span><span class="o">::</span><span class="n">GraphicsAPI_imp_if</span><span class="p">;</span>
+<span class="w">    </span><span class="n">graphics_api_pkg</span><span class="o">::</span><span class="n">Point_t</span><span class="w"> </span><span class="n">m_point</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">virtual</span><span class="w"> </span><span class="k">task</span><span class="w"> </span><span class="n">set_point</span><span class="p">(</span><span class="k">input</span><span class="w"> </span><span class="n">graphics_api_pkg</span><span class="o">::</span><span class="n">Point_t</span><span class="w"> </span><span class="n">p</span><span class="p">);</span>
+<span class="w">        </span><span class="p">$</span><span class="n">display</span><span class="p">(</span><span class="s">&quot;Received point: x=%0d, y=%0d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="w">        </span><span class="n">m_point</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="k">endtask</span>
+
+<span class="w">    </span><span class="k">virtual</span><span class="w"> </span><span class="k">task</span><span class="w"> </span><span class="n">get_point</span><span class="p">(</span><span class="k">output</span><span class="w"> </span><span class="n">graphics_api_pkg</span><span class="o">::</span><span class="n">Point_t</span><span class="w"> </span><span class="n">retval</span><span class="p">);</span>
+<span class="w">        </span><span class="p">$</span><span class="n">display</span><span class="p">(</span><span class="s">&quot;Returning point: x=%0d, y=%0d&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">m_point</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">m_point</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="w">        </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m_point</span><span class="p">;</span>
+<span class="w">    </span><span class="k">endtask</span>
+<span class="kd">endclass</span>
+</pre></div>
+</div>
+</section>
+<section id="packed-vs-unpacked-structs">
+<h2>Packed vs Unpacked Structs<a class="headerlink" href="#packed-vs-unpacked-structs" title="Link to this heading"></a></h2>
+<p>PyHDL-IF automatically determines whether to use <code class="docutils literal notranslate"><span class="pre">packed</span></code> or unpacked structs:</p>
+<ul class="simple">
+<li><p><strong>Packed structs</strong>: Used when all fields are synthesizable types (integers, bits)</p></li>
+<li><p><strong>Unpacked structs</strong>: Used when any field is a floating-point type (<code class="docutils literal notranslate"><span class="pre">real</span></code>, <code class="docutils literal notranslate"><span class="pre">shortreal</span></code>)</p></li>
+</ul>
+<p>This is necessary because SystemVerilog does not allow real types in packed structs.</p>
+</section>
+<section id="complete-example">
+<h2>Complete Example<a class="headerlink" href="#complete-example" title="Link to this heading"></a></h2>
+<p>A complete working example is available at <code class="docutils literal notranslate"><span class="pre">examples/call/dpi/struct_passing/</span></code>.
+The example demonstrates:</p>
+<ul class="simple">
+<li><p>Defining multiple struct types (Point, Color, Rectangle)</p></li>
+<li><p>Using structs as both parameters and return values</p></li>
+<li><p>Bidirectional struct passing between Python and SystemVerilog</p></li>
+<li><p>A simple graphics API implementation</p></li>
+</ul>
+<p>Run the example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>examples/call/dpi/struct_passing
+dfm<span class="w"> </span>run<span class="w"> </span>-Dsim<span class="o">=</span>vlt<span class="w"> </span>sim-run
+</pre></div>
+</div>
+</section>
+<section id="limitations">
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Nested Structs</strong>: Structs containing other structs as fields are not currently tested</p></li>
+<li><p><strong>Arrays in Structs</strong>: Array fields (using ctypes array types) are not currently supported</p></li>
+<li><p><strong>Module Name</strong>: The SV-to-Python conversion function needs to import the Python module
+containing the struct definition. Ensure the module is in the Python path.</p></li>
+</ol>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="quickstart.html"><span class="doc">Quickstart</span></a> - Getting started guide</p></li>
+<li><p><a class="reference internal" href="py_api.html"><span class="doc">Python API</span></a> - Python API reference</p></li>
+<li><p><a class="reference internal" href="sv_api.html"><span class="doc">SystemVerilog API</span></a> - SystemVerilog API reference</p></li>
+<li><p>Full struct documentation: <a class="reference external" href="https://github.com/fvutils/pyhdl-if/blob/main/doc/struct.md">doc/struct.md</a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pytest_runner.html" class="btn btn-neutral float-left" title="Pytest Runner" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="uvm.html" class="btn btn-neutral float-right" title="UVM Support" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Matthew Ballance.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

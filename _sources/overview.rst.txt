@@ -27,6 +27,10 @@ Call-Interface API
 The *Call Interface* API enables users to create pairs of communicating 
 objects, where one object lives in Python, the other lives in HDL.
 
+The Call Interface supports passing structured data between Python and 
+SystemVerilog using ``ctypes.Structure`` types. This enables efficient 
+interchange of complex data structures. See :doc:`structs` for details.
+
 TLM API
 *******
 The TLM interface implements a FIFO-based interface between Python and
