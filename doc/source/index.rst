@@ -18,6 +18,7 @@ variety of abstraction levels.
    overview  
    sim_integ
    pytest_runner
+   structs
    uvm
    cmdref
    py_api

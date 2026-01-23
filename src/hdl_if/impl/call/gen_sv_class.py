@@ -36,6 +36,7 @@ class GenSVClass(object):
         self._uvm = uvm
         self._deprecated = deprecated
         self._have_imp = False
+        self._struct_types = set()  # Track struct types used in API
         pass
 
     def _collect_methods(self, api: ApiDef):
@@ -89,6 +90,20 @@ class GenSVClass(object):
         self._imp_methods = [m for m in self._methods if m.kind in [MethodKind.ImpFunc, MethodKind.ImpTask]]
         self._have_imp = any(m.kind in [MethodKind.ImpFunc, MethodKind.ImpTask] for m in self._methods)
 
+        # Collect struct types used in the API
+        self._collect_struct_types(api)
+        
+        # Generate struct typedefs
+        if self._struct_types:
+            for struct_type in sorted(self._struct_types, key=lambda t: t.__name__):
+                self.gen_struct_typedef(struct_type)
+                self.println()
+            
+            # Generate conversion functions for each struct
+            for struct_type in sorted(self._struct_types, key=lambda t: t.__name__):
+                self.gen_struct_conversion_functions(struct_type)
+                self.println()
+
         # Existing class generation (unchanged)
 #        self.gen_class_interface_exp(api)
 #        self.println()
@@ -113,6 +128,98 @@ class GenSVClass(object):
         self.println()
         self.gen_imp_impl(api)
         self.println()
+
+    def _is_struct_type(self, t):
+        """Check if a type is a ctypes.Structure subclass"""
+        return (inspect.isclass(t) and 
+                issubclass(t, ctypes.Structure) and 
+                t is not ctypes.Structure)
+
+    def _collect_struct_types(self, api: ApiDef):
+        """Collect all struct types used in API methods"""
+        self._struct_types = set()
+        
+        for method in self._methods:
+            # Check return type
+            if method.rtype and self._is_struct_type(method.rtype):
+                self._struct_types.add(method.rtype)
+            
+            # Check parameter types
+            for param_name, param_type in method.params:
+                if self._is_struct_type(param_type):
+                    self._struct_types.add(param_type)
+
+    def gen_struct_typedef(self, struct_type):
+        """Generate SystemVerilog typedef for a struct type"""
+        # Check if any fields are real/shortreal (which can't be in packed structs)
+        has_real_fields = any(
+            field_type in (ctypes.c_float, ctypes.c_double, float) 
+            for _, field_type in struct_type._fields_
+        )
+        
+        packed_keyword = "" if has_real_fields else "packed"
+        self.println(f"typedef struct {packed_keyword} {{")
+        self.inc_ind()
+        
+        # Generate fields
+        for field_name, field_type in struct_type._fields_:
+            sv_type = self.svtype(field_type)
+            self.println(f"{sv_type} {field_name};")
+        
+        self.dec_ind()
+        self.println(f"}} {struct_type.__name__}_t;")
+
+    def _sv_struct_to_py(self, struct_type, sv_var):
+        """Generate inline SV code to convert SV struct to Python ctypes.Structure
+        Returns a PyObject* representing the Python struct"""
+        return f"pyhdl_if_struct_to_py_{struct_type.__name__}({sv_var})"
+
+    def _py_to_sv_struct(self, struct_type, py_var):
+        """Generate inline SV code to convert Python ctypes.Structure to SV struct"""
+        return f"pyhdl_if_py_to_struct_{struct_type.__name__}({py_var})"
+
+    def gen_struct_conversion_functions(self, struct_type):
+        """Generate conversion function from Python to SV struct"""
+        # Generate function that converts PyObject to SV struct
+        self.println(f"function {struct_type.__name__}_t pyhdl_if_py_to_struct_{struct_type.__name__}(pyhdl_if::PyObject py_obj);")
+        self.inc_ind()
+        self.println(f"{struct_type.__name__}_t result;")
+        
+        # Declare all PyObject variables on one line
+        field_names = [f"__field_{fname}" for fname, _ in struct_type._fields_]
+        if field_names:
+            self.println(f"pyhdl_if::PyObject {', '.join(field_names)};")
+        
+        for field_name, field_type in struct_type._fields_:
+            self.println(f"__field_{field_name} = pyhdl_if::PyObject_GetAttrString(py_obj, \"{field_name}\");")
+            py2sv_expr = self.py2sv_expr(field_type, f"__field_{field_name}")
+            self.println(f"result.{field_name} = {py2sv_expr};")
+            self.println(f"pyhdl_if::Py_DecRef(__field_{field_name});")
+        
+        self.println("return result;")
+        self.dec_ind()
+        self.println("endfunction")
+        self.println()
+        
+        # Generate function that converts SV struct to PyObject
+        self.println(f"function pyhdl_if::PyObject pyhdl_if_struct_to_py_{struct_type.__name__}({struct_type.__name__}_t sv_struct);")
+        self.inc_ind()
+        self.println(f"pyhdl_if::PyObject __module, __class, __args, result;")
+        self.println(f"__module = pyhdl_if::PyImport_ImportModule(\"{struct_type.__module__}\");")
+        self.println(f"__class = pyhdl_if::PyObject_GetAttrString(__module, \"{struct_type.__name__}\");")
+        self.println(f"__args = pyhdl_if::PyTuple_New({len(struct_type._fields_)});")
+        
+        for i, (field_name, field_type) in enumerate(struct_type._fields_):
+            sv_field = f"sv_struct.{field_name}"
+            self.println(f"void'(pyhdl_if::PyTuple_SetItem(__args, {i}, {self.sv2py_func(field_type, sv_field)}));")
+        
+        self.println("result = pyhdl_if::PyObject_Call(__class, __args, null);")
+        self.println("pyhdl_if::Py_DecRef(__args);")
+        self.println("pyhdl_if::Py_DecRef(__class);")
+        self.println("pyhdl_if::Py_DecRef(__module);")
+        self.println("return result;")
+        self.dec_ind()
+        self.println("endfunction")
 
     def gen_class_interface_exp(self, api : ApiDef):
         self.println("interface class I%sExp;" % api.name)
@@ -865,6 +972,8 @@ class GenSVClass(object):
             str : "PyUnicode_AsUTF8",
             ctypes.py_object : ""
         }
+        if self._is_struct_type(t):
+            return f"pyhdl_if_py_to_struct_{t.__name__}"
         if t not in type_m.keys():
             if t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__") or inspect.isclass(t):
                 return ""
@@ -876,6 +985,8 @@ class GenSVClass(object):
         # Produce a complete SV expression converting a PyObject to the target SV type
         if t in (ctypes.c_bool, bool):
             return f"pyhdl_if::py_as_bool({var})"
+        if t in (ctypes.c_float,):
+            return f"shortreal'(pyhdl_if::py_as_double({var}))"
         if t in (ctypes.c_double, float):
             return f"pyhdl_if::py_as_double({var})"
         if t in (ctypes.c_byte, ctypes.c_char, ctypes.c_int8):
@@ -887,17 +998,19 @@ class GenSVClass(object):
         if t in (ctypes.c_int64, int):
             return f"pyhdl_if::PyLong_AsLong({var})"
         if t in (ctypes.c_uint8,):
-            return f"byte unsigned'(pyhdl_if::PyLong_AsLong({var}))"
+            return f"8'(pyhdl_if::PyLong_AsLong({var}))"
         if t in (ctypes.c_uint16,):
-            return f"shortint unsigned'(pyhdl_if::PyLong_AsLong({var}))"
+            return f"16'(pyhdl_if::PyLong_AsLong({var}))"
         if t in (ctypes.c_uint32,):
-            return f"int unsigned'(pyhdl_if::PyLong_AsLong({var}))"
+            return f"32'(pyhdl_if::PyLong_AsLong({var}))"
         if t in (ctypes.c_uint64,):
-            return f"longint unsigned'(pyhdl_if::PyLong_AsLong({var}))"
+            return f"64'(pyhdl_if::PyLong_AsLong({var}))"
         if t in (str,):
             return f"pyhdl_if::PyUnicode_AsUTF8({var})"
         if isinstance(t, type) and issubclass(t, enum.IntEnum):
             return f"int'(pyhdl_if::PyLong_AsLong({var}))"
+        if self._is_struct_type(t):
+            return self._py_to_sv_struct(t, var)
         if t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__") or inspect.isclass(t):
             return f"({var})"
         raise Exception("Unsupported type %s on " % str(t))
@@ -912,12 +1025,16 @@ class GenSVClass(object):
             return f"pyhdl_if::PyLong_FromUnsignedLong(longint'({var}))"
         if t in (ctypes.c_uint64,):
             return f"pyhdl_if::PyLong_FromUnsignedLongLong({var})"
+        if t in (ctypes.c_float,):
+            return f"pyhdl_if::PyFloat_FromDouble(real'({var}))"
         if t in (ctypes.c_double, float):
             return f"pyhdl_if::PyFloat_FromDouble({var})"
         if t in (str,):
             return f"pyhdl_if::PyUnicode_FromString({var})"
         if isinstance(t, type) and issubclass(t, enum.IntEnum):
             return "PyLong_FromLong"
+        if self._is_struct_type(t):
+            return self._sv_struct_to_py(t, var)
         if t == ctypes.py_object or type(t) == type or hasattr(t, "__origin__") or inspect.isclass(t):
             return f"({var}==null)?pyhdl_if::None:{var}"
         raise Exception("Unsupported type %s (%s)" % (str(type), str(t)))
@@ -928,6 +1045,7 @@ class GenSVClass(object):
             bool : "bit",
             ctypes.c_byte : "byte",
             ctypes.c_char : "byte",
+            ctypes.c_float : "shortreal",
             ctypes.c_double : "real",
             float : "real",
             ctypes.c_int : "int",
@@ -947,6 +1065,8 @@ class GenSVClass(object):
         }
         if t in type_m.keys():
             return type_m[t]
+        elif self._is_struct_type(t):
+            return f"{t.__name__}_t"
         elif isinstance(t, type):
             if issubclass(t, enum.IntEnum):
                 return "int"

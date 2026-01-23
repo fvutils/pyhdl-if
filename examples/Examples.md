@@ -65,4 +65,13 @@ You can see the detailed commands used to run the example by running:
 % dfm --log-level=INFO run -Dsim=<sim> sim-run
 ```
 
+## Available Examples
+
+### call/dpi/call_sv_bfm
+Demonstrates calling SystemVerilog tasks and functions from Python using a Wishbone initiator BFM.
+
+### call/dpi/struct_passing
+Demonstrates passing structured data (ctypes.Structure) between Python and SystemVerilog. Shows how to define and use custom struct types for complex data interchange.
+
+
 

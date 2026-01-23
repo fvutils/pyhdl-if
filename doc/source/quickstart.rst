@@ -52,3 +52,31 @@ Then, run tests from your SystemVerilog testbench:
 
 For complete details, see :doc:`pytest_runner`.
 
+Using Structured Data (Structs)
+================================
+
+PyHDL-IF supports passing structured data between Python and SystemVerilog using 
+``ctypes.Structure`` types:
+
+.. code-block:: python
+
+    import ctypes as ct
+    import hdl_if as hif
+
+    class Point(ct.Structure):
+        _fields_ = [
+            ("x", ct.c_int32),
+            ("y", ct.c_int32),
+        ]
+
+    @hif.api
+    class GeometryAPI(object):
+        @hif.imp
+        async def draw_point(self, p: Point):
+            """Called from SystemVerilog"""
+            pass
+
+PyHDL-IF automatically generates SystemVerilog struct typedefs and conversion 
+functions. For complete details and a working example, see :doc:`structs`.
+
+
