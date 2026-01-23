@@ -1,0 +1,56 @@
+
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json"
+
+package:
+  name: hdl_if.examples.struct_passing
+  with:
+    sim:
+      type: str 
+      value: "vlt"
+    debug:
+      type: int
+      value: 0
+
+  tasks:
+  - name: local-pythonpath
+    uses: std.SetEnv
+    desc: Adds example directory to PYTHONPATH
+    with:
+      prepend_path:
+        PYTHONPATH: ${{ rootdir }}
+
+  - name: api-gen-hvlsrc
+    desc: Generates SV interface code for the struct-based API
+    uses: pyhdl-if.APIGenSV
+    needs: [local-pythonpath]
+    with:
+      pkgname: struct_passing_pkg
+      modules: 
+      - struct_passing
+
+  - name: example-hvlsrc
+    desc: SystemVerilog testbench for the example
+    uses: std.FileSet 
+    with:
+      type: systemVerilogSource
+      include:
+      - struct_passing.sv
+
+  - name: sim-img
+    desc: Compiles/elaborates the simulation image
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs: 
+    - pyhdl-if.DpiLib
+    - pyhdl-if.SvPkg
+    - api-gen-hvlsrc
+    - example-hvlsrc
+    with:
+      top: [struct_passing]
+
+  - name: sim-run
+    desc: Runs simulation
+    needs: [local-pythonpath, sim-img]
+    uses: hdlsim.${{ sim }}.SimRun
+    with:
+      plusargs:
+      - pyhdl.debug=${{ debug }}

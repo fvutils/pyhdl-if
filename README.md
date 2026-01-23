@@ -6,6 +6,7 @@ hardware description languages, with a current focus on SystemVerilog.
 - Call SystemVerilog functions and tasks from Python, and invoke Python methods from SystemVerilog
 - Use the Python C API, and a SystemVerilog convenience API, to call Python
 - **Run async pytest tests from SystemVerilog testbenches**
+- **Pass structured data between Python and SystemVerilog using ctypes.Structure**
 
 ## Key Features
 
@@ -23,6 +24,26 @@ endmodule
 ```
 
 See [doc/pytest_runner.md](doc/pytest_runner.md) for complete documentation and examples.
+
+### Struct Type Support
+Pass complex structured data between Python and SystemVerilog using `ctypes.Structure`:
+
+```python
+import ctypes as ct
+import hdl_if as hif
+
+class Point(ct.Structure):
+    _fields_ = [("x", ct.c_int32), ("y", ct.c_int32)]
+
+@hif.api
+class GeometryAPI(object):
+    @hif.imp
+    async def draw_point(self, p: Point):
+        """Called from SystemVerilog"""
+        pass
+```
+
+PyHDL-IF automatically generates SystemVerilog struct typedefs and conversion functions. See [doc/struct.md](doc/struct.md) for complete documentation.
 
 ## Installing PyHDL-IF
 Installing PyHDL-IF in your own Python virtual environment is easy:
