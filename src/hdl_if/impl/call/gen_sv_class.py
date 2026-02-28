@@ -37,6 +37,7 @@ class GenSVClass(object):
         self._deprecated = deprecated
         self._have_imp = False
         self._struct_types = set()  # Track struct types used in API
+        self._emitted_struct_types = set()  # Track struct types already emitted (across multiple gen() calls)
         pass
 
     def _collect_methods(self, api: ApiDef):
@@ -93,16 +94,20 @@ class GenSVClass(object):
         # Collect struct types used in the API
         self._collect_struct_types(api)
         
-        # Generate struct typedefs
-        if self._struct_types:
-            for struct_type in sorted(self._struct_types, key=lambda t: t.__name__):
+        # Generate struct typedefs only for types not already emitted
+        new_struct_types = self._struct_types - self._emitted_struct_types
+        if new_struct_types:
+            for struct_type in sorted(new_struct_types, key=lambda t: t.__name__):
                 self.gen_struct_typedef(struct_type)
                 self.println()
             
-            # Generate conversion functions for each struct
-            for struct_type in sorted(self._struct_types, key=lambda t: t.__name__):
+            # Generate conversion functions for each new struct
+            for struct_type in sorted(new_struct_types, key=lambda t: t.__name__):
                 self.gen_struct_conversion_functions(struct_type)
                 self.println()
+            
+            self._emitted_struct_types.update(new_struct_types)
+        self._struct_types = set()
 
         # Existing class generation (unchanged)
 #        self.gen_class_interface_exp(api)

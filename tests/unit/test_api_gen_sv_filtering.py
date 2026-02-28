@@ -450,3 +450,45 @@ class TestApiGenSvFiltering:
         assert len(filtered) == 3
         names = [a.name for a in filtered]
         assert names == ["First", "Second", "Third"]
+
+    def test_no_duplicate_struct_typedefs_across_apis(self):
+        """Test that struct typedefs are not duplicated when multiple APIs share the same struct type."""
+
+        class Point(ct.Structure):
+            _fields_ = [
+                ("x", ct.c_int32),
+                ("y", ct.c_int32),
+            ]
+
+        @api
+        class FirstAPI(object):
+            @imp
+            async def func1(self, pt: Point):
+                pass
+
+        @api
+        class SecondAPI(object):
+            @exp
+            def func2(self, pt: Point):
+                pass
+
+        all_apis = ApiDefRgy.inst().getApis()
+
+        out = io.StringIO()
+        gen = GenSVClass(out, ind="", uvm=False, deprecated=False)
+        for a in all_apis:
+            gen.gen(a)
+        sv_content = out.getvalue()
+
+        # Count occurrences of the struct typedef — must appear exactly once
+        typedef_count = sv_content.count("typedef struct")
+        assert typedef_count == 1, (
+            f"Expected 1 struct typedef for Point_t, but found {typedef_count}. "
+            f"Duplicate typedefs cause SV compilation errors."
+        )
+        # Conversion function definitions must also appear exactly once
+        # (the name may also appear in calls within API method bodies)
+        assert sv_content.count("function Point_t pyhdl_if_py_to_struct_Point") == 1, \
+            "pyhdl_if_py_to_struct_Point conversion function definition duplicated"
+        assert sv_content.count("function pyhdl_if::PyObject pyhdl_if_struct_to_py_Point") == 1, \
+            "pyhdl_if_struct_to_py_Point conversion function definition duplicated"
