@@ -26,7 +26,6 @@ package:
       url: https://github.com/dv-flow/dv-flow-libhdlsim.git
     - name: dv-flow-mgr
       url: https://github.com/dv-flow/dv-flow-mgr.git
-      branch: mballance/taskdeps
     - name: verilator
       url: https://github.com/edapack/verilator-bin
       src: gh-rls
