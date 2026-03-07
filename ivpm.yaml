@@ -8,15 +8,6 @@ package:
 
   dep-sets:
 
-  - name: default
-    deps:
-    - name: pytest
-      src: pypi
-        #    - name: pyvsc-dataclasses
-        #      src: pypi
-    - name: fusesoc
-      src: pypi
-
   - name: default-dev
     deps:
     - name: pytest
@@ -85,9 +76,6 @@ package:
     - name: dv-flow-mgr
       url: https://github.com/dv-flow/dv-flow-mgr.git
       dep-set: default-dev
-        #    - name: pyvsc-dataclasses
-        #      url: https://github.com/vsc-tools/pyvsc-dataclasses.git
-        #      dep-set: default-dev
     - name: pcpp
       src: pypi
     - name: cxxheaderparser
@@ -106,6 +94,15 @@ package:
       src: pypi
     - name: doxygen-filter-sv
       url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
+
+  - name: default
+    deps:
+    - name: pytest
+      src: pypi
+        #    - name: pyvsc-dataclasses
+        #      src: pypi
+    - name: fusesoc
+      src: pypi
 
   env:
     - name: PATH
