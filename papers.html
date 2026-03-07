@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Papers &mdash; PyHDL-IF  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="SystemVerilog API" href="sv_api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PyHDL-IF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_integ.html">Simulator Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytest_runner.html">Pytest Runner</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structs.html">Struct Type Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="uvm.html">UVM Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmdref.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py_api.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sv_api.html">SystemVerilog API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Papers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#properly-introducing-python-to-your-uvm-testbench">Properly Introducing Python To Your UVM Testbench</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#refresh-your-uvm-testbench-with-a-spritz-of-python">Refresh Your UVM Testbench with a Spritz of Python</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyHDL-IF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Papers</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/papers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="papers">
+<h1>Papers<a class="headerlink" href="#papers" title="Link to this heading"></a></h1>
+<p>This page collects publications and presentations about PyHDL-IF and
+related Python-in-UVM verification topics.</p>
+<hr class="docutils" />
+<section id="properly-introducing-python-to-your-uvm-testbench">
+<h2>Properly Introducing Python To Your UVM Testbench<a class="headerlink" href="#properly-introducing-python-to-your-uvm-testbench" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><th class="stub"><p>Conference</p></th>
+<td><p><a class="reference external" href="https://dvcon.org">DVCon US 2026</a></p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>Award</p></th>
+<td><p><strong>Stuart Sutherland Best Paper Award — 1st Place</strong></p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>Author</p></th>
+<td><p>Matthew Ballance, Advanced Micro Devices (AMD)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Abstract</strong></p>
+<p>There are many attractive aspects of using Python in a simulation testbench —
+including a large ecosystem of libraries and tools.  Among the obstacles is the
+integration effort and limitations in the ability to reuse existing UVM content.
+This paper presents a UVM-centric integration approach, implemented by an
+open-source library, that practically eliminates per-testbench integration work
+while preserving the ability to reuse existing UVM assets in a
+highly-performant manner.  Examples highlight key use-cases enabled by such an
+integration approach.</p>
+<p><a class="reference download internal" download="" href="_downloads/8f60f4d82c276c3a036e8e6e017ab03f/ProperlyIntroducingPythonToYourUVMTestbench.pdf"><code class="xref download docutils literal notranslate"><span class="pre">Paper</span> <span class="pre">(PDF)</span></code></a>
+| <a class="reference download internal" download="" href="_downloads/95f23f707158fa0c27df67c89cd5f5b6/ProperlyIntroducingPythonToUVM_presentation.pdf"><code class="xref download docutils literal notranslate"><span class="pre">Presentation</span> <span class="pre">slides</span> <span class="pre">(PDF)</span></code></a></p>
+</section>
+<hr class="docutils" />
+<section id="refresh-your-uvm-testbench-with-a-spritz-of-python">
+<h2>Refresh Your UVM Testbench with a Spritz of Python<a class="headerlink" href="#refresh-your-uvm-testbench-with-a-spritz-of-python" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><th class="stub"><p>Conference</p></th>
+<td><p><a class="reference external" href="https://www.dac.com">62nd ACM/IEEE Design Automation Conference (DAC 2025)</a> —
+Front-End Design Track</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>Award</p></th>
+<td><p><strong>Honorable Mention</strong></p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>Author</p></th>
+<td><p>Matthew Ballance</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Overview</strong></p>
+<p>This presentation introduces the motivation and key ideas behind blending
+Python into an existing SystemVerilog/UVM testbench flow.  It explores why
+domain-specific languages (DSLs) such as SystemVerilog cover some verification
+tasks extremely well while falling short in areas where general-purpose
+languages — and Python in particular — shine.  The talk surveys the trade-offs
+of different integration strategies and shows how PyHDL-IF enables practical,
+low-overhead Python adoption without discarding existing UVM infrastructure.</p>
+<p><a class="reference download internal" download="" href="_downloads/c9c09a09b9a79e8b977134fb480b35ca/FrontEndTrackSubmission_presentation.pdf"><code class="xref download docutils literal notranslate"><span class="pre">Presentation</span> <span class="pre">slides</span> <span class="pre">(PDF)</span></code></a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sv_api.html" class="btn btn-neutral float-left" title="SystemVerilog API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Matthew Ballance.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
