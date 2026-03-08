@@ -207,7 +207,7 @@ package pyhdl_if;
     function automatic PyObject pyhdl_pi_if_HandleErr(PyObject obj);
         if (obj == null) begin
             $display("--> HandleErr");
-            $stacktrace;
+            `STACKTRACE;
             PyErr_Print();
             $display("<-- HandleErr");
         end

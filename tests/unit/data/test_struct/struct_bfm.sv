@@ -30,8 +30,8 @@ module struct_bfm
     Point_t     stored_point;
 
     initial begin
-        StructBFM_Impl impl = new();
-        StructTest_exp_impl test;
+        automatic StructBFM_Impl impl = new();
+        automatic StructTest_exp_impl test;
         int fd;
         string line;
         

@@ -90,8 +90,8 @@ module struct_comprehensive_bfm
     ComprehensiveBFM_imp_impl#(ComprehensiveBFM_Impl) bfm;
 
     initial begin
-        ComprehensiveBFM_Impl impl = new();
-        ComprehensiveTest_exp_impl test;
+        automatic ComprehensiveBFM_Impl impl = new();
+        automatic ComprehensiveTest_exp_impl test;
         int fd;
         string line;
         

@@ -29,7 +29,11 @@
     $display x ; \
     $finish ;
 
+`ifdef XILINX_SIMULATOR
+`define STACKTRACE $display("TODO: no stacktrace support in Xilinx simulator")
+`else
 `define STACKTRACE $stacktrace
+`endif
 
 
 `endif /* INCLUDED_PYHDL_IF_MACROS_SVH */
