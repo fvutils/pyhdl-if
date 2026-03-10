@@ -1004,7 +1004,7 @@ class GenSVClass(object):
         if t in (ctypes.c_uint32,):
             return f"32'(pyhdl_if::PyLong_AsLong({var}))"
         if t in (ctypes.c_uint64,):
-            return f"64'(pyhdl_if::PyLong_AsLong({var}))"
+            return f"pyhdl_if::PyLong_AsUnsignedLongLong({var})"
         if t in (str,):
             return f"pyhdl_if::PyUnicode_AsUTF8({var})"
         if isinstance(t, type) and issubclass(t, enum.IntEnum):
