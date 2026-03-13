@@ -3,12 +3,17 @@ module test_smoke;
     import pyhdl_if::*;
 
     initial begin
-        py_object smoke_test_m = py_import("smoke_test");
-        py_object foo = smoke_test_m.get_attr("foo");
-        int ret = int'(foo.call().to_long());
+        automatic py_object smoke_test_m;
+        automatic py_object foo;
+        automatic int ret;
+        automatic int fp;
+
+        smoke_test_m = py_import("smoke_test");
+        foo = smoke_test_m.get_attr("foo");
+        ret = int'(foo.call().to_long());
 
         begin
-            int fp = $fopen("status.txt", "w");
+            fp = $fopen("status.txt", "w");
             if (ret == 27) begin
                 $fwrite(fp, "PASS:\n");
             end else begin

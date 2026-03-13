@@ -6,7 +6,7 @@ interface class uvm_object_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -17,7 +17,7 @@ interface class uvm_object_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -30,7 +30,7 @@ interface class uvm_object_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -98,7 +98,7 @@ endclass
 class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -173,9 +173,9 @@ class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::IC
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -219,7 +219,7 @@ class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::IC
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -242,9 +242,9 @@ class uvm_object_imp_impl #(type ImpT=uvm_object_imp_if) implements pyhdl_if::IC
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -314,7 +314,7 @@ interface class uvm_component_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -325,7 +325,7 @@ interface class uvm_component_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -338,7 +338,7 @@ interface class uvm_component_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function pyhdl_if::PyObject pack_ints();
     pure virtual function void unpack_ints(input pyhdl_if::PyObject data);
@@ -405,7 +405,7 @@ endclass
 class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_component");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_component");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -522,9 +522,9 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -568,7 +568,7 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -591,9 +591,9 @@ class uvm_component_imp_impl #(type ImpT=uvm_component_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -659,7 +659,7 @@ interface class uvm_analysis_port_proxy_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -670,7 +670,7 @@ interface class uvm_analysis_port_proxy_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -683,7 +683,7 @@ interface class uvm_analysis_port_proxy_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function pyhdl_if::PyObject pack_ints();
     pure virtual function void unpack_ints(input pyhdl_if::PyObject data);
@@ -750,7 +750,7 @@ endclass
 class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_analysis_port_proxy");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_analysis_port_proxy");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -872,9 +872,9 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -918,7 +918,7 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -941,9 +941,9 @@ class uvm_analysis_port_proxy_imp_impl #(type ImpT=uvm_analysis_port_proxy_imp_i
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -991,7 +991,7 @@ interface class uvm_cmdline_processor_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -1002,7 +1002,7 @@ interface class uvm_cmdline_processor_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -1015,7 +1015,7 @@ interface class uvm_cmdline_processor_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -1083,7 +1083,7 @@ endclass
 class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_cmdline_processor");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_cmdline_processor");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -1163,9 +1163,9 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -1209,7 +1209,7 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -1232,9 +1232,9 @@ class uvm_cmdline_processor_imp_impl #(type ImpT=uvm_cmdline_processor_imp_if) i
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -1320,7 +1320,7 @@ interface class uvm_component_proxy_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -1425,7 +1425,7 @@ endclass
 class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_component_proxy");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_component_proxy");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -1501,12 +1501,12 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
             "get_inst_id": begin
                 longint __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromLongLong(__rval);
             end
             "get_inst_count": begin
                 longint __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromLongLong(__rval);
             end
             "info": begin
                 string __msg = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
@@ -1597,7 +1597,7 @@ class uvm_component_proxy_imp_impl #(type ImpT=uvm_component_proxy_imp_if) imple
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -1761,7 +1761,7 @@ endclass
 class uvm_enum_rgy_imp_impl #(type ImpT=uvm_enum_rgy_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_enum_rgy");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_enum_rgy");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -1865,7 +1865,7 @@ interface class uvm_object_list_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -1876,7 +1876,7 @@ interface class uvm_object_list_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -1889,7 +1889,7 @@ interface class uvm_object_list_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -1957,7 +1957,7 @@ endclass
 class uvm_object_list_imp_impl #(type ImpT=uvm_object_list_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object_list");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object_list");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -2043,9 +2043,9 @@ class uvm_object_list_imp_impl #(type ImpT=uvm_object_list_imp_if) implements py
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -2089,7 +2089,7 @@ class uvm_object_list_imp_impl #(type ImpT=uvm_object_list_imp_if) implements py
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -2112,9 +2112,9 @@ class uvm_object_list_imp_impl #(type ImpT=uvm_object_list_imp_if) implements py
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -2173,7 +2173,7 @@ interface class uvm_object_map_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -2184,7 +2184,7 @@ interface class uvm_object_map_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -2197,7 +2197,7 @@ interface class uvm_object_map_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -2265,7 +2265,7 @@ endclass
 class uvm_object_map_imp_impl #(type ImpT=uvm_object_map_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object_map");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object_map");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -2360,9 +2360,9 @@ class uvm_object_map_imp_impl #(type ImpT=uvm_object_map_imp_if) implements pyhd
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -2406,7 +2406,7 @@ class uvm_object_map_imp_impl #(type ImpT=uvm_object_map_imp_if) implements pyhd
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -2429,9 +2429,9 @@ class uvm_object_map_imp_impl #(type ImpT=uvm_object_map_imp_if) implements pyhd
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -2485,7 +2485,7 @@ interface class uvm_object_string_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -2496,7 +2496,7 @@ interface class uvm_object_string_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -2509,7 +2509,7 @@ interface class uvm_object_string_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -2577,7 +2577,7 @@ endclass
 class uvm_object_string_imp_impl #(type ImpT=uvm_object_string_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object_string");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object_string");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -2662,9 +2662,9 @@ class uvm_object_string_imp_impl #(type ImpT=uvm_object_string_imp_if) implement
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -2708,7 +2708,7 @@ class uvm_object_string_imp_impl #(type ImpT=uvm_object_string_imp_if) implement
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -2731,9 +2731,9 @@ class uvm_object_string_imp_impl #(type ImpT=uvm_object_string_imp_if) implement
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -2859,7 +2859,7 @@ endclass
 class uvm_object_rgy_imp_impl #(type ImpT=uvm_object_rgy_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object_rgy");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_object_rgy");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -2966,7 +2966,7 @@ interface class uvm_reg_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -2977,7 +2977,7 @@ interface class uvm_reg_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -2990,7 +2990,7 @@ interface class uvm_reg_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -3058,7 +3058,7 @@ endclass
 class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_reg");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_reg");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -3119,7 +3119,7 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
                 __ret = (__rval==null)?pyhdl_if::None:__rval;
             end
             "set": begin
-                longint unsigned __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 0));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 0));
                 m_impl.set(__value);
                 __ret = pyhdl_if::None;
             end
@@ -3148,9 +3148,9 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -3194,7 +3194,7 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -3217,9 +3217,9 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -3258,7 +3258,7 @@ class uvm_reg_imp_impl #(type ImpT=uvm_reg_imp_if) implements pyhdl_if::ICallApi
         case (method)
             "write": begin
                 bit __retval;
-                longint unsigned __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 0));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 0));
                 pyhdl_if::PyGILState_Release(state); // Release the GIL before invoking the task
                 m_impl.write(__retval, __value);
                 state = pyhdl_if::PyGILState_Ensure(); // Reacquire the GIL after invoking the task
@@ -3296,7 +3296,7 @@ interface class uvm_reg_block_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -3307,7 +3307,7 @@ interface class uvm_reg_block_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -3320,7 +3320,7 @@ interface class uvm_reg_block_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -3388,7 +3388,7 @@ endclass
 class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_reg_block");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_reg_block");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -3478,9 +3478,9 @@ class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -3524,7 +3524,7 @@ class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -3547,9 +3547,9 @@ class uvm_reg_block_imp_impl #(type ImpT=uvm_reg_block_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -3605,7 +3605,7 @@ interface class uvm_reg_field_imp_if;
     pure virtual function bit _randomize();
     pure virtual function string get_name();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -3616,7 +3616,7 @@ interface class uvm_reg_field_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -3629,7 +3629,7 @@ interface class uvm_reg_field_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -3697,7 +3697,7 @@ endclass
 class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_reg_field");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_reg_field");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -3753,7 +3753,7 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
         pyhdl_if::PyGILState_STATE state = pyhdl_if::PyGILState_Ensure();
         case (method)
             "set": begin
-                longint unsigned __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 0));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 0));
                 m_impl.set(__value);
                 __ret = pyhdl_if::None;
             end
@@ -3782,9 +3782,9 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -3828,7 +3828,7 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -3851,9 +3851,9 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;
@@ -3892,7 +3892,7 @@ class uvm_reg_field_imp_impl #(type ImpT=uvm_reg_field_imp_if) implements pyhdl_
         case (method)
             "write": begin
                 bit __retval;
-                longint unsigned __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 0));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 0));
                 pyhdl_if::PyGILState_Release(state); // Release the GIL before invoking the task
                 m_impl.write(__retval, __value);
                 state = pyhdl_if::PyGILState_Ensure(); // Reacquire the GIL after invoking the task
@@ -4000,7 +4000,7 @@ endclass
 class uvm_sequence_proxy_imp_impl #(type ImpT=uvm_sequence_proxy_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_sequence_proxy");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_sequence_proxy");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -4149,18 +4149,18 @@ interface class uvm_phase_imp_if;
     pure virtual function string get_name();
     pure virtual function void raise_objection(
         input pyhdl_if::PyObject obj,
-        input longint count
+        input int count
     );
 
     pure virtual function void drop_objection(
         input pyhdl_if::PyObject obj,
-        input longint count
+        input int count
     );
 
     pure virtual function void reseed();
     pure virtual function bit _randomize();
     pure virtual function void set_name(input string name);
-    pure virtual function longint get_inst_id();
+    pure virtual function longint unsigned get_inst_id();
     pure virtual function string get_type_name();
     pure virtual function pyhdl_if::PyObject create(input string name);
     pure virtual function pyhdl_if::PyObject clone();
@@ -4171,7 +4171,7 @@ interface class uvm_phase_imp_if;
     pure virtual function bit compare(input pyhdl_if::PyObject rhs);
     pure virtual function void set_int_local(
         input string name,
-        input longint value
+        input longint unsigned value
     );
 
     pure virtual function void set_string_local(
@@ -4184,7 +4184,7 @@ interface class uvm_phase_imp_if;
         input pyhdl_if::PyObject value
     );
 
-    pure virtual function longint get_inst_count();
+    pure virtual function longint unsigned get_inst_count();
     pure virtual function string sprint();
     pure virtual function string get_full_name();
     pure virtual function pyhdl_if::PyObject pack_ints();
@@ -4252,7 +4252,7 @@ endclass
 class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICallApi;
     ImpT m_impl;
     PyObject m_obj;
-    function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_phase");
+    function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname="uvm_phase");
         m_impl = impl;
         if (obj == null && create) begin
             // Create an instance of the Python class
@@ -4314,7 +4314,7 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
             end
             "raise_objection": begin
                 pyhdl_if::PyObject __obj = (pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __count = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                int __count = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.raise_objection(
                     __obj,
                     __count);
@@ -4322,7 +4322,7 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
             end
             "drop_objection": begin
                 pyhdl_if::PyObject __obj = (pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __count = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                int __count = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.drop_objection(
                     __obj,
                     __count);
@@ -4343,9 +4343,9 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
                 __ret = pyhdl_if::None;
             end
             "get_inst_id": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_id();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "get_type_name": begin
                 string __rval;
@@ -4389,7 +4389,7 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
             end
             "set_int_local": begin
                 string __name = pyhdl_if::PyUnicode_AsUTF8(pyhdl_if::PyTuple_GetItem(args, 0));
-                longint __value = pyhdl_if::PyLong_AsLong(pyhdl_if::PyTuple_GetItem(args, 1));
+                longint unsigned __value = pyhdl_if::PyLong_AsUnsignedLongLong(pyhdl_if::PyTuple_GetItem(args, 1));
                 m_impl.set_int_local(
                     __name,
                     __value);
@@ -4412,9 +4412,9 @@ class uvm_phase_imp_impl #(type ImpT=uvm_phase_imp_if) implements pyhdl_if::ICal
                 __ret = pyhdl_if::None;
             end
             "get_inst_count": begin
-                longint __rval;
+                longint unsigned __rval;
                 __rval = m_impl.get_inst_count();
-                __ret = pyhdl_if::PyLong_FromLong(__rval);
+                __ret = pyhdl_if::PyLong_FromUnsignedLongLong(__rval);
             end
             "sprint": begin
                 string __rval;

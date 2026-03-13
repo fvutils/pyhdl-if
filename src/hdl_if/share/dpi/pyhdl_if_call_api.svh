@@ -123,18 +123,10 @@
         input int           id,
         output PyObject     res,
         inout PyGILState_STATE state);
-        // Wait for the semaphore while supporting Python threads that may call
-        // back into SV via run_coroutine_threadsafe.
+        // Wait for the semaphore while continuing to pump Python work.
         //
-        // Strategy: Keep polling idle() until either:
-        // 1. Our call completes (semaphore is set)
-        // 2. A new py2sv call or time delay is queued (py2sv is greater than initial)
-        //
-        // When work is queued, we yield with #0 to let __pyhdl_pi_if_run() process it.
-        // We must NOT wait for simulation time here - that would block thread-initiated
-        // calls which depend on idle() being pumped to process their scheduled coroutines.
-        int initial_py2sv_call = __py2sv_call;
-        bit have = 1'b0;
+        // Thread-initiated run_coroutine_threadsafe() calls depend on idle() being
+        // serviced until the outer SV->Python task finishes.
         `PYHDL_IF_DEBUG(("--> pyhdl_if_waitSem: id=%0d sv2py=%0d py2sv=%0d", id, __sv2py_call, __py2sv_resp));
 
 
@@ -144,36 +136,20 @@
                     __sv2py_call, __sv2py_resp, __py2sv_call, __py2sv_resp));
             if (__callsem[id].try_get() != 32'h0) begin
                 `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: callsem is valid"));
-                have = 1'b1;
-                break;
-            end else if (__py2sv_call != initial_py2sv_call) begin
-                `PYHDL_IF_DEBUG((
-                    "pyhdl_if_waitSem: change in new calls: %0d -> %0d",
-                    initial_py2sv_call, __py2sv_call));
-                break;
+                res = __callsem_res[id];
+                __callsem_res[id] = null;
+                `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: done id=%0d", id));
+                `PYHDL_IF_DEBUG(("<-- pyhdl_if_waitSem: id=%0d sv2py=%0d py2sv=%0d", id, __sv2py_call, __py2sv_resp));
+                return;
             end
 
             // Pump Python event loop to process scheduled coroutines
             pyhdl_pi_if_idle();
             PyGILState_Release(state);
             void'(pyhdl_if_sched_yield());
-            #0; // Allow the SV scheduler to start new threads
+            #1step; // Allow time to advance while the outer SV->Python call is pending
             state = PyGILState_Ensure();
         end
-
-        if (have) begin
-            `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: call already complete"));
-        end else begin
-            `PYHDL_IF_DEBUG(("--> pyhdl_if_waitSem: wait for call to complete"));
-            __callsem[id].get();
-            `PYHDL_IF_DEBUG(("<-- pyhdl_if_waitSem: wait for call to complete"));
-        end
-
-        `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: done id=%0d", id));
-        res = __callsem_res[id];
-        __callsem_res[id] = null;
-
-        `PYHDL_IF_DEBUG(("<-- pyhdl_if_waitSem: id=%0d sv2py=%0d py2sv=%0d", id, __sv2py_call, __py2sv_resp));
     endtask
 
     function automatic void pyhdl_if_setSem(

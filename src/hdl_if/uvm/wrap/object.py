@@ -108,7 +108,7 @@ class uvm_object(uvm_object_p):
         ...
 
     @imp
-    def get_inst_id(self) -> int:
+    def get_inst_id(self) -> ctypes.c_uint64:
         """
         Returns the unique instance ID assigned by the backend.
         """
@@ -139,7 +139,7 @@ class uvm_object(uvm_object_p):
     def compare(self, rhs: uvm_object_p) -> bool: ...
 
     @imp
-    def set_int_local(self, name: str, value: int) -> None: ...
+    def set_int_local(self, name: str, value: ctypes.c_uint64) -> None: ...
 
     @imp
     def set_string_local(self, name: str, value: str) -> None: ...
@@ -148,7 +148,7 @@ class uvm_object(uvm_object_p):
     def set_object_local(self, name: str, value: uvm_object_p) -> None: ...
 
     @imp
-    def get_inst_count(self) -> int:
+    def get_inst_count(self) -> ctypes.c_uint64:
         """
         Returns the number of instances created for this object's type in the backend.
         """

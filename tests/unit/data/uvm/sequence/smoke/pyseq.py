@@ -1,8 +1,11 @@
 
-from hdl_if.uvm import UvmSequenceProxy
+from hdl_if.uvm import uvm_sequence_impl
 
-class PySeq(UvmSequenceProxy):
+class PySeq(uvm_sequence_impl):
 
     async def body(self):
         print("body", flush=True)
-        print("name: %s" % self.get_name(), flush=True)
+        req = self.proxy.create_req()
+        req.randomize()
+        await self.proxy.start_item(req)
+        await self.proxy.finish_item(req)

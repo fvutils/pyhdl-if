@@ -8,14 +8,6 @@ package:
 
   dep-sets:
 
-  - name: default
-    deps:
-    - name: pytest
-      src: pypi
-        #    - name: pyvsc-dataclasses
-        #      src: pypi
-    - name: fusesoc
-      src: pypi
 
   - name: default-dev
     deps:
@@ -35,12 +27,12 @@ package:
       url: https://github.com/dv-flow/dv-flow-libhdlsim.git
     - name: dv-flow-mgr
       url: https://github.com/dv-flow/dv-flow-mgr.git
-      branch: mballance/taskdeps
     - name: verilator
       url: https://github.com/edapack/verilator-bin
       src: gh-rls
+      version: v5.047.22543776923
         #      version: 5.043.19982369871
-        #      prerelease: true
+      prerelease: true
       cache: true
 #      url: https://github.com/pss-hands-on/verilator-bin/releases/download/v5.030/verilator-ubuntu-x64-5.030.tar.gz
     - name: pcpp
@@ -106,6 +98,15 @@ package:
       src: pypi
     - name: doxygen-filter-sv
       url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
+
+  - name: default
+    deps:
+    - name: pytest
+      src: pypi
+        #    - name: pyvsc-dataclasses
+        #      src: pypi
+    - name: fusesoc
+      src: pypi
 
   env:
     - name: PATH

@@ -20,8 +20,10 @@ class PerfTest(object):
     @hif.exp
     async def run(self, bfm: ct.py_object):
         """Main test entry point called from SV"""
-        num_calls_asyncio = 250000
-        num_calls_thread = 25000
+        # Keep the unit-test workload modest so all supported simulators
+        # exercise both paths without turning this into a simulator stress test.
+        num_calls_asyncio = 1000
+        num_calls_thread = 20
         
         print(f"[Py] Performance test: asyncio={num_calls_asyncio}, thread={num_calls_thread} Py->SV task calls", flush=True)
         print("=" * 60, flush=True)

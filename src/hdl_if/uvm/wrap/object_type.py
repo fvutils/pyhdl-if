@@ -93,8 +93,7 @@ class UvmObjectType(object):
                 mask = (1 << size) - 1
                 v_masked = v & mask
 
-                # Append bits MSB -> LSB
-                for i in range(size - 1, -1, -1):
+                for i in range(size):
                     bits.append((v_masked >> i) & 1)
 
             elif f.kind == UvmFieldKind.ENUM:
@@ -114,8 +113,7 @@ class UvmObjectType(object):
                 mask = (1 << size) - 1
                 v_masked = int_val & mask
 
-                # Append bits MSB -> LSB
-                for i in range(size - 1, -1, -1):
+                for i in range(size):
                     bits.append((v_masked >> i) & 1)
 
             elif f.kind == UvmFieldKind.OBJ:
@@ -142,7 +140,7 @@ class UvmObjectType(object):
                     if len(v) == 0:
                         # Empty queue - just pack the length as 0
                         queue_len = 0
-                        for i in range(31, -1, -1):
+                        for i in range(32):
                             bits.append((queue_len >> i) & 1)
                         continue
                     else:
@@ -164,7 +162,7 @@ class UvmObjectType(object):
                 
                 # Pack queue length as 32-bit unsigned integer
                 queue_len = len(v)
-                for i in range(31, -1, -1):
+                for i in range(32):
                     bits.append((queue_len >> i) & 1)
                 
                 # Pack each element
@@ -173,7 +171,7 @@ class UvmObjectType(object):
                     if not isinstance(elem, int):
                         raise TypeError(f"Queue field '{f.name}' element must be int, got {type(elem)!r}")
                     elem_masked = elem & mask
-                    for i in range(size - 1, -1, -1):
+                    for i in range(size):
                         bits.append((elem_masked >> i) & 1)
 
             else:
@@ -182,12 +180,10 @@ class UvmObjectType(object):
     def pack_ints(self, data_obj: object) -> List[int]:
         """
         Packs fields from the provided data object into a list of 32-bit ints.
-        Semantics mirror UVM uvm_object::pack_ints + uvm_packer.get_ints with big_endian=1:
-        - Fields are appended MSB-first into a bitstream.
-        - For OBJ fields, a 4-bit header (0=null, 0xF=non-null) is packed, then object fields recursively.
-        - The bitstream is chunked into 32-bit words.
-        - Each 32-bit word is bit-reversed before being emitted (matching get_ints big_endian behavior).
-        - The last partial word is zero-padded; significant bits end up in the MSB positions of the returned int.
+        Mirrors the active UVM packer layout:
+        - The stream includes the 64-bit UVM packer header.
+        - A top-level 4-bit non-null object header precedes the field payload.
+        - Bits are stored in the same low-to-high order used by the packer.
         Returns:
             List[int]: 32-bit words representing the packed bitstream.
         """
@@ -196,34 +192,28 @@ class UvmObjectType(object):
         if self.data_t is None:
             raise ValueError("data_t is not defined for this UvmObjectType (%s)" % self.type_name)
 
-        # Build MSB-first bitstream from fields
-        bits: List[int] = []
-        self._pack_bits(data_obj, bits)
+        payload_bits: List[int] = [1, 1, 1, 1]
+        self._pack_bits(data_obj, payload_bits)
 
-        if not bits:
-            return []
+        total_bits = 64 + len(payload_bits)
+        bits: List[int] = [0] * total_bits
 
-        # Convert to 32-bit ints per UVM get_ints with big_endian=1 (reverse bits within each 32-bit word)
-        n = len(bits)
-        words = (n + 31) // 32
+        for i in range(32):
+            bits[i] = (total_bits >> i) & 1
+            bits[32 + i] = (64 >> i) & 1
+
+        for i, b in enumerate(payload_bits):
+            bits[64 + i] = 1 if b else 0
+
+        words = (total_bits + 31) // 32
         out: List[int] = []
         for wi in range(words):
-            # Collect 32 source bits (MSB-first slice of m_bits)
-            word_bits = [0] * 32
             base = wi * 32
+            v = 0
             for k in range(32):
                 idx = base + k
-                word_bits[k] = bits[idx] if idx < n else 0
-
-            # Reverse bit order within the 32-bit word (big_endian behavior)
-            v = 0
-            for j in range(32):
-                b = word_bits[31 - j]
-                if b:
-                    v |= (1 << j)
-
-            # Do NOT mask after reversal; UVM get_ints masks before reversal so resulting ints'
-            # significant bits in the last word reside in MSB positions.
+                if idx < total_bits and bits[idx]:
+                    v |= (1 << k)
             out.append(v)
 
         return out
@@ -245,10 +235,10 @@ class UvmObjectType(object):
                 seg = bits[offset:offset + size]
                 offset += size
 
-                # Convert MSB-first segment to integer
                 val = 0
-                for b in seg:
-                    val = (val << 1) | (1 if b else 0)
+                for i, b in enumerate(seg):
+                    if b:
+                        val |= (1 << i)
 
                 # Interpret signed if requested (two's complement)
                 if f.is_signed and size > 0:
@@ -266,10 +256,10 @@ class UvmObjectType(object):
                 seg = bits[offset:offset + size]
                 offset += size
 
-                # Convert MSB-first segment to integer
                 val = 0
-                for b in seg:
-                    val = (val << 1) | (1 if b else 0)
+                for i, b in enumerate(seg):
+                    if b:
+                        val |= (1 << i)
 
                 # Interpret signed if requested (two's complement)
                 if f.is_signed and size > 0:
@@ -292,8 +282,9 @@ class UvmObjectType(object):
                 header_bits = bits[offset:offset + 4]
                 offset += 4
                 header_val = 0
-                for b in header_bits:
-                    header_val = (header_val << 1) | (1 if b else 0)
+                for i, b in enumerate(header_bits):
+                    if b:
+                        header_val |= (1 << i)
 
                 if header_val == 0:
                     # null object
@@ -316,8 +307,9 @@ class UvmObjectType(object):
                 len_bits = bits[offset:offset + 32]
                 offset += 32
                 queue_len = 0
-                for b in len_bits:
-                    queue_len = (queue_len << 1) | (1 if b else 0)
+                for i, b in enumerate(len_bits):
+                    if b:
+                        queue_len |= (1 << i)
                 
                 # If element size is unknown and queue has elements, we need to infer it
                 if (f.size_unknown or size is None or size <= 0) and queue_len > 0:
@@ -363,8 +355,9 @@ class UvmObjectType(object):
                     offset += size
                     
                     elem_val = 0
-                    for b in elem_bits:
-                        elem_val = (elem_val << 1) | (1 if b else 0)
+                    for i, b in enumerate(elem_bits):
+                        if b:
+                            elem_val |= (1 << i)
                     
                     # Interpret signed if requested (two's complement)
                     if f.is_signed and size > 0:
@@ -384,11 +377,8 @@ class UvmObjectType(object):
     def unpack_ints(self, intstream: List[int]) -> object:
         """
         Unpacks a list of 32-bit ints (as produced by pack_ints) into a new data_t instance.
-        Mirrors UVM uvm_object::unpack_ints + uvm_packer.put_ints with big_endian=1:
-        - Each 32-bit word is bit-reversed before appending to the bitstream.
-        - Uses the exact field sizes in order to slice values MSB-first.
-        - For OBJ fields, reads 4-bit header (0=null, else non-null) then recursively unpacks.
-        - Signed fields are interpreted in two's complement.
+        Mirrors the active UVM packer layout, including the 64-bit reserved
+        prefix and the top-level object header.
         Returns:
             data_t instance populated with unpacked field values.
         """
@@ -397,22 +387,42 @@ class UvmObjectType(object):
         if not isinstance(intstream, list):
             raise TypeError("intstream must be a List[int]")
 
-        # Reconstruct m_bits by reversing each 32-bit word (undo big_endian get_ints)
         bits: List[int] = []
         for v in intstream:
             if not isinstance(v, int):
                 raise TypeError(f"intstream contains non-int element: {type(v)!r}")
-            # Reverse 32 bits of v
-            word_bits = [0] * 32
             for j in range(32):
-                bj = (v >> j) & 1
-                word_bits[31 - j] = bj
-            bits.extend(word_bits)
+                bits.append((v >> j) & 1)
+
+        if len(bits) < 64:
+            raise ValueError("Packed int stream is missing the UVM packer header")
+
+        packed_size = 0
+        unpack_iter = 0
+        for i in range(32):
+            if bits[i]:
+                packed_size |= (1 << i)
+            if bits[32 + i]:
+                unpack_iter |= (1 << i)
+
+        if packed_size <= 64 or unpack_iter < 64:
+            raise ValueError(
+                f"Invalid UVM packer header: packed_size={packed_size}, unpack_iter={unpack_iter}")
+
+        bits = bits[:packed_size]
 
         # Create target data object
         data = self.data_t()
 
-        # Unpack fields recursively
-        self._unpack_bits(bits, 0, data)
+        header_bits = bits[unpack_iter:unpack_iter + 4]
+        header_val = 0
+        for i, b in enumerate(header_bits):
+            if b:
+                header_val |= (1 << i)
+
+        if header_val == 0:
+            raise ValueError("Top-level object pack stream contains a null object header")
+
+        self._unpack_bits(bits, unpack_iter + 4, data)
 
         return data

@@ -11,7 +11,7 @@ data_dir = os.path.join(
 uvm_data_dir = os.path.join(data_dir, "uvm")
 uvm_seq_data_dir = os.path.join(uvm_data_dir, "sequence")
 
-@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(excl=('vlt')), indirect=True)
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(), indirect=True)
 def test_smoke(pyhdl_dvflow, hdl_if_env):
     env = hdl_if_env
     env["PYTHONPATH"] = os.path.join(uvm_seq_data_dir, "smoke") + os.pathsep + env["PYTHONPATH"]
@@ -38,6 +38,16 @@ def test_smoke(pyhdl_dvflow, hdl_if_env):
     
     status, out = pyhdl_dvflow.runTask(sim_run)
 
+    assert len(out.output) == 1
+
+    with open(os.path.join(out.output[0].basedir, "sim.log"), "r") as fp:
+        simlog = fp.read()
+
+    print("simlog:\n%s" % simlog)
+
     assert status == 0
+    assert "body" in simlog
+    assert "Driver got item:" in simlog
+    assert "UVM_FATAL /" not in simlog
 
     pass

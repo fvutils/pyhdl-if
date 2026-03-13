@@ -118,8 +118,17 @@ package pyhdl_if;
             current_real_time = pyhdl_if_get_real_time_ms();
             elapsed = current_real_time - last_poll_real_time;
 
-            // Pump the Python event loop
+            // Repeatedly pumping Python while a Python->SV task
+            // is already in flight can create enough same-timestamp churn to hit
+            // the inactive-region converge limit. Let the active SV task finish
+            // before polling for more Python work.
+`ifdef VERILATOR
+            if (__py2sv_call == __py2sv_resp) begin
+                pyhdl_pi_if_idle();
+            end
+`else
             pyhdl_pi_if_idle();
+`endif
 
             // Adjust next simulation wait based on real-time performance
             // Goal: poll approximately every __py_poll_real_time_ms of real time
@@ -326,4 +335,3 @@ package pyhdl_if;
     `include "pyhdl_if_pytest.svh"
 
 endpackage
-

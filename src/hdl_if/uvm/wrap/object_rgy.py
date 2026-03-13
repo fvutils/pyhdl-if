@@ -156,24 +156,29 @@ class uvm_object_rgy(object):
                 field_name = tokens[0]
                 field_type = tokens[1]
 
-                # Check if this is a queue/array field - UVM shows these as "da(integral)" or "da(...)"
-                if field_type.startswith("da("):
-                    # Dynamic array (queue) field
-                    # Size token is the number of elements currently in the queue
-                    try:
-                        num_elements = int(tokens[2])
-                    except (ValueError, IndexError):
-                        num_elements = 0
-                    
-                    # For queue fields, we need to determine element size
-                    # If queue is empty (0 elements), we mark size as unknown
-                    # and will determine it from actual data during pack/unpack
+                # Check if this is a queue/array field.
+                # Different UVM implementations report queue fields as either
+                # "da(...)" or "queue(...)" in sprint output.
+                if field_type.startswith("da(") or field_type.startswith("queue("):
+                    # Dynamic array / queue field. UVM sprint reports the element
+                    # category in the type token (for example "queue(integral)").
+                    # Packing uses the compile-time element width ($bits(VAR[0])),
+                    # so prefer a known width when the type token is specific
+                    # enough. Fall back to runtime inference only when the sprint
+                    # type does not tell us the element width.
+                    elem_type = field_type[field_type.find("(")+1:-1]
+                    elem_size = -1
+                    size_unknown = True
+                    if elem_type == "integral":
+                        elem_size = 32
+                        size_unknown = False
+
                     field = UvmFieldType(
                         name=field_name,
                         kind=UvmFieldKind.QUEUE,
-                        size=-1,  # Element size unknown initially
+                        size=elem_size,
                         is_signed=False,  # Assuming unsigned for now
-                        size_unknown=True  # Will be determined from data
+                        size_unknown=size_unknown
                     )
                     obj_t.fields.append(field)
                     obj_t.field_m[field.name] = field

@@ -10,7 +10,7 @@ data_dir = os.path.join(
 uvm_data_dir = os.path.join(data_dir, "uvm")
 object_string_data_dir = os.path.join(uvm_data_dir, "object_string")
 
-@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(excl=('vlt')), indirect=True)
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(), indirect=True)
 def test_uvm_object_string(pyhdl_dvflow, hdl_if_env):
     """
     Test the uvm_object_string functionality in a simulation environment.

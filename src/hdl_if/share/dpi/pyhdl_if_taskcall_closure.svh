@@ -55,8 +55,11 @@ class TaskCallClosure implements PyHdlPiRunnable;
             $finish;
         end
 
-        // If there are pending sv2py calls, poll until something changes
-        if (__sv2py_call != __sv2py_resp) begin
+        // If there are pending sv2py calls and some other py2sv work is still
+        // outstanding, poll until something changes. When this closure is the
+        // last nested py2sv call, waiting here deadlocks because the outer
+        // sv2py response cannot advance until this task returns.
+        if ((__sv2py_call != __sv2py_resp) && (__py2sv_call != __py2sv_resp)) begin
             int py2sv_call_curr = __py2sv_call;
             int py2sv_resp_curr = __py2sv_resp;
             int sv2py_call_curr = __sv2py_call;
@@ -81,7 +84,7 @@ class TaskCallClosure implements PyHdlPiRunnable;
                 "TaskCallClosure::run - done waiting for a change: ps_c=%0d ps_r=%0d sp_c=%0d sp_r=%0d",
                 __py2sv_call, __py2sv_resp, __sv2py_call, __sv2py_resp));
         end else begin
-            `PYHDL_IF_DEBUG(("TaskCallClosure::run - no outstanding sv2py ... which is odd"));
+            `PYHDL_IF_DEBUG(("TaskCallClosure::run - no additional outstanding py2sv work"));
         end
 
         PyGILState_Release(state);

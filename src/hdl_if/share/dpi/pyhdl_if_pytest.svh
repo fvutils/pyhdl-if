@@ -49,7 +49,7 @@ task automatic pyhdl_pytest(
     PyObject pytest_runner_m, run_pytest_h, args, kwargs, task_h, result;
     PyObject os_expandvars_h, expanded_str;
     string final_testpath, final_testname, final_filter;
-    int has_error;
+    bit has_error;
     
     // Ensure SV event loop is running
     if (!prv_run_q_running) begin
@@ -186,7 +186,7 @@ task automatic pyhdl_pytest(
     fork
         begin
             automatic PyObject done_h, done_result;
-            automatic int is_done;
+            automatic bit is_done;
             
             is_done = 0;
             while (!is_done) begin

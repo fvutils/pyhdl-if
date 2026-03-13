@@ -62,7 +62,9 @@ class pyhdl_uvm_object_type_p #(type T=uvm_object, type Tw=pyhdl_uvm_object_w) e
 
     virtual function bit issubclass(uvm_object obj);
         T test_t;
-        return $cast(test_t, obj);
+        bit match;
+        match = $cast(test_t, obj);
+        return match;
     endfunction
 
     virtual function pyhdl_uvm_object_if create(uvm_object obj);
@@ -79,4 +81,3 @@ class pyhdl_uvm_object_type_p #(type T=uvm_object, type Tw=pyhdl_uvm_object_w) e
         return prv_inst;
     endfunction
 endclass
-

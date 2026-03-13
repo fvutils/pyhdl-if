@@ -106,8 +106,14 @@ class CallProxyVPI(CallProxy):
             sem_id,
             m,
             args):
-        res = await m(*args)
-        self.ep.response_py_t(sem_id, res)
+        import traceback
+        res = None
+        try:
+            res = await m(*args)
+        except Exception:
+            traceback.print_exc()
+        finally:
+            self.ep.response_py_t(sem_id, res)
 
     def invoke_py_t(
             self,
@@ -127,4 +133,3 @@ class CallProxyVPI(CallProxy):
         
 
         
-

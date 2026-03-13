@@ -106,6 +106,7 @@ class pyhdl_uvm_sequence_proxy #(
 
         m_helper = new(pyclass, cls);
         m_helper.m_proxy = this;
+        m_helper.m_proxy_if = this;
         m_helper.m_userdata = userdata;
 
         // Associate the Python object for the helper with the sequence object
@@ -117,15 +118,20 @@ class pyhdl_uvm_sequence_proxy #(
 endclass
 
 class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ)
-        extends uvm_sequence_proxy_imp_impl #(pyhdl_uvm_sequence_proxy_helper #(REQ,REQ)) 
-        implements pyhdl_uvm_object_if;
+        extends uvm_sequence_proxy_imp_impl
+        implements uvm_sequence_proxy_imp_if, pyhdl_uvm_object_if;
     uvm_sequence_base               m_proxy;
+    pyhdl_uvm_sequence_proxy_if     m_proxy_if;
     uvm_sequence_proxy_exp_impl     m_exp;
     uvm_object                      m_userdata;
 
     function new(string clsname, PyObject cls);
         PyObject impl_o, args;
-        super.new(this);
+        super.new();
+        m_impl = this;
+        if (m_obj != null) begin
+            pyhdl_if::pyhdl_if_connectObject(m_obj, this);
+        end
 
         m_exp = new(m_obj);
 
@@ -208,22 +214,20 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
     endfunction
 
     virtual function void set_int_local(string name, int value);
-        m_proxy.set_int_local(name, value);
+        // uvm_sequence_base does not provide the set_*_local helpers used by uvm_object.
     endfunction
 
     virtual function void set_string_local(string name, string value);
-        m_proxy.set_string_local(name, value);
+        // uvm_sequence_base does not provide the set_*_local helpers used by uvm_object.
     endfunction
 
     virtual function void set_object_local(string name, PyObject value);
-        m_proxy.set_object_local(name, pyhdl_uvm_object_rgy::inst().get_object(value));
+        // uvm_sequence_base does not provide the set_*_local helpers used by uvm_object.
     endfunction
 
     virtual function PyObject _get_sequencer();
-        pyhdl_uvm_sequence_proxy_if proxy;
-        $cast (proxy, m_proxy);
         `PYHDL_IF_DEBUG(("-- _get_sequencer"))
-        return pyhdl_uvm_object_rgy::inst().wrap(proxy._get_sequencer());
+        return pyhdl_uvm_object_rgy::inst().wrap(m_proxy_if._get_sequencer());
     endfunction
 
     virtual function PyObject get_userdata();
@@ -240,7 +244,7 @@ class pyhdl_uvm_sequence_proxy_helper #(type REQ=uvm_sequence_item, type RSP=REQ
     endfunction
 
     virtual function PyObject create_rsp();
-        RSP rsp = REQ::type_id::create();
+        RSP rsp = RSP::type_id::create();
         return pyhdl_uvm_object_rgy::inst().wrap(rsp);
     endfunction
 

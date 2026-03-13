@@ -34,7 +34,7 @@ package reseed_pkg;
     function void build_phase(uvm_phase phase);
       reseed_item obj = reseed_item::type_id::create("obj");
       // Provide object to Python side via config DB
-      set_config_object("*", "MY_CONFIG", obj);
+      uvm_config_db #(uvm_object)::set(this, "*", "MY_CONFIG", obj);
 
       // Bridge to Python component that will perform reseed/verify
       m_proxy = pyhdl_uvm_component_proxy::type_id::create("m_proxy", this);

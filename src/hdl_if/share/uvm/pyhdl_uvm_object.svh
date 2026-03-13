@@ -38,7 +38,7 @@ class pyhdl_uvm_object;
     endfunction
 
     virtual function bit _randomize();
-        return m_uvm_obj .randomize();
+        return bit'(m_uvm_obj .randomize());
     endfunction
 
     virtual function string get_name();
@@ -126,14 +126,17 @@ class pyhdl_uvm_object;
     endfunction
 
     virtual function longint unsigned get_inst_id();
-        return m_uvm_obj .get_inst_id();
+        longint unsigned ret;
+        ret = m_uvm_obj .get_inst_id();
+        return ret;
     endfunction
 
     virtual function longint unsigned get_inst_count();
-        return m_uvm_obj .get_inst_count();
+        longint unsigned ret;
+        ret = m_uvm_obj .get_inst_count();
+        return ret;
     endfunction
 
 endclass
 
 `pyhdl_uvm_type_utils(uvm_object, pyhdl_uvm_object, uvm_object, pyhdl_uvm_object)
-

@@ -53,10 +53,18 @@ my_count      integral       16    'habcd
         assert obj_t.fields[2].kind == UvmFieldKind.INT
     
     def test_populate_fields_unknown_size(self):
-        """Test handling of fields with unknown size (should set can_pack=False)"""
+        """Test handling of object fields with unresolvable type (should set can_pack=False).
+
+        Real UVM sprint() output always begins with an object-type-annotation line
+        (name, class-type, '-', @handle) before listing fields.  The parser consumes
+        that first '-' line as the class annotation; subsequent '-' lines are treated
+        as nested-object fields.  When the nested type is unknown, can_pack must be
+        set to False.
+        """
         layout = """------------------------------------------------------------------
 Name          Type           Size  Value
 ------------------------------------------------------------------
+my_item       my_item_t      -     @12345
 my_data       integral       32    'h12345678
 my_object     object         -     <object>
 my_count      integral       16    'habcd
@@ -66,11 +74,11 @@ my_count      integral       16    'habcd
         obj_t = UvmObjectType()
         self.factory.populate_fields(obj_t, layout)
         
-        # Verify can_pack is set to False due to unknown size
-# MSB:        assert obj_t.can_pack == False
+        # Verify can_pack is set to False because my_object's type is unresolvable
+        assert obj_t.can_pack == False
         
-        # Verify we still get the fields with valid sizes
-        assert len(obj_t.fields) == 2  # my_object should be skipped due to "-" size
+        # Verify we still get the integral fields; my_object is skipped (unresolvable type)
+        assert len(obj_t.fields) == 2
         
         assert obj_t.fields[0].name == "my_data"
         assert obj_t.fields[0].size == 32

@@ -62,13 +62,13 @@ class BackendAsyncio(Backend):
         self._loop.stop()
 
     def idle(self):
-        self._loop.call_soon(self.__soon_cb)
-        self._loop.run_forever()
+        passes = 4 if threading.active_count() > 1 else 1
+        for _ in range(passes):
+            self._loop.call_soon(self.__soon_cb)
+            self._loop.run_forever()
         if threading.active_count() > 1:
-            # Yield to other threads
             time.sleep(0.0)
 
     def callCallback(self, cb):
         cb()
         self.idle()
-

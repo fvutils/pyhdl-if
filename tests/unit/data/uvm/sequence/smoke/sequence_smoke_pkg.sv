@@ -86,6 +86,14 @@ package sequence_smoke_pkg;
     endfunction
   endclass : sequence_env
 
+  class pyseq_t extends pyhdl_uvm_sequence_proxy #(.REQ(seq_item), .PyClass("pyseq::PySeq"));
+    `uvm_object_utils(pyseq_t)
+
+    function new(string name = "pyseq_t");
+      super.new(name);
+    endfunction
+  endclass : pyseq_t
+
   // Test
   class sequence_smoke_test extends uvm_test;
     `uvm_component_utils(sequence_smoke_test)
@@ -102,12 +110,11 @@ package sequence_smoke_pkg;
     endfunction
 
     virtual task run_phase(uvm_phase phase);
-      typedef pyhdl_uvm_sequence_proxy #(.REQ(seq_item), .PyClass("pyseq::PySeq")) seq_t;
-      seq_t s;
+      pyseq_t s;
 
       phase.raise_objection(this);
 
-      s = seq_t::type_id::create("s");
+      s = pyseq_t::type_id::create("s");
       s.start(env.seqr);
 
       // wait a bit for the sequence to run

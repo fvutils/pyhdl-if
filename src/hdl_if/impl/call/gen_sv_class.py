@@ -513,7 +513,7 @@ class GenSVClass(object):
         self.inc_ind()
         self.println("ImpT m_impl;")
         self.println("PyObject m_obj;")
-        self.println("function new(ImpT impl, pyhdl_if::PyObject obj=null, bit create=1, string clsname=\"%s\");" % api.name)
+        self.println("function new(ImpT impl=null, pyhdl_if::PyObject obj=null, bit create=1, string clsname=\"%s\");" % api.name)
         self.inc_ind()
         self.println("m_impl = impl;")
         self.println("if (obj == null && create) begin")
@@ -963,12 +963,12 @@ class GenSVClass(object):
             ctypes.c_int8 : "PyLong_AsLong",
             ctypes.c_int16 : "PyLong_AsLong",
             ctypes.c_int32 : "PyLong_AsLong",
-            ctypes.c_int64 : "PyLong_AsLong",
-            int : "PyLong_AsLong",
+            ctypes.c_int64 : "PyLong_AsLongLong",
+            int : "PyLong_AsLongLong",
             ctypes.c_uint8 : "PyLong_AsLong",
             ctypes.c_uint16 : "PyLong_AsLong",
             ctypes.c_uint32 : "PyLong_AsLong",
-            ctypes.c_uint64 : "PyLong_AsLong",
+            ctypes.c_uint64 : "PyLong_AsUnsignedLongLong",
             str : "PyUnicode_AsUTF8",
             ctypes.py_object : ""
         }
@@ -996,7 +996,7 @@ class GenSVClass(object):
         if t in (ctypes.c_int32, ctypes.c_int):
             return f"int'(pyhdl_if::PyLong_AsLong({var}))"
         if t in (ctypes.c_int64, int):
-            return f"pyhdl_if::PyLong_AsLong({var})"
+            return f"pyhdl_if::PyLong_AsLongLong({var})"
         if t in (ctypes.c_uint8,):
             return f"8'(pyhdl_if::PyLong_AsLong({var}))"
         if t in (ctypes.c_uint16,):
@@ -1004,7 +1004,7 @@ class GenSVClass(object):
         if t in (ctypes.c_uint32,):
             return f"32'(pyhdl_if::PyLong_AsLong({var}))"
         if t in (ctypes.c_uint64,):
-            return f"64'(pyhdl_if::PyLong_AsLong({var}))"
+            return f"pyhdl_if::PyLong_AsUnsignedLongLong({var})"
         if t in (str,):
             return f"pyhdl_if::PyUnicode_AsUTF8({var})"
         if isinstance(t, type) and issubclass(t, enum.IntEnum):
@@ -1020,7 +1020,7 @@ class GenSVClass(object):
         if t in (ctypes.c_bool, bool, ctypes.c_byte, ctypes.c_char, ctypes.c_int8, ctypes.c_int16, ctypes.c_int32, ctypes.c_int):
             return f"pyhdl_if::PyLong_FromLong(longint'({var}))"
         if t in (ctypes.c_int64, int):
-            return f"pyhdl_if::PyLong_FromLong({var})"
+            return f"pyhdl_if::PyLong_FromLongLong({var})"
         if t in (ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint32):
             return f"pyhdl_if::PyLong_FromUnsignedLong(longint'({var}))"
         if t in (ctypes.c_uint64,):

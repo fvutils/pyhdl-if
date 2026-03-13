@@ -10,7 +10,7 @@ data_dir = os.path.join(
 uvm_data_dir = os.path.join(data_dir, "uvm")
 queue_int_data_dir = os.path.join(uvm_data_dir, "queue_int")
 
-@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(excl=('vlt')), indirect=True)
+@pytest.mark.parametrize("pyhdl_dvflow", available_sims_uvm(), indirect=True)
 def test_uvm_field_queue_int_with_data(pyhdl_dvflow, hdl_if_env):
     """
     Test the uvm_field_queue_int pack/unpack functionality with populated queues.
