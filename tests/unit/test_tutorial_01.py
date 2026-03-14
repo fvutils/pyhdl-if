@@ -19,6 +19,7 @@ def test_tutorial_01_hello_world(sim, hdl_if_env):
     cmd = [
         os.path.join(REPO_ROOT, "packages", "python", "bin", "dfm"),
         "run",
+        "--clean",
         f"-Dsim={sim}",
         "sim-run",
     ]

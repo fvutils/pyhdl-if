@@ -123,33 +123,45 @@
         input int           id,
         output PyObject     res,
         inout PyGILState_STATE state);
-        // Wait for the semaphore while continuing to pump Python work.
+        // Pump the Python event loop only while there is an imbalance between
+        // sv->py and py->sv call counts, i.e. while Python hasn't yet responded
+        // to our call by queuing an SV task (sv2py_call > py2sv_call).
         //
-        // Thread-initiated run_coroutine_threadsafe() calls depend on idle() being
-        // serviced until the outer SV->Python task finishes.
+        // Once balanced (sv2py_call <= py2sv_call), Python has scheduled its
+        // SV-side work and we must block so the SV scheduler can execute it.
+        // The TaskCallClosure mechanism then drives progress: as each SV task
+        // completes, event.set() -> be.idle() resumes the Python coroutine which
+        // queues the next task, and so on until response_py_t signals our sem.
         `PYHDL_IF_DEBUG(("--> pyhdl_if_waitSem: id=%0d sv2py=%0d py2sv=%0d", id, __sv2py_call, __py2sv_resp));
 
-
-        while (1'b1) begin
+        // Pump while imbalanced: more sv->py calls than py->sv calls means
+        // Python hasn't yet reacted by scheduling SV work.
+        while (__sv2py_call > __py2sv_call) begin
             `PYHDL_IF_DEBUG((
-                "--> pyhdl_if_waitSem: poll sv2py_call=%0d py2sv_resp=%0d py2sv_call=%0d py2sv_resp=%0d",
-                    __sv2py_call, __sv2py_resp, __py2sv_call, __py2sv_resp));
+                "pyhdl_if_waitSem: pump sv2py_call=%0d py2sv_call=%0d py2sv_resp=%0d",
+                    __sv2py_call, __py2sv_call, __py2sv_resp));
             if (__callsem[id].try_get() != 32'h0) begin
-                `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: callsem is valid"));
+                `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: completed during pump id=%0d", id));
                 res = __callsem_res[id];
                 __callsem_res[id] = null;
-                `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: done id=%0d", id));
                 `PYHDL_IF_DEBUG(("<-- pyhdl_if_waitSem: id=%0d sv2py=%0d py2sv=%0d", id, __sv2py_call, __py2sv_resp));
                 return;
             end
-
-            // Pump Python event loop to process scheduled coroutines
             pyhdl_pi_if_idle();
             PyGILState_Release(state);
             void'(pyhdl_if_sched_yield());
-            #1step; // Allow time to advance while the outer SV->Python call is pending
+            #0; // Let SV scheduler start queued TaskCallClosures
             state = PyGILState_Ensure();
         end
+
+        // Balanced: block until the SV task chain completes and signals our sem.
+        `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: balanced sv2py=%0d py2sv=%0d - blocking", __sv2py_call, __py2sv_call));
+        __callsem[id].get();
+
+        `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: done id=%0d", id));
+        res = __callsem_res[id];
+        __callsem_res[id] = null;
+        `PYHDL_IF_DEBUG(("<-- pyhdl_if_waitSem: id=%0d sv2py=%0d py2sv=%0d", id, __sv2py_call, __py2sv_resp));
     endtask
 
     function automatic void pyhdl_if_setSem(

@@ -45,14 +45,15 @@ class ThreadedTest(object):
         
         def blocking_work():
             """Blocking work that runs in a thread and calls back to SV"""
-            print("[Thread] Worker started", flush=True)
+            import threading
+            print("[Thread] Worker started, active_threads=%d" % threading.active_count(), flush=True)
             try:
                 for i in range(3):
                     # Schedule async call on the main event loop and wait for result
-                    print("--> %d: threaded increment" % i, flush=True)
+                    print("--> %d: threaded run_coroutine_threadsafe" % i, flush=True)
                     future = asyncio.run_coroutine_threadsafe(
                         counter.increment(), loop)
-                    print("<-- %d: threaded increment" % i, flush=True)
+                    print("<-- %d: threaded run_coroutine_threadsafe, waiting for result..." % i, flush=True)
                     val = future.result(timeout=30.0)
                     print(f"[Thread] Increment {i+1}: counter = {val}", flush=True)
                     results.append(val)

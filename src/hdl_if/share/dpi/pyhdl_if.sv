@@ -73,6 +73,14 @@ package pyhdl_if;
     int __py_poll_sim_time = 1000;         // +pyhdl.poll_sim_time=N (initial sim time units)
     longint __py_poll_real_time_ms = 100;  // +pyhdl.poll_real_time_ms=N (target real time in ms)
 
+    // Call balance tracking for Python thread support
+    // - sv2py_active: count of active SV->Python async calls waiting for completion
+    // - py2sv_active: count of active Python->SV blocking calls in progress
+    int __sv2py_call = 0;
+    int __sv2py_resp = 0;
+    int __py2sv_call = 0;
+    int __py2sv_resp = 0;
+
     // DPI import for getting real time in milliseconds
     import "DPI-C" function longint pyhdl_if_get_real_time_ms();
 
@@ -118,17 +126,26 @@ package pyhdl_if;
             current_real_time = pyhdl_if_get_real_time_ms();
             elapsed = current_real_time - last_poll_real_time;
 
-            // Repeatedly pumping Python while a Python->SV task
-            // is already in flight can create enough same-timestamp churn to hit
-            // the inactive-region converge limit. Let the active SV task finish
-            // before polling for more Python work.
+            // The poll thread must not pump Python while waitSem is already pumping
+            // (sv2py_call > py2sv_call = Python hasn't yet scheduled any SV work).
+            // Once balanced (sv2py_call <= py2sv_call), waitSem is in blocking mode
+            // and the poll thread is the ONLY thing that can drive the event loop —
+            // this is critical for asyncio.to_thread / run_coroutine_threadsafe flows
+            // where Python needs the event loop pumped to progress.
+            `PYHDL_IF_DEBUG(("poll_thread: sv2py=%0d/%0d py2sv=%0d/%0d - %s",
+                __sv2py_call, __sv2py_resp, __py2sv_call, __py2sv_resp,
+                (__sv2py_call <= __py2sv_call) ? "pumping" : "skipping (waitSem pumping)"));
+            if (__sv2py_call <= __py2sv_call) begin
 `ifdef VERILATOR
-            if (__py2sv_call == __py2sv_resp) begin
-                pyhdl_pi_if_idle();
-            end
+                // On Verilator, also skip pumping when a py2sv call is in flight
+                // to avoid hitting the inactive-region converge limit.
+                if (__py2sv_call == __py2sv_resp) begin
+                    pyhdl_pi_if_idle();
+                end
 `else
-            pyhdl_pi_if_idle();
+                pyhdl_pi_if_idle();
 `endif
+            end
 
             // Adjust next simulation wait based on real-time performance
             // Goal: poll approximately every __py_poll_real_time_ms of real time
@@ -138,10 +155,13 @@ package pyhdl_if;
                 if (sim_wait < min_sim_wait) sim_wait = min_sim_wait;
             end else if (elapsed == 0) begin
                 // Sim time is passing much faster than real time - increase wait significantly
-                sim_wait = sim_wait * 4;
+                // Cap at 1 billion to prevent 32-bit signed integer overflow
+                if (sim_wait < 250_000_000) sim_wait = sim_wait * 4;
+                else sim_wait = 1_000_000_000;
             end else if (elapsed < __py_poll_real_time_ms / 2) begin
                 // Sim time is passing faster than real time - increase wait
-                sim_wait = sim_wait * 2;
+                if (sim_wait < 500_000_000) sim_wait = sim_wait * 2;
+                else sim_wait = 1_000_000_000;
             end
 
             last_poll_real_time = current_real_time;
@@ -263,14 +283,6 @@ package pyhdl_if;
     ICallApi            __objects[];
     semaphore           __callsem[];
     PyObject            __callsem_res[];
-
-    // Call balance tracking for Python thread support
-    // - sv2py_active: count of active SV->Python async calls waiting for completion
-    // - py2sv_active: count of active Python->SV blocking calls in progress
-    int __sv2py_call = 0;
-    int __sv2py_resp = 0;
-    int __py2sv_call = 0;
-    int __py2sv_resp = 0;
 
     // Empty base class
     class CallEmptyBase;

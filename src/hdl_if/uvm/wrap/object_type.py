@@ -376,9 +376,19 @@ class UvmObjectType(object):
 
     def unpack_ints(self, intstream: List[int]) -> object:
         """
-        Unpacks a list of 32-bit ints (as produced by pack_ints) into a new data_t instance.
-        Mirrors the active UVM packer layout, including the 64-bit reserved
-        prefix and the top-level object header.
+        Unpacks a list of 32-bit ints into a new data_t instance.
+
+        Handles two UVM packer formats transparently:
+        - IEEE 1800.2 / bundled UVM (e.g. Verilator): m_pack calls pack_object(),
+          which prepends a 64-bit header [packed_size, unpack_iter=64] and a 4-bit
+          non-null object marker before the field payload.
+        - UVM 1.2 (e.g. Questa/MTI): m_pack calls __m_uvm_field_automation directly,
+          producing raw field bits from offset 0 with no header.
+
+        The format is detected by checking self-consistency of the first word:
+        packed_size (intstream[0]) must equal the stream length in bits rounded up
+        to 32-bit words, and intstream[1] must equal 64.
+
         Returns:
             data_t instance populated with unpacked field values.
         """
@@ -394,35 +404,33 @@ class UvmObjectType(object):
             for j in range(32):
                 bits.append((v >> j) & 1)
 
-        if len(bits) < 64:
-            raise ValueError("Packed int stream is missing the UVM packer header")
+        # Detect the IEEE 1800.2 / bundled-UVM 64-bit header by self-consistency:
+        # intstream[0] encodes packed_size (total bits in stream), which must round
+        # up to exactly len(intstream) words; intstream[1] encodes unpack_iter=64.
+        has_header = False
+        field_offset = 0
+        if len(intstream) >= 2:
+            packed_size = intstream[0]
+            unpack_iter = intstream[1]
+            if (packed_size > 64
+                    and unpack_iter == 64
+                    and (packed_size + 31) // 32 == len(intstream)):
+                has_header = True
 
-        packed_size = 0
-        unpack_iter = 0
-        for i in range(32):
-            if bits[i]:
-                packed_size |= (1 << i)
-            if bits[32 + i]:
-                unpack_iter |= (1 << i)
-
-        if packed_size <= 64 or unpack_iter < 64:
-            raise ValueError(
-                f"Invalid UVM packer header: packed_size={packed_size}, unpack_iter={unpack_iter}")
-
-        bits = bits[:packed_size]
-
-        # Create target data object
         data = self.data_t()
 
-        header_bits = bits[unpack_iter:unpack_iter + 4]
-        header_val = 0
-        for i, b in enumerate(header_bits):
-            if b:
-                header_val |= (1 << i)
+        if has_header:
+            bits = bits[:packed_size]
+            # 4-bit non-null object marker added by pack_object() at unpack_iter
+            header_val = 0
+            for i, b in enumerate(bits[unpack_iter:unpack_iter + 4]):
+                if b:
+                    header_val |= (1 << i)
+            if header_val == 0:
+                raise ValueError("Top-level object pack stream contains a null object header")
+            field_offset = unpack_iter + 4
+        # else: UVM 1.2 / MTI — raw fields from bit 0, no header prefix
 
-        if header_val == 0:
-            raise ValueError("Top-level object pack stream contains a null object header")
-
-        self._unpack_bits(bits, unpack_iter + 4, data)
+        self._unpack_bits(bits, field_offset, data)
 
         return data

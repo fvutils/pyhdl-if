@@ -14,8 +14,8 @@ jobs:
       run: |
         python3 -m venv py
         ./py/bin/pip install -U ivpm
-        ./py/bin/python3 -m ivpm update -a
-        ./packages/python/bin/pip install -U typing_extensions build
+        ./py/bin/python3 -m ivpm update -d default-dev -a
+        ./packages/python/bin/pip install -U typing_extensions build pcpp cxxheaderparser cython setuptools_scm
         ./packages/python/bin/python3 setup.py build_ext --inplace
         ./packages/python/bin/python3 -m build -n
         ls src
@@ -180,4 +180,3 @@ jobs:
 #       shell: bash
 #       run: |
 #           ./packages/python/Scripts/python -m twine upload dist/*.whl
-
