@@ -14,7 +14,7 @@ jobs:
       run: |
         python3 -m venv py
         ./py/bin/pip install -U ivpm
-        ./py/bin/python3 -m ivpm update -d default-dev -a
+        ./py/bin/python3 -m ivpm update -d default-dev -a --py-pip
         ./packages/python/bin/pip install -U typing_extensions build pcpp cxxheaderparser cython setuptools_scm
         ./packages/python/bin/python3 setup.py build_ext --inplace
         ./packages/python/bin/python3 -m build -n
