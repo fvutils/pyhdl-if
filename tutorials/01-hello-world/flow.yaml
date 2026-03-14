@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+#
+# DV Flow Manager build/run recipe for Tutorial 1 — Hello World.
+#
+# Run with:
+#   dfm run -Dsim=<sim> sim-run
+#
+# where <sim> is one of:
+#   xcm  - Cadence Xcelium
+#   mti  - Siemens Questa / ModelSim
+#   vcs  - Synopsys VCS
+#   vlt  - Verilator
+#
+# To inspect the exact commands sent to the simulator, add --log-level=INFO:
+#   dfm --log-level=INFO run -Dsim=xcm sim-run
+
+package:
+  name: hello_world
+  with:
+    sim:
+      type: str
+      # Default simulator.  Override on the command line with -Dsim=<sim>.
+      value: "vlt"
+
+  tasks:
+  - name: defines
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [defines.v]
+
+  - name: src
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [top_pkg.sv, top.sv]
+
+  # Add this directory to PYTHONPATH so the simulator can find hello.py
+  # when the proxy executes `import hello`.
+  - name: pythonpath
+    uses: std.SetEnv
+    with:
+      prepend_path:
+        PYTHONPATH: ${{ srcdir }}
+
+  - name: sim-img
+    desc: Builds the simulation image
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs:
+    - defines
+    - "hdlsim.${{ sim }}.SimLibUVM"  # Compile the UVM class library
+    - pyhdl-if.UVMPkg                # Compile PyHDL-IF UVM package
+    - pyhdl-if.DpiLib                # Link the PyHDL-IF DPI shared library
+    - src
+    with:
+      top: [top]
+
+  - name: sim-run
+    uses: "hdlsim.${{ sim }}.SimRun"
+    needs: [pythonpath, sim-img]
+    with:
+      plusargs:
+      - UVM_TESTNAME=hello_test
+      - pyhdl.debug=0

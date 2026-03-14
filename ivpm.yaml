@@ -2,12 +2,29 @@
 package:
   name: pyhdl-if
 
-  #  setup-deps:
-  #- ninja
-  #- cython
-
   dep-sets:
+  - name: examples
+    deps: 
+    - name: pyhdl-if
+      src: pypi 
+    - name: verilator
+      url: https://github.com/edapack/verilator-bin
+      src: gh-rls
+      version: v5.046
+      cache: true
+    - name: dv-flow-mgr
+      src: pypi
+    - name: dv-flow-libhdlsim
+      src: pypi
+    - name: pytest_dfm
+      src: pypi
 
+  - name: default
+    deps:
+    - name: pcpp
+      src: pypi
+    - name: cxxheaderparser
+      src: pypi
 
   - name: default-dev
     deps:
@@ -31,10 +48,8 @@ package:
       url: https://github.com/edapack/verilator-bin
       src: gh-rls
       version: v5.047.22543776923
-        #      version: 5.043.19982369871
       prerelease: true
       cache: true
-#      url: https://github.com/pss-hands-on/verilator-bin/releases/download/v5.030/verilator-ubuntu-x64-5.030.tar.gz
     - name: pcpp
       src: pypi
     - name: cxxheaderparser
@@ -58,6 +73,7 @@ package:
         #    - name: uvm
         #      url: https://www.accellera.org/images/downloads/standards/uvm/Accellera-1800.2-2017-1.0.tar.gz
         #      cache: true
+
   - name: default-ci
     deps:
     - name: pytest
@@ -99,14 +115,6 @@ package:
     - name: doxygen-filter-sv
       url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
 
-  - name: default
-    deps:
-    - name: pytest
-      src: pypi
-        #    - name: pyvsc-dataclasses
-        #      src: pypi
-    - name: fusesoc
-      src: pypi
 
   env:
     - name: PATH
