@@ -112,17 +112,25 @@ jobs:
       # Against the installed wheel in a clean venv, never the source tree --
       # that is what makes this a test of the artifact we would ship. The
       # simulator-driven tests are GitHub's job (see the header note); this
-      # checks the compiled extension loads and the packaged SV sources shipped.
+      # checks the package imports, the compiled library shipped, and the
+      # generated SV sources are present.
+      #
+      # Note the extension is NOT importable as hdl_if.entry: setup.py's
+      # ivpm_ext_name_m renames it to libpyhdl_if.so, because a simulator
+      # dlopens it as a DPI/VPI library rather than Python importing it. Its
+      # presence as a file is therefore the only check that means anything.
       run: |
         /opt/python/cp312-cp312/bin/python -m venv /tmp/smoke
         /tmp/smoke/bin/pip install -q dist/*cp312*.whl
         /tmp/smoke/bin/python -c "
-        import os, hdl_if, hdl_if.entry
-        share = os.path.join(os.path.dirname(hdl_if.__file__), 'share')
-        for f in ('dpi/pyhdl_if.sv', 'dpi/pyhdl_dpi_imports.svh', 'uvm/pyhdl_uvm.sv'):
-            p = os.path.join(share, f)
-            assert os.path.isfile(p), 'missing from wheel: ' + f
-        print('extension and SV sources OK:', hdl_if.__file__)
+        import os, hdl_if
+        d = os.path.dirname(hdl_if.__file__)
+        for f in ('libpyhdl_if.so',
+                  'share/dpi/pyhdl_if.sv',
+                  'share/dpi/pyhdl_dpi_imports.svh',
+                  'share/uvm/pyhdl_uvm.sv'):
+            assert os.path.isfile(os.path.join(d, f)), 'missing from wheel: ' + f
+        print('package, DPI library and SV sources OK:', d)
         "
         /tmp/smoke/bin/pyhdl-if --help > /dev/null && echo "console script OK"
 
@@ -174,7 +182,11 @@ jobs:
       run: |
         P=/opt/python/cp312-cp312/bin/python
         $P setup.py build_ext --inplace
-        $P -c "import sys; sys.path.insert(0, 'src'); import hdl_if.entry; print('extension importable')"
+        # build_ext lands the DPI library beside the sources as
+        # src/hdl_if/libpyhdl_if.so (setup.py renames it via ivpm_ext_name_m);
+        # it is dlopened by a simulator, never imported, so check for the file.
+        test -f src/hdl_if/libpyhdl_if.so
+        $P -c "import sys; sys.path.insert(0, 'src'); import hdl_if; print('hdl_if importable:', hdl_if.__file__)"
         cd doc
         make html SPHINXBUILD="/opt/python/cp312-cp312/bin/sphinx-build" 2>&1 | tee /tmp/sphinx.log
         touch build/html/.nojekyll
