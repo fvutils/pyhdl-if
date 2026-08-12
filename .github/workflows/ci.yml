@@ -63,7 +63,10 @@ jobs:
       run: |
         python3 -m pip install packaging sphinx cairosvg sphinx-argparse
         python3 -m pip install sphinx-rtd-theme sphinx-systemverilog
-        python3 -m pip install ivpm cxxheaderparser pcpp
+        # setuptools_scm is in setup.py's setup_requires; without it installed,
+        # setuptools fetches it into .eggs without its dependencies and 10.x
+        # then fails on `import vcs_versioning`.
+        python3 -m pip install ivpm cxxheaderparser pcpp setuptools_scm
     - name: Build
       # Without the UVM sources conf.py drops the generated SystemVerilog class
       # reference from uvm.rst, so fetch them here too -- otherwise this job

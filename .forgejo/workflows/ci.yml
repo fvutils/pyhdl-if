@@ -74,8 +74,14 @@ jobs:
       # cxxheaderparser) to generate the DPI import layer, then compiles
       # hdl_if.entry. The ivpm.yaml source dependencies are test and doc
       # dependencies, and pulling them would put GitHub back in this path.
+      #
+      # cp313 is deliberately absent, matching the GitHub matrix. Python 3.13
+      # declares PyDict_GetItemRef(PyObject *, PyObject *, PyObject **result),
+      # and gen_py_if.py cannot map a PyObject** parameter -- it raises
+      # "parameter type PyObject** is not supported" and the build fails. Add
+      # cp313 here once the generator handles output-pointer parameters.
       run: |
-        for py in cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312 cp313-cp313; do
+        for py in cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312; do
           echo "=== $py ==="
           P=/opt/python/${py}/bin/python
           $P -m pip install -q --upgrade pip setuptools wheel build twine \
@@ -141,9 +147,14 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install doc dependencies
+      # setuptools_scm is here because setup.py names it in setup_requires: if
+      # it is not already importable, setuptools fetches it into .eggs on its
+      # own, and that path installs the distribution without its dependencies
+      # -- setuptools_scm 10.x then dies on `import vcs_versioning`. Installing
+      # it with pip resolves the dependency and keeps .eggs out of the picture.
       run: |
         P=/opt/python/cp312-cp312/bin/python
-        $P -m pip install -q --upgrade pip setuptools wheel
+        $P -m pip install -q --upgrade pip setuptools wheel setuptools_scm
         $P -m pip install -q sphinx sphinx-rtd-theme sphinx-argparse cairosvg \
           packaging sphinx-systemverilog ivpm cython pcpp cxxheaderparser
 
