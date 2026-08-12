@@ -19,9 +19,20 @@
 #*     Author: 
 #*
 #****************************************************************************
+"""Simulator services available to Python."""
+
 from typing import Dict, List
 
 class HdlServices(object):
+    """Services the running simulator provides to Python.
+
+    Each foreign interface -- DPI, VPI -- registers an implementation at
+    startup, so this is the seam between Python and simulator-specific
+    facilities such as time callbacks. Reach the active one with :meth:`inst`.
+
+    Args:
+        name: The name this implementation registers under, e.g. ``"dpi"``.
+    """
 
     _impl : List['HdlServices'] = []
     _impl_m : Dict[str, 'HdlServices'] = {}
@@ -30,15 +41,48 @@ class HdlServices(object):
         self.name = name
 
     def registerTimeCB(self, cb : callable, time_ps : int) -> object:
+        """Schedule a callback at a simulation time.
+
+        Args:
+            cb: The callback to invoke.
+            time_ps: Delay from now, in picoseconds.
+
+        Returns:
+            A handle identifying the scheduled callback.
+
+        Raises:
+            NotImplementedError: Always, on the base class.
+        """
         raise NotImplementedError("registerTimeCB for %s" % str(type(self)))
 
     @classmethod
     def registerServices(cls, services):
+        """Register a services implementation.
+
+        Called by a foreign-interface backend during startup.
+
+        Args:
+            services: The implementation to register.
+        """
         cls._impl.append(services)
         cls._impl_m[services.name] = services
 
     @classmethod
     def inst(cls, name=None):
+        """Return a registered services implementation.
+
+        Args:
+            name: The implementation to return. Defaults to the first
+                registered, which is the right one in a single-simulator run.
+
+        Returns:
+            The requested :class:`HdlServices`.
+
+        Raises:
+            Exception: If nothing has registered yet, which means the
+                simulator-side startup has not run.
+            KeyError: If ``name`` names no registered implementation.
+        """
         if len(cls._impl) == 0:
             raise Exception("No services registered yet")
         if name is None:

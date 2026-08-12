@@ -19,15 +19,38 @@
 #*     Author: 
 #*
 #****************************************************************************
+"""Declaration of a single FIFO-backed TLM method."""
+
 from enum import Enum, auto
 
 class TlmMethodKind(Enum):
+    """The direction of data flow through a TLM method.
+
+    Attributes:
+        Req: Outbound only -- see :func:`~hdl_if.decorators.req_fifo`.
+        Rsp: Inbound only -- see :func:`~hdl_if.decorators.rsp_fifo`.
+        ReqRsp: Paired request and response -- see
+            :func:`~hdl_if.decorators.reqrsp_fifo`.
+    """
     Req = auto()
     Rsp = auto()
     ReqRsp = auto()
 
 
 class TlmMethod(object):
+    """One FIFO-backed method of a TLM interface.
+
+    Created when a method is decorated, and collected by
+    :func:`~hdl_if.decorators.tlm_if` into the interface's type info. The
+    payload types are what the generated SystemVerilog FIFO widths are derived
+    from.
+
+    Args:
+        name: The method name.
+        kind: The method's :class:`TlmMethodKind`.
+        t1: The request payload type, or None for a response-only method.
+        t2: The response payload type, or None for a request-only method.
+    """
 
     def __init__(self, name, kind, t1, t2):
         self.name = name

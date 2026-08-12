@@ -13,6 +13,7 @@ Overview
 SystemVerilog proxy classes construct and drive Python implementations at
 runtime. You supply the Python implementation class via a string (``pyclass``
 field or ``PyClass`` parameter) and the proxy:
+
 1. Parses the string into module and class names
 2. Imports the Python module
 3. Instantiates the class
@@ -99,6 +100,7 @@ Two ways to specify the Python class:
       end
 
 Examples:
+
 - ``examples/uvm/sequence_rand_item/top_pkg.sv``
 - ``examples/uvm/sequence_item_knobs/top_pkg.sv``
 - ``examples/uvm/multi_comp_hierarchy/top_pkg.sv``
@@ -126,6 +128,7 @@ the injected ``self.proxy`` helpers.
 Advanced Item Manipulation
 --------------------------
 Typical flow inside the Python sequence:
+
 - Create item: ``req = self.proxy.create_req()``
 - Randomize SV-side: ``req.randomize()``
 - Access packed view: ``vals = req.pack()``
@@ -133,6 +136,7 @@ Typical flow inside the Python sequence:
 - Handshake: ``await self.proxy.start_item(req)`` / ``await self.proxy.finish_item(req)``
 
 See:
+
 - ``examples/uvm/sequence_item_knobs/pyseq.py`` (control knobs + field
   mutation)
 - ``examples/uvm/spi_reg_seq/pyseq.py`` (register access sequencing)
@@ -142,6 +146,7 @@ PyClass String Format
 Accepted forms: ``module::ClassName`` (recommended) or ``module:ClassName``.
 
 Parsing steps (SV side):
+
 - Scan from end for first ``:`` (possibly part of a ``::`` pair)
 - Class name = substring after the last colon(s)
 - Module name = substring before the preceding colons
@@ -149,6 +154,7 @@ Parsing steps (SV side):
 - Lookup: ``PyObject_GetAttrString(module, ClassName)``
 
 Errors:
+
 - Empty string -> fatal
 - Missing ``::`` / ``:`` delimiter -> fatal
 - Module or class not found -> fatal (prints Python error stack)
@@ -164,6 +170,7 @@ After creating and setting the Python class reference, start on a sequencer:
    seq.start(m_env.m_seqr);
 
 Internals:
+
 - Scheduler startup via ``pyhdl_if_start()``
 - Python ``body()`` coroutine awaited within SV ``task body()``
 - ``create_req()`` / ``create_rsp()`` provide typed SV items
@@ -172,11 +179,13 @@ Internals:
 Lifecycle Summary
 -----------------
 Component:
+
 1. Set ``pyclass`` before or during build.
 2. SV build_phase loads module/class, constructs helper + Python impl.
 3. Phases call through to Python implementation.
 
 Sequence:
+
 1. Set ``PyClass`` parameter or ``pyclass`` field.
 2. On ``start()``, SV ``body()`` loads Python class, constructs helper.
 3. Python ``body()`` drives items using proxy methods.
@@ -191,8 +200,39 @@ Troubleshooting
 Class API Reference
 *******************
 
-.. autoclass:: hdl_if.uvm.UvmComponent
+These are the Python classes the UVM integration exposes. ``uvm_component_impl``
+and ``uvm_sequence_impl`` are the ones you subclass; the ``*_proxy`` classes are
+the handles the SystemVerilog side injects, and are documented because your
+implementation calls through them.
 
-.. autoclass:: hdl_if.uvm.UvmObject
+.. autoclass:: hdl_if.uvm.uvm_component_impl
+   :members:
 
-.. autoclass:: hdl_if.uvm.UvmSequence
+.. autoclass:: hdl_if.uvm.uvm_sequence_impl
+   :members:
+
+.. autoclass:: hdl_if.uvm.uvm_component_proxy
+   :members:
+
+.. autoclass:: hdl_if.uvm.uvm_sequence_proxy
+   :members:
+
+.. autoclass:: hdl_if.uvm.uvm_object
+   :members:
+
+.. autoclass:: hdl_if.uvm.uvm_component
+   :members:
+
+.. only:: have_uvm
+
+   SystemVerilog Class Reference
+   *****************************
+
+   The ``pyhdl_uvm`` package provides the SystemVerilog side of the UVM
+   integration -- the proxy classes described above, along with the object
+   registry and type-wrapper infrastructure they rely on.
+
+   .. autosvsummary::
+      :packages: pyhdl_uvm
+      :kinds: class
+      :members:

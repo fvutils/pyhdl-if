@@ -1,6 +1,41 @@
 
+/**
+ * Carries transactions from Python to the HDL.
+ *
+ * A synchronous FIFO whose write side is a Python coroutine and whose read
+ * side is a valid/ready port pair consumed by the design. The interface
+ * registers itself as a request stream at time zero; an `await` on the bound
+ * Python method pushes one entry.
+ *
+ * Instantiate it beside the logic consuming the data, then bind it from
+ * Python with a @ref req_fifo -decorated method whose parameter type is the
+ * matching `ctypes.Structure`::
+ *
+ *     tlm_hvl2hdl_fifo #(.Twidth(64), .Tdepth(4)) u_req (
+ *         .clock(clk), .reset(rst),
+ *         .valid(in_valid), .ready(in_ready), .dat_o(in_data));
+ *
+ * The stream is registered under the interface's hierarchical path, which is
+ * the path Python binds against.
+ *
+ * @param Twidth Payload width in bits. Must match the packed width of the
+ *        Python structure bound to this stream. Widths above 64 bits are not
+ *        yet supported and terminate the simulation at run time.
+ * @param Tdepth Number of entries. Must be a power of two -- the pointers
+ *        wrap by masking, so a non-power-of-two depth corrupts them.
+ * @param clock Clock; the FIFO is synchronous to its rising edge.
+ * @param reset Active-high synchronous reset. Holds `valid` low and empties
+ *        the FIFO.
+ * @param valid Asserted by the FIFO when `dat_o` holds a valid entry.
+ * @param ready Asserted by the consumer when it can accept an entry. A
+ *        transfer occurs on a rising clock edge with both `valid` and
+ *        `ready` high.
+ * @param dat_o Payload at the head of the FIFO.
+ *
+ * @see tlm_hdl2hvl_fifo
+ */
 interface tlm_hvl2hdl_fifo #(
-    parameter Twidth=32, 
+    parameter Twidth=32,
     parameter Tdepth=1) (
     input               clock,
     input               reset,
@@ -52,6 +87,14 @@ interface tlm_hvl2hdl_fifo #(
         end
     end
 
+    /**
+     * Push one entry, blocking until there is room.
+     *
+     * Waits out reset, then waits for any in-flight push to be taken.
+     * Called from the Python side of the stream rather than from HDL code.
+     *
+     * @param dat The entry to enqueue.
+     */
     task put(input reg[Twidth-1:0]  dat);
         while (reset !== 0) begin
             @(posedge clock);

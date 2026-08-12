@@ -374,45 +374,52 @@ Complete Working Example
 
 This example demonstrates the complete flow from Python API definition to 
 SystemVerilog implementation and usage, showing both directions of 
-tcommunication between Python and SystemVerilog.
-==================
+communication between Python and SystemVerilog.
 
 Class-Based API
-===============
-.. doxygenclass:: py_object
+---------------
+.. autosvclass:: pyhdl_if::py_object
     :members:
 
-.. doxygenclass:: py_dict
+.. autosvclass:: pyhdl_if::py_dict
     :members:
 
-.. doxygenclass:: py_list
+.. autosvclass:: pyhdl_if::py_list
     :members:
 
-.. doxygenclass:: py_tuple
+.. autosvclass:: pyhdl_if::py_tuple
+    :members:
+
+.. autosvclass:: pyhdl_if::py_iter
+    :members:
+
+.. autosvclass:: pyhdl_if::py_ctxt
     :members:
 
 Utility Methods
----------------
+~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: py_from_int
+.. autosvfunction:: pyhdl_if::py_from_bool
 
-.. doxygenfunction:: py_from_uint
+.. autosvfunction:: pyhdl_if::py_from_int
 
-.. doxygenfunction:: py_from_long
+.. autosvfunction:: pyhdl_if::py_from_uint
 
-.. doxygenfunction:: py_from_ulong
+.. autosvfunction:: pyhdl_if::py_from_long
 
-.. doxygenfunction:: py_from_str
+.. autosvfunction:: pyhdl_if::py_from_ulong
 
-.. doxygenfunction:: py_import
+.. autosvfunction:: pyhdl_if::py_from_str
 
-.. doxygenfunction:: py_call_builtin
+.. autosvfunction:: pyhdl_if::py_import
 
-.. doxygenfunction:: py_gil_enter
+.. autosvfunction:: pyhdl_if::py_call_builtin
 
-.. doxygenfunction:: py_gil_leave
+.. autosvfunction:: pyhdl_if::py_gil_enter
+
+.. autosvfunction:: pyhdl_if::py_gil_leave
 
 
 
 Direct API
-==========
+----------
