@@ -20,7 +20,16 @@
 #*
 #****************************************************************************
 
+"""Registry of declared TLM interfaces."""
+
+
 class TlmIfcRgy(object):
+    """Collects every class decorated with :func:`~hdl_if.decorators.tlm_if`.
+
+    ``hdl_if ifc-gen-sv`` reads this registry to emit the matching
+    SystemVerilog, so an interface must have been imported before generation
+    runs. Reach the singleton with :meth:`inst`.
+    """
 
     _inst = None
 
@@ -28,17 +37,28 @@ class TlmIfcRgy(object):
         self.tlm_ifcs = []
 
     def addTlmIf(self, tlm_ifc):
+        """Register a TLM interface.
+
+        Args:
+            tlm_ifc: The interface type info to register.
+        """
         self.tlm_ifcs.append(tlm_ifc)
 
     def getTlmIfcs(self):
+        """Return every registered interface, in declaration order."""
         return self.tlm_ifcs
 
     @classmethod
     def inst(cls):
+        """Return the registry singleton, creating it on first use."""
         if cls._inst is None:
             cls._inst = TlmIfcRgy()
         return cls._inst
-    
+
     @classmethod
     def reset(cls):
+        """Discard the singleton and its registrations.
+
+        Intended for tests, which need a clean registry per case.
+        """
         cls._inst = None

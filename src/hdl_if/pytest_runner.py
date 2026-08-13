@@ -19,6 +19,8 @@
 #*     Author: 
 #*
 #****************************************************************************
+"""Run async pytest tests from a SystemVerilog testbench."""
+
 import sys
 import os
 import inspect
@@ -175,6 +177,7 @@ async def run_pytest(
     Main entry point for running pytest tests from SystemVerilog.
     
     This function:
+
     1. Uses pytest.main(--collect-only) to discover and collect tests
        (benefits from assertion rewriting)
     2. Runs the collected async test functions directly in our event loop

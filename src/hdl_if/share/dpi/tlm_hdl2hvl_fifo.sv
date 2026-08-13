@@ -1,6 +1,40 @@
 
+/**
+ * Carries transactions from the HDL to Python.
+ *
+ * A synchronous FIFO whose write side is a valid/ready port pair driven by
+ * the design, and whose read side is a Python coroutine: the interface
+ * registers itself as a response stream at time zero, and an `await` on the
+ * bound Python method pops one entry.
+ *
+ * Instantiate it beside the logic producing the data, then bind it from
+ * Python with a @ref rsp_fifo -decorated method whose return type is the
+ * matching `ctypes.Structure`::
+ *
+ *     tlm_hdl2hvl_fifo #(.Twidth(64), .Tdepth(4)) u_rsp (
+ *         .clock(clk), .reset(rst),
+ *         .valid(out_valid), .ready(out_ready), .dat_i(out_data));
+ *
+ * The stream is registered under the interface's hierarchical path, which is
+ * the path Python binds against.
+ *
+ * @param Twidth Payload width in bits. Must match the packed width of the
+ *        Python structure bound to this stream. Widths above 64 bits are not
+ *        yet supported and terminate the simulation at run time.
+ * @param Tdepth Number of entries. Must be a power of two -- the pointers
+ *        wrap by masking, so a non-power-of-two depth corrupts them.
+ * @param clock Clock; the FIFO is synchronous to its rising edge.
+ * @param reset Active-high synchronous reset. Holds `ready` low and empties
+ *        the FIFO.
+ * @param valid Asserted by the producer when `dat_i` is valid.
+ * @param ready Asserted by the FIFO when it has room. A transfer occurs on a
+ *        rising clock edge with both `valid` and `ready` high.
+ * @param dat_i Payload to enqueue.
+ *
+ * @see tlm_hvl2hdl_fifo
+ */
 interface tlm_hdl2hvl_fifo #(
-    parameter Twidth=32, 
+    parameter Twidth=32,
     parameter Tdepth=1) (
     input               clock,
     input               reset,
@@ -49,6 +83,14 @@ interface tlm_hdl2hvl_fifo #(
         end
     end
 
+    /**
+     * Pop one entry, blocking until one is available.
+     *
+     * Waits out reset, then waits for a non-empty FIFO. Called from the
+     * Python side of the stream rather than from HDL code.
+     *
+     * @param dat_o The entry read from the FIFO.
+     */
     task get(output reg[Twidth-1:0] dat_o);
         while (reset !== 0) begin
             @(posedge clock);

@@ -1,8 +1,3 @@
-.. PyHDL-IF documentation master file, created by
-   sphinx-quickstart on Sat Apr  6 19:07:21 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 PyHDL-IF Documentation
 =========================
 PyHDL-IF implements a procedural interface between Python and
@@ -15,7 +10,8 @@ variety of abstraction levels.
    :caption: Contents:
 
    quickstart
-   overview  
+   overview
+   theory_of_op
    sim_integ
    pytest_runner
    structs

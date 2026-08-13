@@ -19,9 +19,21 @@
 #*     Author: 
 #*
 #****************************************************************************
+"""Type information for a declared TLM interface."""
+
 from hdl_if.impl.tlm.type_info_tlm_if import TypeInfoTlmIF
 
 class TlmIfc(TypeInfoTlmIF):
+    """Describes a class decorated with :func:`~hdl_if.decorators.tlm_if`.
+
+    Carries the interface's name and the FIFO methods declared inside it,
+    which is what the SystemVerilog interface package is generated from.
+
+    Args:
+        ti: Type info for the decorated class.
+        qname: The class's fully-qualified name. The leaf name becomes
+            :attr:`name`.
+    """
 
     def __init__(self, ti, qname):
         super().__init__(ti)
@@ -33,11 +45,19 @@ class TlmIfc(TypeInfoTlmIF):
             self.name = self.name[ld+1:]
 
     def getMethods(self):
+        """Return the interface's :class:`~hdl_if.tlm.tlm_method.TlmMethod` list."""
         return self._if_method_l
 
     @staticmethod
     def get(T) -> 'TlmIfc':
-        """Return type-info for a """
+        """Return the TLM type info for a decorated class.
+
+        Args:
+            T: A class decorated with :func:`~hdl_if.decorators.tlm_if`.
+
+        Returns:
+            The interface's type info.
+        """
         from hdl_if.impl.typeinfo import TypeInfo
         return TypeInfoTlmIF.get(TypeInfo.get(T))
 

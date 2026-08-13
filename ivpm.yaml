@@ -36,8 +36,6 @@ package:
       src: pypi
     - name: sphinx
       src: pypi
-    - name: breathe
-      src: pypi
     - name: sphinx-rtd-theme
       src: pypi
     - name: cairosvg
@@ -46,10 +44,9 @@ package:
       src: pypi
     - name: packaging
       src: pypi
-        #    - name: cocotb
-        #      src: pypi
-    - name: doxygen-filter-sv
-      url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
+    - name: sphinx-systemverilog
+      url: https://git.dvkit.org/fvutils/sphinx-systemverilog.git
+
   - name: default-ci
     deps:
     - name: pytest
@@ -75,8 +72,6 @@ package:
       src: pypi
     - name: sphinx
       src: pypi
-    - name: breathe
-      src: pypi
     - name: sphinx-rtd-theme
       src: pypi
     - name: cairosvg
@@ -85,8 +80,16 @@ package:
       src: pypi
     - name: packaging
       src: pypi
-    - name: doxygen-filter-sv
-      url: https://github.com/SeanOBoyle/DoxygenFilterSystemVerilog.git
+    - name: sphinx-systemverilog
+      url: https://git.dvkit.org/fvutils/sphinx-systemverilog.git
+
+  # The UVM library, needed only to build documentation: doc/source/conf.py
+  # elaborates the pyhdl_uvm package against it to generate the SystemVerilog
+  # class reference, and drops that section entirely when it is absent.
+  - name: docs
+    deps:
+    - name: uvm
+      url: https://www.accellera.org/images/downloads/standards/uvm/UVM-1800.2-2020.3.1.tar.gz
 
   - name: default
     deps:

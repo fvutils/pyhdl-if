@@ -1,0 +1,274 @@
+# CI/CD for fvutils/pyhdl-if on Forgejo Actions.
+#
+# Ported from .github/workflows/ci.yml. Four things differ from that workflow,
+# and each is deliberate:
+#
+#  1. No third-party actions. A bare `uses:` resolves against code.forgejo.org
+#     (Forgejo's DEFAULT_ACTIONS_URL), not github.com, so ctrf-io/github-test-reporter
+#     and JamesIves/github-pages-deploy-action are unavailable here. Publishing
+#     is plain `twine`, which keeps GitHub off the critical path of a release.
+#  2. Releases are tag-driven. The GitHub workflow publishes a
+#     `<version>.<run-id>` wheel on every push to main; here a `v<version>` tag
+#     is the deliberate act, and it publishes the clean version. Ordinary pushes
+#     still build and test, but their run-id-suffixed wheels never reach PyPI.
+#  3. The simulator test suite does not run. tests/unit needs verilator and
+#     iverilog, which ivpm fetches as GitHub releases -- exactly the dependency
+#     this release path exists to avoid. GitHub Actions still runs those on
+#     every push; what runs here is a smoke test against the built wheel.
+#  4. Docs are published as an artifact, not pushed to a gh-pages branch. Built
+#     HTML is a build output, never a git branch -- see
+#     ~/Documents/dvkit-docs-publishing-design.md F2 and section 5.8. A host-side
+#     poller picks up `docs-fvutils-pyhdl-if` and stages it for review; nothing
+#     here can reach dvkit.org on its own.
+name: CI
+
+on:
+  - push
+  - pull_request
+  - workflow_dispatch
+
+jobs:
+  build-linux-x86_64:
+    runs-on: ubuntu-latest
+    container:
+      # hdl_if.entry is a C extension, so PyPI needs manylinux wheels; the act
+      # images produce `linux_x86_64` wheels PyPI rejects. This prebuilt image
+      # is manylinux_2_28 plus the node that act needs in-container for JS
+      # actions (checkout, upload-artifact). It is shared with psstools/pssparser
+      # -- source and rebuild instructions live in that repo's
+      # .forgejo/ci-image/Dockerfile.
+      image: dvkit/pssparser-ci:manylinux_2_28-x86_64
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check for internal identifiers in tracked files
+      # This repo is published to git.dvkit.org and mirrored to GitHub, so
+      # anything committed here is public. Internal host names, tailnet
+      # addresses and CGNAT-range IPs must not appear in tracked files -- if a
+      # build ever needs one, it belongs in a repository secret, which is
+      # masked in logs.
+      run: |
+        pattern='perch-char\.ts\.net|\.ts\.net|a9550|100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.[0-9]+\.[0-9]+'
+        if git grep -nIE "$pattern" -- . ':!.forgejo/workflows/ci.yml' ; then
+          echo "::error::internal identifier found in a tracked file (see matches above)"
+          exit 1
+        fi
+        echo "OK: no internal identifiers in tracked files"
+
+    - name: Stamp build version
+      # setup.py appends `.<BUILD_NUM>` when src/hdl_if/__build_num__.py exists.
+      # Tag builds leave it absent and keep the clean version; everything else
+      # gets a .<run-id> suffix so an ordinary push can never produce a wheel
+      # whose version could collide with a release on PyPI.
+      run: |
+        case "$GITHUB_REF" in
+          refs/tags/*) echo "tag build -- leaving version clean" ;;
+          *) echo "BUILD_NUM=${GITHUB_RUN_ID}" > src/hdl_if/__build_num__.py ;;
+        esac
+        cat src/hdl_if/__build_num__.py 2>/dev/null || echo "(no build number)"
+
+    - name: Build wheels
+      # No `ivpm update` here. The wheel needs only the PyPI tooling below:
+      # setup.py's pre-setup hook runs scripts/gen_py_if.py (pcpp +
+      # cxxheaderparser) to generate the DPI import layer, then compiles
+      # hdl_if.entry. The ivpm.yaml source dependencies are test and doc
+      # dependencies, and pulling them would put GitHub back in this path.
+      #
+      # cp313 is deliberately absent, matching the GitHub matrix. Python 3.13
+      # declares PyDict_GetItemRef(PyObject *, PyObject *, PyObject **result),
+      # and gen_py_if.py cannot map a PyObject** parameter -- it raises
+      # "parameter type PyObject** is not supported" and the build fails. Add
+      # cp313 here once the generator handles output-pointer parameters.
+      run: |
+        for py in cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312; do
+          echo "=== $py ==="
+          P=/opt/python/${py}/bin/python
+          $P -m pip install -q --upgrade pip setuptools wheel build twine \
+            ivpm cython pcpp cxxheaderparser setuptools_scm
+          $P setup.py bdist_wheel
+        done
+        ls -la dist/
+
+    - name: Audit wheels
+      # bdist_wheel tags these `linux_x86_64`, which PyPI rejects. auditwheel
+      # rewrites the tag to manylinux after checking the extension's external
+      # library references are all in the manylinux baseline.
+      run: |
+        for whl in dist/*.whl; do
+          /opt/python/cp312-cp312/bin/auditwheel repair "$whl"
+          rm "$whl"
+        done
+        cp wheelhouse/*.whl dist/
+        ls -la dist/
+        for w in dist/*.whl; do
+          case "$(basename "$w")" in
+            *manylinux*) ;;
+            *) echo "::error::$(basename "$w") was not converted to manylinux"; exit 1 ;;
+          esac
+        done
+
+    - name: Smoke test the built wheel
+      # Against the installed wheel in a clean venv, never the source tree --
+      # that is what makes this a test of the artifact we would ship. The
+      # simulator-driven tests are GitHub's job (see the header note); this
+      # checks the package imports, the compiled library shipped, and the
+      # generated SV sources are present.
+      #
+      # Note the extension is NOT importable as hdl_if.entry: setup.py's
+      # ivpm_ext_name_m renames it to libpyhdl_if.so, because a simulator
+      # dlopens it as a DPI/VPI library rather than Python importing it. Its
+      # presence as a file is therefore the only check that means anything.
+      run: |
+        /opt/python/cp312-cp312/bin/python -m venv /tmp/smoke
+        /tmp/smoke/bin/pip install -q dist/*cp312*.whl
+        /tmp/smoke/bin/python -c "
+        import os, hdl_if
+        d = os.path.dirname(hdl_if.__file__)
+        for f in ('libpyhdl_if.so',
+                  'share/dpi/pyhdl_if.sv',
+                  'share/dpi/pyhdl_dpi_imports.svh',
+                  'share/uvm/pyhdl_uvm.sv'):
+            assert os.path.isfile(os.path.join(d, f)), 'missing from wheel: ' + f
+        print('package, DPI library and SV sources OK:', d)
+        "
+        /tmp/smoke/bin/pyhdl-if --help > /dev/null && echo "console script OK"
+
+    - name: Upload wheels
+      uses: forgejo/upload-artifact@v4
+      with:
+        name: wheels-linux-x86_64
+        path: dist/*.whl
+        if-no-files-found: error
+
+  docs:
+    # Built from the source tree rather than the wheel, unlike the sibling
+    # repos: doc/source/conf.py puts ../src at the front of sys.path, so an
+    # installed wheel would be shadowed anyway. `build_ext --inplace` is still
+    # required -- autodoc imports hdl_if, which loads the compiled extension --
+    # so this needs the same toolchain image as the build job.
+    runs-on: ubuntu-latest
+    container:
+      image: dvkit/pssparser-ci:manylinux_2_28-x86_64
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install doc dependencies
+      # setuptools_scm is here because setup.py names it in setup_requires: if
+      # it is not already importable, setuptools fetches it into .eggs on its
+      # own, and that path installs the distribution without its dependencies
+      # -- setuptools_scm 10.x then dies on `import vcs_versioning`. Installing
+      # it with pip resolves the dependency and keeps .eggs out of the picture.
+      run: |
+        P=/opt/python/cp312-cp312/bin/python
+        $P -m pip install -q --upgrade pip setuptools wheel setuptools_scm
+        $P -m pip install -q sphinx sphinx-rtd-theme sphinx-argparse cairosvg \
+          packaging sphinx-systemverilog ivpm cython pcpp cxxheaderparser
+
+    - name: Fetch the UVM library
+      # conf.py parses the UVM sources to elaborate the pyhdl_uvm package. They
+      # are not a build dependency and are absent from a bare checkout, so the
+      # `have_uvm` tag gates the SystemVerilog class reference in uvm.rst --
+      # meaning a build without them still succeeds and silently ships a doc set
+      # missing that whole section. Hence the fetch, and the content check below.
+      run: |
+        /opt/python/cp312-cp312/bin/python -m ivpm update -d docs
+        test -f packages/uvm/src/uvm_pkg.sv
+
+    - name: Build HTML docs
+      # doc/Makefile passes -W --keep-going: the reference is generated, so a
+      # warning means an object went missing or a cross-reference broke.
+      run: |
+        P=/opt/python/cp312-cp312/bin/python
+        $P setup.py build_ext --inplace
+        # build_ext lands the DPI library beside the sources as
+        # src/hdl_if/libpyhdl_if.so (setup.py renames it via ivpm_ext_name_m);
+        # it is dlopened by a simulator, never imported, so check for the file.
+        test -f src/hdl_if/libpyhdl_if.so
+        $P -c "import sys; sys.path.insert(0, 'src'); import hdl_if; print('hdl_if importable:', hdl_if.__file__)"
+        cd doc
+        make html SPHINXBUILD="/opt/python/cp312-cp312/bin/sphinx-build" 2>&1 | tee /tmp/sphinx.log
+        touch build/html/.nojekyll
+        rm -rf build/html/.doctrees build/doctrees
+
+    - name: Check the UVM reference is live
+      # If the UVM sources had not reached the build, uvm.rst still renders --
+      # as the hand-written guide, minus the generated class reference. Only a
+      # content check distinguishes that from the full page, and shipping the
+      # reduced version by accident is what this job exists to prevent.
+      run: |
+        f=doc/build/html/uvm.html
+        [ -f "$f" ] || { echo "::error::missing $f"; exit 1; }
+        if ! grep -q "SystemVerilog Class Reference" "$f"; then
+          echo "::error::$f has no generated SV class reference -- the UVM sources did not reach the build"
+          exit 1
+        fi
+        echo "OK: uvm.html ($(wc -c < "$f") bytes) carries the generated reference"
+        echo "generated pages: $(find doc/build/html -name '*.html' | wc -l)"
+
+    - name: Upload docs
+      # Consumed by the host-side docs staging poller; see
+      # ~/Documents/dvkit-docs-publishing-design.md section 5.5. The artifact
+      # name is the <org>-<repo> convention that design depends on.
+      uses: forgejo/upload-artifact@v4
+      with:
+        name: docs-fvutils-pyhdl-if
+        path: doc/build/html/**
+        if-no-files-found: error
+
+  publish-pypi:
+    # Releases only. Pushes to main produce run-id-suffixed wheels that must
+    # never reach PyPI from here: a version number there can be yanked but
+    # never reused.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-linux-x86_64, docs]
+    runs-on: ubuntu-latest
+    container:
+      image: dvkit/pssparser-ci:manylinux_2_28-x86_64
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download wheels
+      uses: forgejo/download-artifact@v4
+      with:
+        name: wheels-linux-x86_64
+        path: dist
+
+    - name: Check the tag matches the package version
+      # Guards against tagging v0.2.1 while setup.py still says 0.2.0, which
+      # would publish a release under the wrong number, unfixably.
+      run: |
+        tag="${GITHUB_REF#refs/tags/v}"
+        base=$(grep '^version=' setup.py | sed 's/.*"\(.*\)".*/\1/')
+        echo "tag=$tag  version=$base"
+        if [ "$tag" != "$base" ]; then
+          echo "::error::tag v$tag does not match version $base in setup.py"
+          exit 1
+        fi
+        for w in dist/*.whl; do
+          case "$(basename "$w")" in
+            pyhdl_if-${base}-*) ;;
+            *) echo "::error::wheel $(basename "$w") is not version ${base}"; exit 1 ;;
+          esac
+        done
+        echo "OK: tag, source version and all wheels agree on ${base}"
+
+    - name: Publish to PyPI
+      # Plain twine rather than a third-party action: this is the release path,
+      # and it should not depend on GitHub being reachable. PYPI_API_TOKEN is an
+      # organization secret on fvutils.
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        if [ -z "$TWINE_PASSWORD" ]; then
+          echo "::error::PYPI_API_TOKEN is not visible to this repository"
+          exit 1
+        fi
+        P=/opt/python/cp312-cp312/bin/python
+        $P -m pip install -q --upgrade pip twine
+        $P -m twine check dist/*.whl
+        $P -m twine upload --non-interactive --skip-existing dist/*.whl
+        echo "published $(ls dist/*.whl | wc -l) wheels"

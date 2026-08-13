@@ -19,9 +19,20 @@
 #*     Author: 
 #*
 #****************************************************************************
+"""Registry mapping HDL instance paths to Python objects."""
+
 import re
 
 class HdlObjRgy(object):
+    """Maps HDL instance paths to the Python objects bound to them.
+
+    When an interface object is constructed for a particular HDL scope it is
+    registered here under that scope's instance path, so later code -- a test,
+    another interface -- can find it by path instead of threading a reference
+    through.
+
+    Use :meth:`inst` to reach the singleton.
+    """
 
     _inst = None
 
@@ -31,6 +42,18 @@ class HdlObjRgy(object):
         pass
 
     def registerObj(self, obj, inst_name, replace=False):
+        """Register an object against an HDL instance path.
+
+        Args:
+            obj: The object to register.
+            inst_name: The HDL instance path to register it under.
+            replace: Whether to replace an existing registration for this
+                path. When False, a duplicate path is an error.
+
+        Raises:
+            Exception: If the path is already registered and ``replace`` is
+                False.
+        """
         if inst_name not in self.obj_instname_m.keys():
             self.obj_instname_m[inst_name] = obj
             self.obj_l.append(obj)
@@ -42,6 +65,20 @@ class HdlObjRgy(object):
             raise Exception("An object with instance-path %s is already registered" % inst_name)
         
     def findObj(self, inst_name, regex=False):
+        """Find a registered object by instance path.
+
+        Args:
+            inst_name: The instance path to look for, or a regular expression
+                matching one when ``regex`` is True.
+            regex: Whether to treat ``inst_name`` as a regular expression.
+
+        Returns:
+            The registered object, or None if nothing matched.
+
+        Raises:
+            Exception: If ``regex`` is True and the pattern matches more than
+                one registered path.
+        """
         ret = None
         if regex:
             match = []
@@ -52,8 +89,9 @@ class HdlObjRgy(object):
 
             if len(match) == 1:
                 ret = match[0];
-            elif len(match) == 0:
-                raise Exception("Multiple matches to pattern %s: %s" % (inst_name, str(ret)))
+            elif len(match) > 1:
+                raise Exception("Multiple matches to pattern %s: %s" % (
+                    inst_name, str([o for o in match])))
         else:
             for name in self.obj_instname_m.keys():
                 if inst_name == name:
@@ -62,13 +100,16 @@ class HdlObjRgy(object):
         return ret
     
     def getInstNames(self):
+        """Return the instance paths of every registered object."""
         return list(self.obj_instname_m.keys())
-    
+
     def getObjs(self):
+        """Return every registered object, in registration order."""
         return self.obj_l
 
     @classmethod
     def inst(cls):
+        """Return the registry singleton, creating it on first use."""
         if cls._inst is None:
             cls._inst = HdlObjRgy()
         return cls._inst

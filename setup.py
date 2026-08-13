@@ -6,7 +6,7 @@ import sys
 import sysconfig
 from setuptools import Extension, setup, find_namespace_packages
 
-version="0.2.0"
+version="0.2.1"
 
 proj_dir = os.path.dirname(os.path.abspath(__file__))
 pythondir = os.path.join(proj_dir, "src")
@@ -92,7 +92,11 @@ setup_args = dict(
   """,
   license = "Apache 2.0",
   keywords = ["SystemVerilog", "Verilog", "VHDL", "RTL", "Python"],
-  url = "https://github.com/fvutils/pyhdl-if",
+  url = "https://dvkit.org/fvutils/pyhdl-if",
+  project_urls = {
+      "Documentation" : "https://dvkit.org/fvutils/pyhdl-if/",
+      "Source" : "https://git.dvkit.org/fvutils/pyhdl-if",
+  },
   install_requires=[
   ],
   extras_require={

@@ -23,7 +23,7 @@ module my_test;
 endmodule
 ```
 
-See [doc/pytest_runner.md](doc/pytest_runner.md) for complete documentation and examples.
+See [the pytest-runner documentation](doc/source/pytest_runner.rst) for complete documentation and examples.
 
 ### Struct Type Support
 Pass complex structured data between Python and SystemVerilog using `ctypes.Structure`:
@@ -43,7 +43,7 @@ class GeometryAPI(object):
         pass
 ```
 
-PyHDL-IF automatically generates SystemVerilog struct typedefs and conversion functions. See [doc/struct.md](doc/struct.md) for complete documentation.
+PyHDL-IF automatically generates SystemVerilog struct typedefs and conversion functions. See [the struct-support documentation](doc/source/structs.rst) for complete documentation.
 
 ## Installing PyHDL-IF
 Installing PyHDL-IF in your own Python virtual environment is easy:

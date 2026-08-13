@@ -19,6 +19,33 @@
 #*     Author: 
 #*
 #****************************************************************************
+"""Decorators that declare the interface between Python and SystemVerilog.
+
+These are the package's primary public API and are normally reached through
+the ``hdl_if`` namespace::
+
+    import hdl_if as hif
+
+There are two families:
+
+* **Call interfaces** -- :func:`api` marks a class as an interface;
+  :func:`imp` marks a method Python *implements* and SystemVerilog calls;
+  :func:`exp` marks a method SystemVerilog implements and Python calls. From
+  these, ``hdl_if api`` generates the SystemVerilog package that carries the
+  calls across.
+* **TLM interfaces** -- :func:`tlm_if` marks a class as a TLM interface, and
+  :func:`req_fifo`, :func:`rsp_fifo` and :func:`reqrsp_fifo` declare the
+  FIFO-backed methods within it.
+
+Every parameter and return of a decorated method must carry a type
+annotation: the annotations are what the SystemVerilog side is generated
+from, so an untyped parameter raises at decoration time rather than failing
+later in the flow.
+
+Both families accept bare or called form -- ``@hif.api`` and ``@hif.api()``
+are equivalent.
+"""
+
 from __future__ import annotations
 
 import ctypes
@@ -274,6 +301,27 @@ def api(cls: TClass) -> TClass: ...
 def api(*args: Any, **kwargs: Any) -> Callable[[TClass], TClass]: ...
 
 def api(*args: Any, **kwargs: Any):
+    """Declare a class as a Python/SystemVerilog call interface.
+
+    Registers the class so that ``hdl_if api`` can generate the matching
+    SystemVerilog package, collecting the methods that :func:`imp` and
+    :func:`exp` declared inside it. Constructor parameters must be annotated,
+    since they become parameters of the generated SystemVerilog class.
+
+    Example::
+
+        @hif.api
+        class MemApi:
+            def __init__(self, base: int):
+                self.base = base
+
+            @hif.imp
+            async def read(self, addr: int) -> int:
+                return self.mem[addr]
+
+    Raises:
+        Exception: If a constructor parameter has no type annotation.
+    """
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _api_decorate(args[0])
 
@@ -290,6 +338,27 @@ def exp(func: Callable[P, R]) -> Callable[P, R]: ...
 def exp(*args: Any, **kwargs: Any) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 def exp(*args: Any, **kwargs: Any):
+    """Declare a method that SystemVerilog implements and Python calls.
+
+    The decorated method is a *declaration*: its body is never run, so write
+    it as ``...``. Calling it from Python dispatches to the SystemVerilog
+    side. Declare it ``async`` when the SystemVerilog implementation is a
+    task and may consume simulation time; a plain ``def`` maps to a
+    SystemVerilog function and must return immediately.
+
+    Example::
+
+        @hif.api
+        class BfmApi:
+            @hif.exp
+            async def write(self, addr: int, data: int) -> None: ...
+
+    Raises:
+        Exception: If a parameter has no type annotation.
+
+    See Also:
+        :func:`imp`, for the opposite direction.
+    """
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _method_decorate(args[0], MethodKind.Exp)
 
@@ -306,6 +375,27 @@ def imp(func: Callable[P, R]) -> Callable[P, R]: ...
 def imp(*args: Any, **kwargs: Any) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 def imp(*args: Any, **kwargs: Any):
+    """Declare a method that Python implements and SystemVerilog calls.
+
+    Unlike :func:`exp`, the body here is real: it runs when SystemVerilog
+    calls in. Declare it ``async`` to be callable from a SystemVerilog task,
+    which lets the implementation await simulation time; a plain ``def`` is
+    callable from a SystemVerilog function and must not block.
+
+    Example::
+
+        @hif.api
+        class ScoreboardApi:
+            @hif.imp
+            async def observed(self, addr: int, data: int) -> None:
+                self.seen.append((addr, data))
+
+    Raises:
+        Exception: If a parameter has no type annotation.
+
+    See Also:
+        :func:`exp`, for the opposite direction.
+    """
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _method_decorate(args[0], MethodKind.Imp)
 
@@ -326,6 +416,27 @@ def tlm_if(cls: TClass) -> TClass: ...
 def tlm_if(*args: Any, **kwargs: Any) -> Callable[[TClass], TClass]: ...
 
 def tlm_if(*args: Any, **kwargs: Any):
+    """Declare a class as a TLM interface.
+
+    Collects the FIFO methods declared inside the class -- see
+    :func:`req_fifo`, :func:`rsp_fifo` and :func:`reqrsp_fifo` -- and
+    registers the interface so it can be bound to the matching SystemVerilog
+    TLM FIFOs.
+
+    Where an :func:`api` interface carries individual calls, a TLM interface
+    carries structured transactions through FIFOs, which decouples the two
+    sides in time.
+
+    Example::
+
+        @hif.tlm_if
+        class WishboneInitiator:
+            class ReqData(ct.Structure):
+                _fields_ = [('addr', ct.c_uint32), ('data', ct.c_uint32)]
+
+            @hif.req_fifo
+            def req(self, t: ReqData): ...
+    """
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _tlm_if_decorate(args[0])
 
@@ -342,6 +453,20 @@ def req_fifo(func: Callable[P, R]) -> Callable[P, R]: ...
 def req_fifo(*args: Any, **kwargs: Any) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 def req_fifo(*args: Any, **kwargs: Any):
+    """Declare an outbound (request-only) FIFO method on a TLM interface.
+
+    The decorated method takes exactly one parameter, whose type must derive
+    from :class:`ctypes.Structure`, and returns nothing. Awaiting it puts the
+    structure into the bound FIFO.
+
+    Raises:
+        Exception: If the method declares a return type, does not take
+            exactly one data parameter, or the parameter type is not a
+            :class:`ctypes.Structure`.
+
+    See Also:
+        :func:`rsp_fifo`, :func:`reqrsp_fifo`
+    """
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _req_fifo_decorate(args[0])
 
@@ -358,6 +483,20 @@ def rsp_fifo(func: Callable[P, R]) -> Callable[P, R]: ...
 def rsp_fifo(*args: Any, **kwargs: Any) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 def rsp_fifo(*args: Any, **kwargs: Any):
+    """Declare an inbound (response-only) FIFO method on a TLM interface.
+
+    The decorated method takes no parameters and must declare a return type
+    deriving from :class:`ctypes.Structure`. Awaiting it blocks until a
+    response is available and returns it.
+
+    Raises:
+        Exception: If the method declares no return type, declares
+            parameters, or the return type is not a
+            :class:`ctypes.Structure`.
+
+    See Also:
+        :func:`req_fifo`, :func:`reqrsp_fifo`
+    """
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _rsp_fifo_decorate(args[0])
 
@@ -374,6 +513,21 @@ def reqrsp_fifo(func: Callable[P, R]) -> Callable[P, R]: ...
 def reqrsp_fifo(*args: Any, **kwargs: Any) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 def reqrsp_fifo(*args: Any, **kwargs: Any):
+    """Declare a paired request/response FIFO method on a TLM interface.
+
+    The decorated method takes exactly one parameter and declares a return
+    type, both deriving from :class:`ctypes.Structure`. Awaiting it puts the
+    request, then blocks for the matching response -- the FIFO equivalent of a
+    blocking call.
+
+    Raises:
+        Exception: If the method declares no return type, does not take
+            exactly one data parameter, or either type is not a
+            :class:`ctypes.Structure`.
+
+    See Also:
+        :func:`req_fifo`, :func:`rsp_fifo`
+    """
     if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
         return _reqrsp_fifo_decorate(args[0])
 
@@ -384,8 +538,22 @@ def reqrsp_fifo(*args: Any, **kwargs: Any):
 
 
 def req_mbox(*args, **kwargs):
+    """Declare an outbound mailbox method on a TLM interface.
+
+    Warning:
+        Not implemented. The decorator is accepted and does nothing -- the
+        method is not registered and no mailbox is bound. Use
+        :func:`req_fifo` instead.
+    """
     pass
 
 
 def rsp_mbox(*args, **kwargs):
+    """Declare an inbound mailbox method on a TLM interface.
+
+    Warning:
+        Not implemented. The decorator is accepted and does nothing -- the
+        method is not registered and no mailbox is bound. Use
+        :func:`rsp_fifo` instead.
+    """
     pass
