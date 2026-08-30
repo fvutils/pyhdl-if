@@ -123,9 +123,8 @@ class CallProxyVPI(CallProxy):
         if m is None:
             print("Error: failed to find method %s" % method_name, flush=True)
         
-        # asyncio only tracks tasks weakly, so hold a reference until the
-        # call completes. Without it a pending response task can be collected
-        # mid-call, taking the completion event SV is holding with it.
+        # asyncio tracks tasks weakly: hold a reference until the call
+        # completes, or GC can take the event SV is still holding.
         task = be.mkTask(self.invoke_py_t_wrap(sem_id, m, args))
         self._pending.add(task)
         task.add_done_callback(self._pending.discard)

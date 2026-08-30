@@ -134,12 +134,8 @@
         // We must NOT wait for simulation time here - that would block thread-initiated
         // calls which depend on idle() being pumped to process their scheduled coroutines.
         //
-        // Note: the loop below exits via its condition rather than via 'break'.
-        // With verilator 5.044 --timing, an assignment made immediately before
-        // a 'break' out of a suspendable loop is discarded, so 'have' read back
-        // as 0 after try_get() had already consumed the semaphore. That sent
-        // the caller into the blocking get() below, where it waited forever
-        // for a token that had already been taken.
+        // The loop exits via its condition, not 'break': verilator 5.044
+        // --timing drops an assignment made just before a 'break' here.
         int initial_py2sv_call = __py2sv_call;
         bit have = 1'b0;
         bit done = 1'b0;
@@ -187,13 +183,8 @@
     function automatic void pyhdl_if_setSem(
         input int           id,
         input PyObject      res);
-        // Take a reference on behalf of the waiting SV process. Python drops
-        // its own reference as soon as the responding coroutine returns, while
-        // the waiter does not collect the result until several scheduler
-        // deltas later. Without this reference the object can be freed and its
-        // memory recycled by a concurrent call's result before the waiter
-        // reads it. Ownership passes to the caller of pyhdl_if_invokePyTask,
-        // matching pyhdl_if_invokePyFunc.
+        // Python drops its reference when the coroutine returns, so hold one
+        // for the waiter. Ownership passes to pyhdl_if_invokePyTask's caller.
         Py_IncRef(res);
         __callsem_res[id] = res;
         __callsem[id].put(1);
