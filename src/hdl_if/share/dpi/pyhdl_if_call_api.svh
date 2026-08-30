@@ -133,32 +133,40 @@
         // When work is queued, we yield with #0 to let __pyhdl_pi_if_run() process it.
         // We must NOT wait for simulation time here - that would block thread-initiated
         // calls which depend on idle() being pumped to process their scheduled coroutines.
+        //
+        // Note: the loop below exits via its condition rather than via 'break'.
+        // With verilator 5.044 --timing, an assignment made immediately before
+        // a 'break' out of a suspendable loop is discarded, so 'have' read back
+        // as 0 after try_get() had already consumed the semaphore. That sent
+        // the caller into the blocking get() below, where it waited forever
+        // for a token that had already been taken.
         int initial_py2sv_call = __py2sv_call;
         bit have = 1'b0;
+        bit done = 1'b0;
         `PYHDL_IF_DEBUG(("--> pyhdl_if_waitSem: id=%0d sv2py=%0d py2sv=%0d", id, __sv2py_call, __py2sv_resp));
 
 
-        while (1'b1) begin
+        while (!done) begin
             `PYHDL_IF_DEBUG((
                 "--> pyhdl_if_waitSem: poll sv2py_call=%0d py2sv_resp=%0d py2sv_call=%0d py2sv_resp=%0d",
                     __sv2py_call, __sv2py_resp, __py2sv_call, __py2sv_resp));
             if (__callsem[id].try_get() != 32'h0) begin
                 `PYHDL_IF_DEBUG(("pyhdl_if_waitSem: callsem is valid"));
                 have = 1'b1;
-                break;
+                done = 1'b1;
             end else if (__py2sv_call != initial_py2sv_call) begin
                 `PYHDL_IF_DEBUG((
                     "pyhdl_if_waitSem: change in new calls: %0d -> %0d",
                     initial_py2sv_call, __py2sv_call));
-                break;
+                done = 1'b1;
+            end else begin
+                // Pump Python event loop to process scheduled coroutines
+                pyhdl_pi_if_idle();
+                PyGILState_Release(state);
+                void'(pyhdl_if_sched_yield());
+                #0; // Allow the SV scheduler to start new threads
+                state = PyGILState_Ensure();
             end
-
-            // Pump Python event loop to process scheduled coroutines
-            pyhdl_pi_if_idle();
-            PyGILState_Release(state);
-            void'(pyhdl_if_sched_yield());
-            #0; // Allow the SV scheduler to start new threads
-            state = PyGILState_Ensure();
         end
 
         if (have) begin
@@ -179,6 +187,14 @@
     function automatic void pyhdl_if_setSem(
         input int           id,
         input PyObject      res);
+        // Take a reference on behalf of the waiting SV process. Python drops
+        // its own reference as soon as the responding coroutine returns, while
+        // the waiter does not collect the result until several scheduler
+        // deltas later. Without this reference the object can be freed and its
+        // memory recycled by a concurrent call's result before the waiter
+        // reads it. Ownership passes to the caller of pyhdl_if_invokePyTask,
+        // matching pyhdl_if_invokePyFunc.
+        Py_IncRef(res);
         __callsem_res[id] = res;
         __callsem[id].put(1);
     endfunction

@@ -41,6 +41,7 @@ class CallProxyVPI(CallProxy):
         self.ev_h_armed = False
         self.req_q : List[Tuple[str,Tuple,object]] = []
         self.method_name_id_m : Dict[str, int] = {}
+        self._pending = set()
         pass
 
     def invoke_hdl_f(
@@ -122,7 +123,12 @@ class CallProxyVPI(CallProxy):
         if m is None:
             print("Error: failed to find method %s" % method_name, flush=True)
         
-        be.mkTask(self.invoke_py_t_wrap(sem_id, m, args))
+        # asyncio only tracks tasks weakly, so hold a reference until the
+        # call completes. Without it a pending response task can be collected
+        # mid-call, taking the completion event SV is holding with it.
+        task = be.mkTask(self.invoke_py_t_wrap(sem_id, m, args))
+        self._pending.add(task)
+        task.add_done_callback(self._pending.discard)
         be.idle()
         
 
