@@ -28,6 +28,54 @@ on:
   - workflow_dispatch
 
 jobs:
+  # ---------------------------------------------------------------------- #
+  # The release-authority master switch. Resolved in its OWN job because an
+  # `if:` on a job cannot reference a step in that same job, so the value has
+  # to arrive through `needs.<job>.outputs`.
+  #
+  # A consumer that reads needs.gate.outputs WITHOUT declaring `needs: gate`
+  # gets an EMPTY STRING rather than an error -- the publish condition is then
+  # false forever, nothing publishes, and nothing goes red. That is the
+  # quietest failure available here, so the shadow check in
+  # .forgejo/workflows/ci.yml asserts the wiring explicitly.
+  # ---------------------------------------------------------------------- #
+  gate:
+    name: Release authority
+    runs-on: ubuntu-latest
+    outputs:
+      authority: ${{ steps.resolve.outputs.authority }}
+    steps:
+      - id: resolve
+        # The python is ONE LINE on purpose: a multi-line `python3 -c` body has
+        # to start at column 0, which terminates the YAML block scalar above it
+        # and silently corrupts the workflow rather than failing to parse.
+        run: |
+          url=https://dvkit.org/.well-known/release-authority.json
+          if ! body=$(curl -fsS --max-time 10 "$url"); then
+            # FAIL CLOSED WHEN A RELEASE COULD ACTUALLY HAPPEN, and quietly
+            # otherwise. In this org a release is a `v*` TAG, so that -- not
+            # the event name -- is the test. Keying on the event name would be
+            # wrong here in both directions: a tag push IS a push, so it would
+            # let a release through unresolved, and every ordinary push would
+            # then also be treated as release-critical and fail the build.
+            #
+            # A release blocked by a dvkit.org outage is recoverable in ten
+            # minutes. A version published twice from two forges is not: PyPI
+            # lets a version be yanked, never reused.
+            case "$GITHUB_REF" in
+              refs/tags/v*)
+                echo "::error::release-authority switch unreachable; refusing to publish"
+                exit 1 ;;
+              *)
+                echo "authority=none" >> "$GITHUB_OUTPUT"
+                echo "switch unreachable, and this ref cannot release; continuing"
+                exit 0 ;;
+            esac
+          fi
+          auth=$(printf '%s' "$body" | python3 -c 'import json,os,sys; d=json.load(sys.stdin); r=os.environ["GITHUB_REPOSITORY"]; print(d["repos"].get(r) or d["orgs"].get(r.split("/")[0]) or d["default"])')
+          echo "release authority for $GITHUB_REPOSITORY: $auth"
+          echo "authority=$auth" >> "$GITHUB_OUTPUT"
+
   build-linux-x86_64:
     runs-on: ubuntu-latest
     container:
@@ -221,8 +269,25 @@ jobs:
     # Releases only. Pushes to main produce run-id-suffixed wheels that must
     # never reach PyPI from here: a version number there can be yanked but
     # never reused.
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-linux-x86_64, docs]
+    # SWITCH ADDED 2026-08-31 (wave 3b). The tag clause was already here and is
+    # unchanged; what is new is the release-authority check.
+    #
+    # THIS IS A REAL PUBLISHER, not a shadow. It is the pipeline that actually
+    # releases this package: the versions on PyPI correspond to `v*` tags that exist
+    # in Forgejo and return 404 on GitHub, so this side has been the release
+    # authority in practice for some time. `sync-policy.toml` now says so explicitly
+    # rather than leaving it as an accident of which forge happened to hold the tag.
+    #
+    # WHY THE SWITCH MATTERS MORE HERE THAN ANYWHERE ELSE IN THE ESTATE. Until
+    # fvutils entered sync this repository only ever received tags a human pushed.
+    # It now also receives them from GitHub, on a five-minute cron -- and a tag
+    # arriving that way would have run this job and uploaded to PyPI. `authority`
+    # is what makes "which forge may publish" a single decision in a single place
+    # instead of a property of whichever forge a tag reached first.
+    if: >-
+      needs.gate.outputs.authority == 'forgejo' &&
+      startsWith(github.ref, 'refs/tags/v')
+    needs: [gate, build-linux-x86_64, docs]
     runs-on: ubuntu-latest
     container:
       image: dvkit/pssparser-ci:manylinux_2_28-x86_64

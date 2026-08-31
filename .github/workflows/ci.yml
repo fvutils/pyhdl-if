@@ -5,6 +5,54 @@ on:
   - workflow_dispatch
 
 jobs:
+  # ---------------------------------------------------------------------- #
+  # The release-authority master switch. Resolved in its OWN job because an
+  # `if:` on a job cannot reference a step in that same job, so the value has
+  # to arrive through `needs.<job>.outputs`.
+  #
+  # A consumer that reads needs.gate.outputs WITHOUT declaring `needs: gate`
+  # gets an EMPTY STRING rather than an error -- the publish condition is then
+  # false forever, nothing publishes, and nothing goes red. That is the
+  # quietest failure available here, so the shadow check in
+  # .forgejo/workflows/ci.yml asserts the wiring explicitly.
+  # ---------------------------------------------------------------------- #
+  gate:
+    name: Release authority
+    runs-on: ubuntu-latest
+    outputs:
+      authority: ${{ steps.resolve.outputs.authority }}
+    steps:
+      - id: resolve
+        # The python is ONE LINE on purpose: a multi-line `python3 -c` body has
+        # to start at column 0, which terminates the YAML block scalar above it
+        # and silently corrupts the workflow rather than failing to parse.
+        run: |
+          url=https://dvkit.org/.well-known/release-authority.json
+          if ! body=$(curl -fsS --max-time 10 "$url"); then
+            # FAIL CLOSED WHEN A RELEASE COULD ACTUALLY HAPPEN, and quietly
+            # otherwise. In this org a release is a `v*` TAG, so that -- not
+            # the event name -- is the test. Keying on the event name would be
+            # wrong here in both directions: a tag push IS a push, so it would
+            # let a release through unresolved, and every ordinary push would
+            # then also be treated as release-critical and fail the build.
+            #
+            # A release blocked by a dvkit.org outage is recoverable in ten
+            # minutes. A version published twice from two forges is not: PyPI
+            # lets a version be yanked, never reused.
+            case "$GITHUB_REF" in
+              refs/tags/v*)
+                echo "::error::release-authority switch unreachable; refusing to publish"
+                exit 1 ;;
+              *)
+                echo "authority=none" >> "$GITHUB_OUTPUT"
+                echo "switch unreachable, and this ref cannot release; continuing"
+                exit 0 ;;
+            esac
+          fi
+          auth=$(printf '%s' "$body" | python3 -c 'import json,os,sys; d=json.load(sys.stdin); r=os.environ["GITHUB_REPOSITORY"]; print(d["repos"].get(r) or d["orgs"].get(r.split("/")[0]) or d["default"])')
+          echo "release authority for $GITHUB_REPOSITORY: $auth"
+          echo "authority=$auth" >> "$GITHUB_OUTPUT"
+
   linux-pretest:
     runs-on: ubuntu-latest
     steps:
@@ -79,7 +127,7 @@ jobs:
         touch build/html/.nojekyll
   linux:
     runs-on: ubuntu-latest
-    needs: linux-pretest
+    needs: [gate, linux-pretest]
     strategy:
       matrix:
         spec: ['cp38-cp38', 'cp39-cp39', 'cp310-cp310', 'cp311-cp311', 'cp312-cp312']
@@ -100,7 +148,26 @@ jobs:
         quay.io/pypa/${{ matrix.image }}
         /io/scripts/build_linux.sh      
     - name: Publish to PyPi
-      if: startsWith(github.ref, 'refs/heads/main')
+      # GATED 2026-08-31 (wave 3b). Two clauses, and both are load-bearing:
+      #
+      #   refs/tags/v*   this repo is mirrored to Forgejo and back on a five-minute
+      #                  cron, and git-sync moves the DEFAULT BRANCH. The condition
+      #                  replaced here was `refs/heads/master` (or main), which a sync
+      #                  cycle satisfies by construction -- so mirroring was a release
+      #                  trigger. A tag is a deliberate act; a cycle never creates one.
+      #
+      #   authority      the release-authority master switch at
+      #                  dvkit.org/.well-known/release-authority.json, so that which
+      #                  forge may publish is one decision in one place rather than
+      #                  fourteen workflow files.
+      #
+      # WHAT THIS COSTS. The per-push `.<run-id>` dev wheel is gone: a push to the
+      # default branch no longer publishes anything to PyPI. That is the same trade
+      # already made for the eight mballance-utils repos, and it is the one
+      # sync-policy.toml describes as outstanding for exactly this shape.
+      if: >-
+        needs.gate.outputs.authority == 'github' &&
+        startsWith(github.ref, 'refs/tags/v')
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
