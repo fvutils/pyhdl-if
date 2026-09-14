@@ -114,38 +114,37 @@ jobs:
       # than a way to lose content.
       run: |
         sudo apt-get update -qq && sudo apt-get install -y -qq graphviz
-        # Only what is needed to *drive* the build. The documentation toolchain
-        # itself -- Sphinx, the theme, sphinx-systemverilog -- comes from the
-        # `docs` dep-set below, so it is declared in one place rather than
-        # here and in ivpm.yaml with a chance to disagree.
+        # The doc toolchain is installed with pip, not taken from the `docs`
+        # dep-set, even though that dep-set declares it. ivpm installs into a
+        # uv-created venv without resolving Sphinx's transitive dependencies --
+        # observed in CI as `ModuleNotFoundError: No module named 'jinja2'`
+        # from an otherwise complete-looking install. The dep-set is what a
+        # developer uses locally and is the reason default-ci no longer drags
+        # pyslang into the wheel build; this is the copy CI actually runs on.
         #
         # setuptools_scm is in setup.py's setup_requires; without it installed,
         # setuptools fetches it into .eggs without its dependencies and 10.x
         # then fails on `import vcs_versioning`.
+        python3 -m pip install packaging sphinx cairosvg sphinx-argparse
+        python3 -m pip install sphinx-rtd-theme "sphinx-systemverilog>=0.6.1"
         python3 -m pip install ivpm cxxheaderparser pcpp setuptools_scm
     - name: Build
       # Without the UVM sources conf.py drops the generated SystemVerilog class
       # reference from uvm.rst, so fetch them here too -- otherwise this job
       # would pass on a doc set the release build rejects.
       run: |
-        # The `docs` dep-set brings both the toolchain and the UVM sources.
+        # -d docs for the UVM sources; the toolchain came from pip above.
         python3 -m ivpm update -d docs
         test -f packages/uvm/src/uvm_pkg.sv
-        SPHINX=$PWD/packages/python/bin/sphinx-build
-        test -x "$SPHINX"
-        # The DPI library is dlopened by a simulator, never imported, so the
-        # interpreter Sphinx runs on does not have to be the one that built it.
         python3 setup.py build_ext --inplace
         cd doc
-        make html SPHINXBUILD="$SPHINX"
+        make html
         touch build/html/.nojekyll
     - name: Check SystemVerilog doc coverage
       # A published object with no doc comment renders as a bare signature, and
       # a source file matching no `:files:` pattern is simply absent: both are
       # invisible in a green build. See scripts/check-sv-doc-coverage.py.
-      # Run on the doc toolchain's interpreter: the script imports
-      # sphinx_systemverilog to index the sources.
-      run: ./packages/python/bin/python scripts/check-sv-doc-coverage.py --list
+      run: python3 scripts/check-sv-doc-coverage.py --list
   linux:
     runs-on: ubuntu-latest
     needs: [gate, linux-pretest]

@@ -215,15 +215,19 @@ jobs:
         dnf install -y -q graphviz || yum install -y -q graphviz
         command -v dot
         P=/opt/python/cp312-cp312/bin/python
-        # Only what drives the build. The documentation toolchain itself --
-        # Sphinx, the theme, sphinx-systemverilog -- comes from the `docs`
-        # dep-set, so it is declared in one place instead of here and in
-        # ivpm.yaml with a chance to disagree.
+        # The doc toolchain is installed with pip, not taken from the `docs`
+        # dep-set, even though that dep-set declares it. ivpm installs into a
+        # uv-created venv without resolving Sphinx's transitive dependencies --
+        # observed in CI as `ModuleNotFoundError: No module named 'jinja2'` from
+        # an otherwise complete-looking install. The dep-set is what a developer
+        # uses locally, and is why default-ci no longer drags pyslang into the
+        # wheel build; this is the copy CI actually runs on.
         $P -m pip install -q --upgrade pip setuptools wheel setuptools_scm
-        $P -m pip install -q ivpm cython pcpp cxxheaderparser
+        $P -m pip install -q sphinx sphinx-rtd-theme sphinx-argparse cairosvg \
+          packaging "sphinx-systemverilog>=0.6.1" ivpm cython pcpp cxxheaderparser
 
-    - name: Fetch the documentation toolchain and the UVM library
-      # The `docs` dep-set carries both. conf.py parses the UVM sources to
+    - name: Fetch the UVM library
+      # From the `docs` dep-set. conf.py parses the UVM sources to
       # elaborate the pyhdl_uvm package; they are not a build dependency and are
       # absent from a bare checkout, so the `have_uvm` tag gates the
       # SystemVerilog class reference in uvm.rst -- meaning a build without them
@@ -232,7 +236,6 @@ jobs:
       run: |
         /opt/python/cp312-cp312/bin/python -m ivpm update -d docs
         test -f packages/uvm/src/uvm_pkg.sv
-        test -x packages/python/bin/sphinx-build
 
     - name: Build HTML docs
       # doc/Makefile passes -W --keep-going: the reference is generated, so a
@@ -246,7 +249,7 @@ jobs:
         test -f src/hdl_if/libpyhdl_if.so
         $P -c "import sys; sys.path.insert(0, 'src'); import hdl_if; print('hdl_if importable:', hdl_if.__file__)"
         cd doc
-        make html SPHINXBUILD="$PWD/../packages/python/bin/sphinx-build" 2>&1 | tee /tmp/sphinx.log
+        make html SPHINXBUILD="/opt/python/cp312-cp312/bin/sphinx-build" 2>&1 | tee /tmp/sphinx.log
         touch build/html/.nojekyll
         rm -rf build/html/.doctrees build/doctrees
 
@@ -256,9 +259,7 @@ jobs:
       # file that matches no `:files:` pattern in doc/source/*.rst (absent, with
       # nothing to notice it). See scripts/check-sv-doc-coverage.py.
       run: |
-        # The doc toolchain's interpreter: the script imports
-        # sphinx_systemverilog to index the sources.
-        ./packages/python/bin/python scripts/check-sv-doc-coverage.py --list
+        /opt/python/cp312-cp312/bin/python scripts/check-sv-doc-coverage.py --list
 
     - name: Check the UVM reference is live
       # If the UVM sources had not reached the build, uvm.rst still renders --
