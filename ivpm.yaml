@@ -81,11 +81,10 @@ package:
     - name: packaging
       src: pypi
     - name: sphinx-systemverilog
-      url: https://github.com/fvutils/sphinx-systemverilog.git
-      # As for the other git-sourced deps here: without an explicit dep-set the
-      # entry inherits the name of the set that declares it, and
-      # sphinx-systemverilog declares only `default` and `default-dev`.
-      dep-set: default-dev
+      # The released package, not the source tree: CI documents against what a
+      # user installs. default-dev keeps the git checkout, so local development
+      # still gets an editable copy to change.
+      src: pypi
 
   # The UVM library, needed only to build documentation: doc/source/conf.py
   # elaborates the pyhdl_uvm package against it to generate the SystemVerilog
