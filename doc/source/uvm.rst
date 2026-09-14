@@ -232,7 +232,128 @@ implementation calls through them.
    integration -- the proxy classes described above, along with the object
    registry and type-wrapper infrastructure they rely on.
 
+   Sections are scoped by source file rather than by a hand-maintained class
+   list, so a new class joins the reference by being added to a file that is
+   already covered. The generated transport layer is deliberately excluded --
+   see :ref:`uvm-generated-layer`.
+
+   Proxies
+   -------
+
+   The classes you instantiate: each hosts a Python implementation and forwards
+   UVM's calls to it.
+
+   .. only:: have_dot
+
+      .. sv:inheritance-diagram:: pyhdl_uvm::pyhdl_uvm_component_proxy
+
    .. autosvsummary::
       :packages: pyhdl_uvm
       :kinds: class
+      :files: pyhdl_uvm_component_proxy.svh, pyhdl_uvm_sequence_proxy.svh, pyhdl_uvm_analysis_port.svh
       :members:
+
+   Object model
+   ------------
+
+   How a UVM object is presented to Python, and how a Python object is
+   presented to UVM.
+
+   Every wrapper descends from ``pyhdl_uvm_object``, which is what lets the
+   registry hold them in one collection and recover either half of a crossed
+   object from a handle to the other:
+
+   .. only:: have_dot
+
+      .. sv:inheritance-diagram:: pyhdl_uvm::pyhdl_uvm_object
+
+   .. autosvsummary::
+      :packages: pyhdl_uvm
+      :kinds: class
+      :files: pyhdl_uvm_object.svh, pyhdl_uvm_object_type.svh, pyhdl_uvm_object_if.svh
+      :members:
+
+   Registries and the factory
+   --------------------------
+
+   The lookup tables that let a name crossing the language boundary resolve to
+   a type on the other side.
+
+   .. autosvsummary::
+      :packages: pyhdl_uvm
+      :kinds: class
+      :files: pyhdl_uvm_object_rgy.svh, pyhdl_uvm_enum_rgy.svh, pyhdl_uvm_wrapper_factory.svh
+      :members:
+
+   Containers
+   ----------
+
+   Wrappers presenting a SystemVerilog collection to Python as a list, a map or
+   a string.
+
+   .. autosvsummary::
+      :packages: pyhdl_uvm
+      :kinds: class
+      :files: pyhdl_uvm_object_list.svh, pyhdl_uvm_object_map.svh, pyhdl_uvm_object_string.svh
+      :members:
+
+   Register model
+   --------------
+
+   .. autosvsummary::
+      :packages: pyhdl_uvm
+      :kinds: class
+      :files: pyhdl_uvm_reg.svh, pyhdl_uvm_reg_block.svh, pyhdl_uvm_reg_field.svh
+      :members:
+
+   Components, phases and utilities
+   --------------------------------
+
+   .. autosvsummary::
+      :packages: pyhdl_uvm
+      :kinds: class
+      :files: pyhdl_uvm_component.svh, pyhdl_uvm_phase.svh, pyhdl_uvm_cmdline_processor.svh, pyhdl_uvm_pygen.svh
+      :members:
+
+   Macros
+   ------
+
+   .. autosvsummary::
+      :kinds: macro
+      :files: pyhdl_uvm_macros.svh
+      :exclude: PYHDL_UVM_MACROS_SVH
+
+   .. _uvm-generated-layer:
+
+   The generated transport layer
+   -----------------------------
+
+   ``pyhdl_uvm_apis.svh`` is generated, not written::
+
+      % python -m hdl_if api-gen-sv -m hdl_if.uvm.wrap \
+          -o src/hdl_if/share/uvm/pyhdl_uvm_apis.svh
+
+   It holds, for each wrapped UVM type, four declarations following a fixed
+   pattern:
+
+   ``<type>_exp_if``
+      The *exported* interface: what SystemVerilog offers to Python. Its
+      methods are the ones a Python implementation may call.
+
+   ``<type>_exp_impl``
+      The implementation of that interface, marshalling each call into the
+      Python C API.
+
+   ``<type>_imp_if``
+      The *imported* interface: what Python offers to SystemVerilog -- the
+      methods a Python implementation is expected to provide.
+
+   ``<type>_imp_impl``
+      The dispatcher that routes an incoming call, by method name, to the
+      Python object.
+
+   These are an implementation detail of the marshalling layer: they carry no
+   behaviour of their own, they change whenever the Python-side API changes,
+   and their contents are the Python API documented above, restated in
+   SystemVerilog. They are therefore excluded from this reference. Read the
+   Python classes instead; the generated pair is derived from them.

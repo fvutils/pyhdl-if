@@ -1,4 +1,15 @@
 
+/**
+ * One pending call from Python into a SystemVerilog task.
+ *
+ * A task may consume simulation time, so the call cannot run on the thread that
+ * arrived from Python. The arguments are captured here and the closure is
+ * queued; the event loop forks #run, which performs the call and then sets the
+ * Python-side event the caller is awaiting.
+ *
+ * @see PyHdlPiRunnable
+ * @see ICallApi
+ */
 class TaskCallClosure implements PyHdlPiRunnable;
     ICallApi        m_obj;
     PyObject        m_evt_obj;

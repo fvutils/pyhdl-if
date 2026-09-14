@@ -19,6 +19,14 @@
  *     Author: 
  */
 
+/**
+ * Presents `uvm_cmdline_processor` to Python.
+ *
+ * Gives a Python implementation the simulator's command line -- plusargs and
+ * tool arguments -- through the same accessors UVM offers SystemVerilog.
+ *
+ * @see pyhdl_uvm_object
+ */
 class pyhdl_uvm_cmdline_processor extends pyhdl_uvm_object;
     uvm_cmdline_processor           m_clp;
 

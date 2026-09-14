@@ -49,10 +49,30 @@ class factory_print_catcher extends uvm_report_catcher;
 endclass
 
 
+/**
+ * Base for the per-type registration objects the type registry holds.
+ *
+ * Empty by design: it exists so registrations of different parameterisations
+ * can be stored in one collection. The work is in
+ * #pyhdl_uvm_object_type_rgy_p.
+ */
 class pyhdl_uvm_object_type_rgy;
 
 endclass
 
+/**
+ * Registers one UVM type, and its base, with the type registry.
+ *
+ * Instantiated by the `pyhdl_uvm_type_utils` macro as a static, so registration
+ * happens during elaboration -- before any Python code can ask about the type.
+ * Recording the base as well is what lets the Python side reproduce the
+ * inheritance chain.
+ *
+ * @param Ct The UVM type being registered.
+ * @param Ctw Its wrapper class.
+ * @param Cb The UVM base type.
+ * @param Cbw The base type's wrapper class.
+ */
 class pyhdl_uvm_object_type_rgy_p #(
     type Ct=uvm_object,
     type Ctw=pyhdl_uvm_object_w,
@@ -85,6 +105,15 @@ class pyhdl_uvm_object_type_rgy_p #(
 
 endclass
 
+/**
+ * The object registry: the map between live UVM objects and their Python peers.
+ *
+ * A singleton. Every object crossing the boundary is recorded here, so a second
+ * crossing of the same object yields the same Python peer rather than a new
+ * wrapper -- which is what makes identity comparisons work on the Python side.
+ * It also holds the type-to-factory map that #pyhdl_uvm_wrapper_factory
+ * implementations register into.
+ */
 class pyhdl_uvm_object_rgy extends uvm_object_rgy_imp_impl #(pyhdl_uvm_object_rgy);
     static pyhdl_uvm_object_rgy    m_inst;
     uvm_object_rgy_exp_impl        m_exp;

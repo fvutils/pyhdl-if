@@ -1,4 +1,16 @@
 
+    /**
+     * Schedules a Python callback for a point in simulation time.
+     *
+     * Exported to the C layer, which is how a Python `await` on a delay is
+     * satisfied. Registration returns immediately; the callback fires when the
+     * simulation reaches the requested time.
+     *
+     * @param target The Python object to call back. A reference is held until
+     *        the callback has run.
+     * @param time_ps Delay from now, in picoseconds.
+     * @return The callback's id, which identifies it if it must be cancelled.
+     */
     function automatic int pyhdl_pi_if_RegisterTimeCB(
         PyObject            target,
         longint unsigned    time_ps);

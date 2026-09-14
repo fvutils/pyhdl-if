@@ -1,4 +1,14 @@
 
+/**
+ * A Python list.
+ *
+ * Indices are zero-based and are not bounds-checked here: an out-of-range
+ * access is reported by CPython. Constructing with a null handle creates an
+ * empty list rather than a null wrapper.
+ *
+ * @see py_object
+ * @see py_tuple
+ */
 class py_list extends py_object;
 
     function new(PyObject obj=null);

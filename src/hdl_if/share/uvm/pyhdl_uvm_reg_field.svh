@@ -19,6 +19,14 @@
  *     Author: 
  */
 
+/**
+ * Presents a `uvm_reg_field` to Python.
+ *
+ * A field is accessed through its parent register, so a field write is a
+ * read-modify-write of that register unless the field occupies it entirely.
+ *
+ * @see pyhdl_uvm_reg
+ */
 class pyhdl_uvm_reg_field extends pyhdl_uvm_object;
 
     function new(uvm_object obj);

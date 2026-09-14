@@ -11,8 +11,11 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import shutil
 import sys
 # sys.path.insert(0, os.path.abspath('.'))
+
+from sphinx_systemverilog import UVM_BOILERPLATE_MACROS
 
 source_dir = os.path.dirname(os.path.abspath(__file__))
 doc_dir = os.path.dirname(source_dir)
@@ -74,6 +77,16 @@ sv_uvm_dir = os.path.join(pyhdl_if_dir, "src", "hdl_if", "share", "uvm")
 sv_uvm_lib = os.path.join(pyhdl_if_dir, "packages", "uvm", "src")
 
 sv_doc_style = "doxygen"        # matches the /** ... */ comments in the sources
+
+# Members a macro wrote are not API a reader can act on.  The shipped default
+# covers UVM's `uvm_*_utils` family; pyhdl_uvm_type_utils is ours, and expands
+# to a whole wrapper class (`<type>_w`) plus its registration -- boilerplate
+# repeated identically for every wrapped UVM type.  The extension notes on each
+# class what it hid, so nothing disappears silently.
+sv_ignore_macro_content = [*UVM_BOILERPLATE_MACROS, "pyhdl_uvm_type_utils"]
+
+# Every autodoc directive documents members unless it says otherwise.
+sv_default_options = {"members": True}
 sv_include_dirs = [sv_dpi_dir, sv_uvm_dir, sv_uvm_lib]
 
 # The pyhdl_uvm package needs the UVM library to elaborate.  That comes from
@@ -91,19 +104,40 @@ if (os.path.isfile(os.path.join(sv_uvm_lib, "uvm_pkg.sv"))
 else:
     sv_build_units = [os.path.join(sv_dpi_dir, "pyhdl_if.sv")]
 
-# The TLM FIFO interfaces (tlm_hdl2hvl_fifo.sv, tlm_hvl2hdl_fifo.sv) are
-# deliberately NOT parsed.  They are instantiated in a design rather than
-# `include`-ed into the package, so each would be its own build unit -- but
-# their `Closure::invokeTask` implementations do not match the current
-# `ICallApi::invokeTask` signature and none of them compiles.  Adding them
-# here surfaces two parser errors and breaks the -W build.  Doc comments are
-# already written in those files; re-enable this once the signatures are
-# fixed.  See doc/documentation-plan.md F19.
+# The TLM FIFO interfaces are instantiated in a design rather than `include`-ed
+# into a package, so each is its own build unit.  They were unparseable until
+# F19 was fixed (every Closure::invokeTask was missing ICallApi's `state`
+# argument); they now elaborate with no diagnostics.
 #
-# sv_build_units += [
-#     os.path.join(sv_dpi_dir, "tlm_hdl2hvl_fifo.sv"),
-#     os.path.join(sv_dpi_dir, "tlm_hvl2hdl_fifo.sv"),
-# ]
+# Only one copy of each interface is parsed.  `tlm_hdl2hvl_fifo` and
+# `tlm_hvl2hdl_fifo` are each declared three times -- in share/dpi (DPI only),
+# share/vpi (VPI only), and share/pyhdl_if_{rsp,req}_fifo.sv (both, selected by
+# `ifdef PYHDL_IF_VPI).  Same interface name in every copy, so parsing more than
+# one gives two objects with one name: ambiguous cross-references and a
+# duplicate anchor.  The share/dpi copies are the ones documented, because they
+# are the ones that carry doc comments.  See doc/sv-api-documentation-plan.md
+# F20 -- which copy should survive is an open question for the project, not a
+# documentation decision.
+sv_build_units += [
+    os.path.join(sv_dpi_dir, "tlm_hdl2hvl_fifo.sv"),
+    os.path.join(sv_dpi_dir, "tlm_hvl2hdl_fifo.sv"),
+    os.path.join(pyhdl_if_dir, "src", "hdl_if", "share", "pyhdl_if_reqrsp_fifo.sv"),
+]
+
+# Pygments' SystemVerilog lexer cannot tokenize pyhdl_if.sv -- it stops on a
+# string literal inside `import "DPI-C"` -- and the viewcode pages highlight
+# whole source files, so it hits this on a file we do not control the shape of.
+# Sphinx recovers by re-lexing in relaxed mode, and the listing renders; the
+# only consequence is a warning, which -W would otherwise turn into a failure.
+suppress_warnings = ['misc.highlighting_failure']
+
+# Inheritance diagrams render through sphinx.ext.graphviz, which needs `dot`.
+# Without it the graphviz extension warns and skips the diagram -- and the
+# Makefile's -W turns that into a failed build. Gating the directives on a tag
+# keeps a machine without graphviz building cleanly; CI installs it, so the
+# published pages always have the diagrams.
+if shutil.which('dot'):
+    tags.add('have_dot')            # noqa: F821 (Sphinx injects `tags`)
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -114,14 +114,21 @@ interface tlm_hdl2hvl_fifo #(
         endfunction
 
         virtual task invokeTask(
-            output PyObject     retval,
-            input string        method,
-            input PyObject      args);
+            output PyObject         retval,
+            inout PyGILState_STATE  state,
+            input string            method,
+            input PyObject          args);
             bit [(Twidth>64)?(Twidth-1):63:0]    tmp = 0;
             retval = None;
             case (method)
                 "get": begin
+                    // `get` blocks until the producer supplies a word, which
+                    // can be any number of clocks away.  Holding the GIL across
+                    // that stalls every Python thread -- including the one that
+                    // would drive the producer -- so release it for the wait.
+                    PyGILState_Release(state);
                     get(tmp[Twidth-1:0]);
+                    state = PyGILState_Ensure();
 
                     if (Twidth <= 64) begin
                         retval = PyLong_FromUnsignedLongLong(tmp);

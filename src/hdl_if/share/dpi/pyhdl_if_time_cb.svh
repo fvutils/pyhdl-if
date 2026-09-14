@@ -1,4 +1,13 @@
 
+/**
+ * Calls back into Python after a delay in simulation time.
+ *
+ * Python cannot wait on simulation time itself. #pyhdl_pi_if_RegisterTimeCB
+ * creates one of these and queues it; the event loop forks #run, which consumes
+ * the delay and then calls the backend's `callCallback`.
+ *
+ * @see PyHdlPiRunnable
+ */
 class PyHdlDpiTimeCB implements PyHdlPiRunnable;
     PyObject            m_target;
     int                 m_cb_id;

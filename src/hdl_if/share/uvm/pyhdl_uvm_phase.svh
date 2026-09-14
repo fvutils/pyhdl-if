@@ -21,6 +21,15 @@
 
 typedef class pyhdl_uvm_object_rgy;
 
+/**
+ * Presents a `uvm_phase` to Python.
+ *
+ * Mainly so a Python implementation can raise and drop objections: a coroutine
+ * that must keep the simulation alive has to hold one for the duration, exactly
+ * as SystemVerilog code does.
+ *
+ * @see pyhdl_uvm_component_proxy
+ */
 class pyhdl_uvm_phase extends pyhdl_uvm_object;
 
     function new(uvm_object obj);

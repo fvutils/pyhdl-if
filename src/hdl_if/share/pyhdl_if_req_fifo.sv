@@ -115,9 +115,10 @@
         endfunction
 
         virtual task invokeTask(
-            output PyObject    retval,
-            input string       method,
-            input PyObject     args);
+            output PyObject         retval,
+            inout PyGILState_STATE  state,
+            input string            method,
+            input PyObject          args);
             bit [Twidth-1:0]    tmp = 0;
             PyObject obj, intval, rshift;
 
@@ -138,7 +139,12 @@
                         $display("TODO: implement >64-bit");
                         $finish;
                     end
-                    put(tmp); 
+                    // `put` blocks until the consumer accepts the word.
+                    // Release the GIL for the wait: holding it would stall the
+                    // Python thread that drives the consumer, and deadlock.
+                    PyGILState_Release(state);
+                    put(tmp);
+                    state = PyGILState_Ensure();
                 end
                 default: begin
                     $display("Fatal Error: unsupported task call %0s", method);

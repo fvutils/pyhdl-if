@@ -19,6 +19,14 @@
  *     Author: 
  */
 
+/**
+ * Both sides of an object that has crossed the language boundary.
+ *
+ * Every wrapper implements this, so the registry can recover either half from a
+ * handle to the other without knowing the concrete wrapper type.
+ *
+ * @see pyhdl_uvm_object_rgy
+ */
 interface class pyhdl_uvm_object_if;
     pure virtual function uvm_object get_object();
     pure virtual function PyObject get_pyobject();

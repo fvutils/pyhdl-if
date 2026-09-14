@@ -1,5 +1,13 @@
 
 
+/**
+ * A UVM object holding an associative array of UVM objects.
+ *
+ * UVM has no container object, so this supplies one for a Python-side mapping
+ * that must travel as a single `uvm_object`.
+ *
+ * @see pyhdl_uvm_object_map
+ */
 class uvm_object_map extends uvm_object;
     `uvm_object_utils(uvm_object_map)
     uvm_object          map[string];
@@ -22,6 +30,12 @@ class uvm_object_map extends uvm_object;
 
 endclass
 
+/**
+ * Presents a #uvm_object_map to Python as a mapping.
+ *
+ * @see pyhdl_uvm_object_list
+ * @see pyhdl_uvm_object_string
+ */
 class pyhdl_uvm_object_map extends pyhdl_uvm_object;
     function new(uvm_object obj);
         super.new(obj);

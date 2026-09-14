@@ -4,6 +4,12 @@
  * Construction utilities for numeric types
  ********************************************************************/
 
+/**
+ * Creates a Python bool.
+ *
+ * @param val The value to convert.
+ * @return A new reference to Python's `True` or `False`.
+ */
 function automatic py_object py_from_bool(bit val);
     py_object ret = new(PyBool_FromLong(longint'(val)));
     return ret;
@@ -49,11 +55,29 @@ function automatic py_object py_from_str(string str);
     return ret;
 endfunction
 
+/**
+ * Reads a Python string as a SystemVerilog string.
+ *
+ * @param hndl A Python `str`. Passing any other type is an error CPython
+ *        reports on its own.
+ * @return The UTF-8 contents. The buffer belongs to @p hndl, so the result is
+ *         only valid while that object lives.
+ */
 function automatic string py_as_str(PyObject hndl);
     string ret = PyUnicode_AsUTF8(hndl);
     return ret;
 endfunction
 
+/**
+ * Reads a Python integer as a single bit.
+ *
+ * Tests the value against zero rather than asking Python for its truthiness,
+ * so a non-integer does not convert the way `bool(obj)` would.
+ *
+ * @param hndl A Python integer.
+ * @return 0 when the value is zero, 1 otherwise. Prints the exception and
+ *         returns 1 if the conversion failed.
+ */
 function automatic bit py_as_bool(PyObject hndl);
     longint ret = PyLong_AsLong(hndl);
 
@@ -64,6 +88,14 @@ function automatic bit py_as_bool(PyObject hndl);
     return (ret != 0);
 endfunction
 
+/**
+ * Reads a Python integer as a 64-bit signed value.
+ *
+ * @param hndl A Python integer.
+ * @return The value, or -1 if the conversion failed -- which is also a valid
+ *         result, so the exception is printed rather than signalled. Values too
+ *         large for 64 bits raise `OverflowError`.
+ */
 function automatic longint py_as_long(PyObject hndl);
     longint ret = PyLong_AsLong(hndl);
 
@@ -74,6 +106,13 @@ function automatic longint py_as_long(PyObject hndl);
     return ret;
 endfunction
 
+/**
+ * Reads a Python float as a real.
+ *
+ * @param hndl A Python float, or anything implementing `__float__`.
+ * @return The value, or -1.0 if the conversion failed, with the exception
+ *         printed.
+ */
 function automatic real py_as_double(PyObject hndl);
     real ret = 0.0;
 
@@ -175,6 +214,15 @@ function automatic void py_gil_leave();
     end
 endfunction
 
+/**
+ * Reports a pending Python exception when a wrapper came back null.
+ *
+ * Wrap a call that returns a #py_object in this to get the traceback printed at
+ * the point of failure rather than a null handle surfacing somewhere else.
+ *
+ * @param obj The object to check.
+ * @return @p obj unchanged, or null -- having printed the exception.
+ */
 function automatic py_object py_check(py_object obj);
     if (obj == null) begin
         $display("Error:");

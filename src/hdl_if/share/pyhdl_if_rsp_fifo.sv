@@ -114,14 +114,19 @@
         endfunction
 
         virtual task invokeTask(
-            output PyObject     retval,
-            input string        method,
-            input PyObject      args);
+            output PyObject         retval,
+            inout PyGILState_STATE  state,
+            input string            method,
+            input PyObject          args);
             bit [(Twidth>64)?(Twidth-1):63:0]    tmp = 0;
             retval = None;
             case (method)
                 "get": begin
+                    // Blocks on the clock: release the GIL for the wait, or
+                    // every Python thread stalls with it.
+                    PyGILState_Release(state);
                     get(tmp[Twidth-1:0]);
+                    state = PyGILState_Ensure();
 
                     if (Twidth <= 64) begin
                         retval = PyLong_FromUnsignedLongLong(tmp);

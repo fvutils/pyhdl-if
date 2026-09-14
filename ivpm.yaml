@@ -45,7 +45,7 @@ package:
     - name: packaging
       src: pypi
     - name: sphinx-systemverilog
-      url: https://git.dvkit.org/fvutils/sphinx-systemverilog.git
+      url: https://github.com/fvutils/sphinx-systemverilog.git
 
   - name: default-ci
     deps:
@@ -81,7 +81,7 @@ package:
     - name: packaging
       src: pypi
     - name: sphinx-systemverilog
-      url: https://git.dvkit.org/fvutils/sphinx-systemverilog.git
+      url: https://github.com/fvutils/sphinx-systemverilog.git
 
   # The UVM library, needed only to build documentation: doc/source/conf.py
   # elaborates the pyhdl_uvm package against it to generate the SystemVerilog

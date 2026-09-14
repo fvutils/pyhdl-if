@@ -1,4 +1,13 @@
 
+/**
+ * A Python dictionary.
+ *
+ * Keys and values are #py_object handles, so any hashable Python object can be
+ * a key. Iterate with #py_iter over the result of #keys.
+ *
+ * @see py_object
+ * @see py_list
+ */
 class py_dict extends py_object;
     function new (PyObject obj);
         super.new(obj);

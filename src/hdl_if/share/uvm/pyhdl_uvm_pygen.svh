@@ -19,6 +19,17 @@
  *     Author: 
  */
 
+/**
+ * A `uvm_test` that emits Python bindings for the elaborated testbench, then exits.
+ *
+ * Run it with `+UVM_TESTNAME=pyhdl_uvm_pygen` to generate the Python side of an
+ * existing testbench rather than writing it by hand. It is a code generator
+ * that happens to be a test, because elaborating the testbench is the only way
+ * to see what is in it.
+ *
+ * @warning Calls `$finish` at the end of `build_phase`: nothing after
+ *          elaboration runs, and no simulation is performed.
+ */
 class pyhdl_uvm_pygen extends uvm_test;
     `uvm_component_utils(pyhdl_uvm_pygen)
 

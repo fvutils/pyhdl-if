@@ -376,50 +376,97 @@ This example demonstrates the complete flow from Python API definition to
 SystemVerilog implementation and usage, showing both directions of 
 communication between Python and SystemVerilog.
 
+``pyhdl_if`` Reference
+----------------------
+
+Sections are scoped by source file rather than by a hand-maintained symbol
+list, so a new declaration joins the reference by being added to a file that is
+already covered.
+
 Class-Based API
----------------
-.. autosvclass:: pyhdl_if::py_object
-    :members:
-
-.. autosvclass:: pyhdl_if::py_dict
-    :members:
-
-.. autosvclass:: pyhdl_if::py_list
-    :members:
-
-.. autosvclass:: pyhdl_if::py_tuple
-    :members:
-
-.. autosvclass:: pyhdl_if::py_iter
-    :members:
-
-.. autosvclass:: pyhdl_if::py_ctxt
-    :members:
-
-Utility Methods
 ~~~~~~~~~~~~~~~
 
-.. autosvfunction:: pyhdl_if::py_from_bool
+Handle classes wrapping a ``PyObject``. Each owns a reference and releases it
+on ``dispose``.
 
-.. autosvfunction:: pyhdl_if::py_from_int
+.. autosvsummary::
+   :packages: pyhdl_if
+   :kinds: class
+   :files: py_object.svh, py_ctxt.svh, py_dict.svh, py_iter.svh, py_list.svh, py_tuple.svh
+   :members:
 
-.. autosvfunction:: pyhdl_if::py_from_uint
+Conversion and Utility Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autosvfunction:: pyhdl_if::py_from_long
+Free functions converting between SystemVerilog and Python values, importing
+modules, and taking or releasing the GIL.
 
-.. autosvfunction:: pyhdl_if::py_from_ulong
+.. autosvsummary::
+   :packages: pyhdl_if
+   :kinds: function
+   :files: py_utils.svh
+   :members:
 
-.. autosvfunction:: pyhdl_if::py_from_str
+Calling Python from SystemVerilog
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autosvfunction:: pyhdl_if::py_import
+The interface a callable object implements, the closure that carries a pending
+task call, and the base classes a generated API extends.
 
-.. autosvfunction:: pyhdl_if::py_call_builtin
+.. autosvsummary::
+   :packages: pyhdl_if
+   :kinds: class
+   :files: pyhdl_if_icall_api.svh, pyhdl_if_taskcall_closure.svh, pyhdl_if_time_cb.svh, pyhdl_if.sv
+   :members:
 
-.. autosvfunction:: pyhdl_if::py_gil_enter
+.. autosvsummary::
+   :packages: pyhdl_if
+   :kinds: function task
+   :files: pyhdl_if_call_api.svh
+   :members:
 
-.. autosvfunction:: pyhdl_if::py_gil_leave
+Runtime and Lifecycle
+~~~~~~~~~~~~~~~~~~~~~
 
+Entry points the simulator and the generated code call: starting the runtime,
+yielding to Python, registering a TLM stream, and running pytest in-simulation.
 
+.. autosvsummary::
+   :packages: pyhdl_if
+   :kinds: function task
+   :files: pyhdl_if.sv, pyhdl_if_pytest.svh, pyhdl_if_pi_dpi.svh
+   :exclude: __do_init, __pyhdl_pi_if_run, __pyhdl_py_poll_thread, pyhdl_if_dpi_entry
+   :members:
+
+Macros
+~~~~~~
+
+.. autosvsummary::
+   :kinds: macro
+   :files: pyhdl_if_macros.svh
+   :exclude: INCLUDED_PYHDL_IF_MACROS_SVH
 
 Direct API
-----------
+~~~~~~~~~~
+
+``pyhdl_dpi_imports.svh`` declares the CPython C API to SystemVerilog directly
+-- close to 600 ``import "DPI-C"`` statements covering ``PyObject_CallObject``,
+``PyTuple_New``, ``PyGILState_Ensure`` and the rest. Everything above is built
+on it, and it is importable as ``pyhdl_if::PyObject_GetAttrString(...)`` when
+the wrapper classes do not cover what you need.
+
+It is deliberately **not** reproduced here. These are not this project's
+declarations, their semantics -- especially which functions return a borrowed
+rather than an owned reference -- are defined by CPython, and restating several
+hundred of them would bury the API that *is* ours. Consult the
+`Python/C API reference <https://docs.python.org/3/c-api/index.html>`_ instead;
+the SystemVerilog import matches the C signature.
+
+Two rules carry over and are easy to get wrong from SystemVerilog:
+
+- **Hold the GIL.** Every call into CPython needs it. Use ``py_gil_enter`` /
+  ``py_gil_leave``, or :sv:class:`pyhdl_if::py_ctxt`, and release it around
+  anything that blocks on simulation time.
+- **Mind the reference counts.** The wrapper classes handle this; raw calls do
+  not. :sv:class:`pyhdl_if::py_object` can adopt a raw handle for you --
+  ``steal`` for an owned reference, ``borrow`` for a borrowed one.

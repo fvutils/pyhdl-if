@@ -19,6 +19,14 @@
  *     Author: 
  */
 
+/**
+ * Presents a `uvm_reg_block` to Python.
+ *
+ * The entry point to a register model: from a block a Python implementation
+ * reaches its registers, its sub-blocks, and its maps.
+ *
+ * @see pyhdl_uvm_reg
+ */
 class pyhdl_uvm_reg_block extends pyhdl_uvm_object;
 
     function new(uvm_object obj);

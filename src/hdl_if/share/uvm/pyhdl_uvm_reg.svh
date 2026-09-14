@@ -19,6 +19,15 @@
  *     Author: 
  */
 
+/**
+ * Presents a `uvm_reg` to Python.
+ *
+ * Reads and writes go through the register model, so they use the map's adapter
+ * and sequencer exactly as a SystemVerilog access would.
+ *
+ * @see pyhdl_uvm_reg_block
+ * @see pyhdl_uvm_reg_field
+ */
 class pyhdl_uvm_reg extends pyhdl_uvm_object;
 
     function new(uvm_object obj);

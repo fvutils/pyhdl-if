@@ -21,6 +21,16 @@
 
 typedef class pyhdl_uvm_object_rgy;
 
+/**
+ * Presents a `uvm_component` to Python.
+ *
+ * Gives a Python implementation the component tree -- name, parent, children --
+ * and the reporting methods. This is the *wrapper* a Python object sees; to
+ * implement a component in Python, instantiate
+ * #pyhdl_uvm_component_proxy instead.
+ *
+ * @see pyhdl_uvm_component_proxy
+ */
 class pyhdl_uvm_component extends pyhdl_uvm_object;
 
     function new(uvm_object comp);

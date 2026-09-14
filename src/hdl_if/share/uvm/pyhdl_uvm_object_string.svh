@@ -4,6 +4,14 @@
  *
  * A simple UVM object class that wraps a string value.
  */
+/**
+ * A UVM object holding a string.
+ *
+ * Lets a bare string travel where a `uvm_object` is required -- as a
+ * `config_db` entry, or an element of a #uvm_object_list.
+ *
+ * @see pyhdl_uvm_object_string
+ */
 class uvm_object_string extends uvm_object;
     `uvm_object_utils(uvm_object_string)
     string          value;
@@ -29,6 +37,12 @@ class uvm_object_string extends uvm_object;
 
 endclass
 
+/**
+ * Presents a #uvm_object_string to Python as a string.
+ *
+ * @see pyhdl_uvm_object_list
+ * @see pyhdl_uvm_object_map
+ */
 class pyhdl_uvm_object_string extends pyhdl_uvm_object;
     function new(uvm_object obj);
         super.new(obj);

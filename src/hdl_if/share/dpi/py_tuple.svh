@@ -1,4 +1,14 @@
 
+/**
+ * A Python tuple, the form an argument list takes.
+ *
+ * A tuple is immutable once Python has seen it, so #set_item is only valid
+ * while building one -- which is what makes it usable for assembling call
+ * arguments.
+ *
+ * @see py_object
+ * @see py_list
+ */
 class py_tuple extends py_object;
 
     function new(PyObject obj);

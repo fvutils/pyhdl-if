@@ -108,9 +108,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Setup
+      # graphviz: conf.py gates the inheritance diagrams on `dot` being present,
+      # so without it the build still succeeds -- and silently ships pages with
+      # no diagrams. Installing it is what makes the gate a safety net rather
+      # than a way to lose content.
       run: |
+        sudo apt-get update -qq && sudo apt-get install -y -qq graphviz
         python3 -m pip install packaging sphinx cairosvg sphinx-argparse
-        python3 -m pip install sphinx-rtd-theme sphinx-systemverilog
+        python3 -m pip install sphinx-rtd-theme "sphinx-systemverilog>=0.6.1"
         # setuptools_scm is in setup.py's setup_requires; without it installed,
         # setuptools fetches it into .eggs without its dependencies and 10.x
         # then fails on `import vcs_versioning`.
@@ -125,6 +130,11 @@ jobs:
         cd doc
         make html
         touch build/html/.nojekyll
+    - name: Check SystemVerilog doc coverage
+      # A published object with no doc comment renders as a bare signature, and
+      # a source file matching no `:files:` pattern is simply absent: both are
+      # invisible in a green build. See scripts/check-sv-doc-coverage.py.
+      run: python3 scripts/check-sv-doc-coverage.py --list
   linux:
     runs-on: ubuntu-latest
     needs: [gate, linux-pretest]

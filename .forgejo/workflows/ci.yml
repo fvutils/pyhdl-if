@@ -209,10 +209,15 @@ jobs:
       # -- setuptools_scm 10.x then dies on `import vcs_versioning`. Installing
       # it with pip resolves the dependency and keeps .eggs out of the picture.
       run: |
+        # graphviz: conf.py gates the inheritance diagrams on `dot`, so a build
+        # without it succeeds and quietly drops them. This is the published
+        # build, so it must have them.
+        dnf install -y -q graphviz || yum install -y -q graphviz
+        command -v dot
         P=/opt/python/cp312-cp312/bin/python
         $P -m pip install -q --upgrade pip setuptools wheel setuptools_scm
         $P -m pip install -q sphinx sphinx-rtd-theme sphinx-argparse cairosvg \
-          packaging sphinx-systemverilog ivpm cython pcpp cxxheaderparser
+          packaging "sphinx-systemverilog>=0.6.1" ivpm cython pcpp cxxheaderparser
 
     - name: Fetch the UVM library
       # conf.py parses the UVM sources to elaborate the pyhdl_uvm package. They
@@ -240,6 +245,14 @@ jobs:
         touch build/html/.nojekyll
         rm -rf build/html/.doctrees build/doctrees
 
+    - name: Check SystemVerilog doc coverage
+      # Two failures a green doc build cannot show: a published object with no
+      # doc comment (renders as a bare signature and says nothing) and a source
+      # file that matches no `:files:` pattern in doc/source/*.rst (absent, with
+      # nothing to notice it). See scripts/check-sv-doc-coverage.py.
+      run: |
+        /opt/python/cp312-cp312/bin/python scripts/check-sv-doc-coverage.py --list
+
     - name: Check the UVM reference is live
       # If the UVM sources had not reached the build, uvm.rst still renders --
       # as the hand-written guide, minus the generated class reference. Only a
@@ -253,6 +266,14 @@ jobs:
           exit 1
         fi
         echo "OK: uvm.html ($(wc -c < "$f") bytes) carries the generated reference"
+        # Same reasoning for the inheritance diagrams: conf.py skips them when
+        # `dot` is missing, so their absence is a silent content loss rather
+        # than a build failure. Assert they are there.
+        if ! grep -q "_images/graphviz-" "$f"; then
+          echo "::error::$f has no inheritance diagram -- graphviz was not available to the build"
+          exit 1
+        fi
+        echo "OK: uvm.html carries $(grep -o '_images/graphviz-' "$f" | wc -l) diagram reference(s)"
         echo "generated pages: $(find doc/build/html -name '*.html' | wc -l)"
 
     - name: Upload docs

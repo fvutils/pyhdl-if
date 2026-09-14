@@ -32,19 +32,49 @@
 `define END_ENTITY_TYPE endinterface
 `endif
 
+/**
+ * Carries a request to the design and its response back, as one stream.
+ *
+ * Two FIFOs that share a registration: Python pushes a request, the design
+ * consumes it and eventually supplies a response, and Python collects that.
+ * Use this rather than a separate #tlm_hvl2hdl_fifo and #tlm_hdl2hvl_fifo when
+ * the pairing matters -- a Python `await` on the bound method returns the
+ * response to its own request.
+ *
+ * The request and response paths are sized independently, because a design
+ * that answers slowly needs depth where a design that answers immediately does
+ * not::
+ *
+ *     pyhdl_if_reqrsp_fifo #(
+ *         .TReqWidth(64), .TReqDepth(4),
+ *         .TRspWidth(32)) u_bus (
+ *         .clock(clk), .reset(rst),
+ *         .req_valid(rq_v), .req_ready(rq_r), .req_dat_o(rq_d),
+ *         .rsp_valid(rs_v), .rsp_ready(rs_r), .rsp_dat_i(rs_d));
+ *
+ * The stream is registered under the instance's hierarchical path, which is
+ * what Python binds against.
+ *
+ * @param TReqWidth Request payload width in bits. Must match the packed width
+ *        of the Python structure sent. Above 64 bits is not yet supported and
+ *        terminates the simulation at run time.
+ * @param TReqDepth Requests that can be outstanding before a push blocks.
+ * @param TRspWidth Response payload width in bits, with the same constraint.
+ * @param TRspDepth Responses that can be buffered. Defaults to TReqDepth.
+ */
 `ENTITY_TYPE pyhdl_if_reqrsp_fifo #(
-    parameter TReqWidth=32, 
+    parameter TReqWidth=32,
     parameter TReqDepth=1,
-    parameter TRspWidth=32, 
+    parameter TRspWidth=32,
     parameter TRspDepth=TReqDepth) (
-    input                   clock,
-    input                   reset,
-    output                  req_valid,
-    input                   req_ready,
-    output[TReqWidth-1:0]   req_dat_o,
-    input                   rsp_valid,
-    output                  rsp_ready,
-    input[TRspWidth-1:0]    rsp_dat_i
+    input                   clock,          //< Stream clock.
+    input                   reset,          //< Active-high synchronous reset.
+    output                  req_valid,      //< A request is available.
+    input                   req_ready,      //< The design accepts the request.
+    output[TReqWidth-1:0]   req_dat_o,      //< Request payload.
+    input                   rsp_valid,      //< A response is available.
+    output                  rsp_ready,      //< The FIFO accepts the response.
+    input[TRspWidth-1:0]    rsp_dat_i       //< Response payload.
     );
 `ifndef PYHDL_IF_VPI
     import pyhdl_if::*;
@@ -183,9 +213,10 @@
         endfunction
 
         virtual task invokeTask(
-            output PyObject    retval,
-            input string       method,
-            input PyObject     args);
+            output PyObject         retval,
+            inout PyGILState_STATE  state,
+            input string            method,
+            input PyObject          args);
             bit [TReqWidth-1:0]    tmp_req = 0;
             bit [TRspWidth-1:0]    tmp_rsp = 0;
             PyObject obj, intval, rshift;
@@ -196,7 +227,11 @@
 
             case (method)
                 "get": begin
+                    // Blocks on the clock: release the GIL for the wait, or
+                    // every Python thread stalls with it.
+                    PyGILState_Release(state);
                     get(tmp_rsp[TRspWidth-1:0]);
+                    state = PyGILState_Ensure();
 
                     if (TRspWidth <= 64) begin
                         retval = PyLong_FromUnsignedLongLong(tmp_rsp);
@@ -217,7 +252,11 @@
                         $display("TODO: implement >64-bit");
                         $finish;
                     end
-                    put(tmp_req); 
+                    // Blocks until the consumer accepts the request; releasing
+                    // the GIL is what lets the Python side drive it.
+                    PyGILState_Release(state);
+                    put(tmp_req);
+                    state = PyGILState_Ensure();
                 end
                 default: begin
                     $display("Fatal Error: unsupported task call %0s", method);

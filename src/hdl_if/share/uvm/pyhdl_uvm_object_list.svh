@@ -4,6 +4,14 @@
  *
  * A simple UVM object class definition for pyhdl UVM list.
  */
+/**
+ * A UVM object holding a queue of UVM objects.
+ *
+ * UVM has no container object, so this supplies one for a Python-side sequence
+ * that must travel as a single `uvm_object`.
+ *
+ * @see pyhdl_uvm_object_list
+ */
 class uvm_object_list extends uvm_object;
     `uvm_object_utils(uvm_object_list)
     uvm_object          items[$];
@@ -22,6 +30,12 @@ class uvm_object_list extends uvm_object;
 
 endclass
 
+/**
+ * Presents a #uvm_object_list to Python as a sequence.
+ *
+ * @see pyhdl_uvm_object_map
+ * @see pyhdl_uvm_object_string
+ */
 class pyhdl_uvm_object_list extends pyhdl_uvm_object;
     function new(uvm_object obj);
         super.new(obj);

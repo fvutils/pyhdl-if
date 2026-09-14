@@ -60,7 +60,17 @@ package pyhdl_if;
         StreamKind_ReqRsp
     } stream_kind_e;
 
+    /**
+     * Something the SystemVerilog-side event loop can run.
+     *
+     * Implement this to have work started from Python execute in a simulator
+     * thread, where it may consume simulation time. Hand an instance to
+     * #pyhdl_pi_if_queue_runnable; the loop forks #run for it.
+     */
     interface class PyHdlPiRunnable;
+        /**
+         * Performs the work. May block on simulation time.
+         */
         pure virtual task run();
     endclass
 
@@ -76,6 +86,16 @@ package pyhdl_if;
     // DPI import for getting real time in milliseconds
     import "DPI-C" function longint pyhdl_if_get_real_time_ms();
 
+    /**
+     * Yields the processor so a Python thread can run.
+     *
+     * Called after releasing the GIL, in loops that poll for a Python-side
+     * result. Without it the simulator can hold the core for the whole poll
+     * interval and the thread that would supply the result never gets to run.
+     *
+     * @return Zero when another thread was scheduled, non-zero otherwise. The
+     *         callers here ignore it.
+     */
     import "DPI-C" function int pyhdl_if_sched_yield();
 
     task automatic __pyhdl_pi_if_run();
@@ -142,6 +162,18 @@ package pyhdl_if;
         end
     endtask
 
+    /**
+     * Queues work to run in a simulator thread.
+     *
+     * Python cannot consume simulation time itself, so anything that must
+     * (waiting on a clock, driving a signal over several cycles) is queued here
+     * and forked by the event loop. Call #pyhdl_if_start first.
+     *
+     * @param runnable The work to run.
+     * @warning Terminates the simulation if the event loop is not running and
+     *          time has advanced past zero -- the work would otherwise be
+     *          queued and silently never run.
+     */
     function automatic void pyhdl_pi_if_queue_runnable(PyHdlPiRunnable runnable);
         if (!prv_run_q_running && $time > 0) begin
             $display("PyHDL-Pi-IF Fatal Error: SV event loop is not running at time %0t", $time);
@@ -150,6 +182,13 @@ package pyhdl_if;
         void'(prv_run_q.try_put(runnable));
     endfunction
 
+    /**
+     * Starts the SystemVerilog-side event loop.
+     *
+     * Forks the thread that services queued runnables and the one that polls
+     * the Python event loop. Call once, from an `initial` block, before any
+     * interaction with Python. Calling it again does nothing.
+     */
     function void pyhdl_if_start();
         if (!prv_run_q_running) begin
             prv_run_q_running = 1;
@@ -191,6 +230,12 @@ package pyhdl_if;
         `PYHDL_IF_DEBUG(("<-- pyhdl_pi_if_idle"));
     endfunction
 
+    /**
+     * Returns the `hdl_if.backend.Backend` singleton, importing it on first use.
+     *
+     * @return The backend object. The reference is cached and borrowed; do not
+     *         release it.
+     */
     function automatic PyObject pyhdl_pi_if_getBackend();
         PyObject args, backend_m, backend_c, inst_m;
         if (__backend == null) begin
@@ -204,6 +249,16 @@ package pyhdl_if;
         return __backend;
     endfunction
 
+    /**
+     * Reports a Python exception if a call failed, and passes the result through.
+     *
+     * Wrap a CPython call that returns a new reference in this to get the
+     * traceback printed instead of a null handle propagating into unrelated
+     * code. It does not clear the error or stop the simulation.
+     *
+     * @param obj Result of the call, or null if it raised.
+     * @return @p obj unchanged.
+     */
     function automatic PyObject pyhdl_pi_if_HandleErr(PyObject obj);
         if (obj == null) begin
             $display("--> HandleErr");
@@ -215,6 +270,13 @@ package pyhdl_if;
     endfunction
 
     
+    /**
+     * Wraps a Python callable as a task on the Python event loop.
+     *
+     * @param callable The coroutine function to schedule. Ownership passes to
+     *        the callee.
+     * @return The resulting task object, or null if the call raised.
+     */
     function automatic PyObject pyhdl_pi_if_mkTask(PyObject callable);
         PyObject args;
         args = PyTuple_New(1);
@@ -269,6 +331,10 @@ package pyhdl_if;
 
     // Empty base class (UVM-Friendly)
     class CallEmptyUvmBase;
+        /**
+         * @param name Ignored; present so a generated class can extend this
+         *        and still match UVM's constructor shape.
+         */
         function new(string name="base");
         endfunction
     endclass

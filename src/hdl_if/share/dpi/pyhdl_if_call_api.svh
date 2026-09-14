@@ -19,6 +19,21 @@
  *     Author: 
  */
 
+    /**
+     * Calls a Python coroutine and blocks until it completes.
+     *
+     * Use this for a method that may suspend. The call is handed to the Python
+     * event loop and this task waits on a semaphore, releasing the GIL while it
+     * does, so the coroutine -- and anything else Python has scheduled -- can
+     * run. #pyhdl_if_invokePyFunc is the non-blocking counterpart.
+     *
+     * @param res Value the coroutine returned. Never null; a Python `None`
+     *        arrives as the `None` handle rather than a null handle.
+     * @param obj The Python object to call the method on.
+     * @param method Name of the method to invoke.
+     * @param args Positional arguments, as a Python tuple. Ownership passes to
+     *        the callee.
+     */
     task automatic pyhdl_if_invokePyTask(
         output PyObject     res,
         input PyObject      obj,
@@ -52,6 +67,20 @@
 
     endtask
 
+    /**
+     * Calls a plain Python method and returns its result.
+     *
+     * The call runs to completion inside this function, so the method must not
+     * suspend -- use #pyhdl_if_invokePyTask for a coroutine. The GIL is taken
+     * for the duration and released before returning.
+     *
+     * @param obj The Python object to call the method on.
+     * @param method Name of the method to invoke.
+     * @param args Positional arguments, as a Python tuple. Ownership passes to
+     *        the callee.
+     * @return The returned object, or null if the call raised. The exception
+     *         has already been printed.
+     */
     function automatic PyObject pyhdl_if_invokePyFunc(
         input PyObject      obj,
         input string        method,
@@ -75,6 +104,18 @@
         return res;
     endfunction
 
+    /**
+     * Reserves a slot in the object table for a SystemVerilog callee.
+     *
+     * The table maps the integer the Python side carries back to the object
+     * that should receive the call, because a class handle cannot cross the
+     * DPI boundary. A freed slot is reused; the table grows 64 entries at a
+     * time when none is free.
+     *
+     * @param sv_api_if The object to register. Its `invokeFunc`/`invokeTask`
+     *        are what an incoming call dispatches to.
+     * @return The slot index, which becomes the object's id.
+     */
     function automatic int allocObjId(ICallApi sv_api_if);
         int ret = -1, i;
 
@@ -95,6 +136,16 @@
         return ret;
     endfunction
 
+    /**
+     * Reserves a semaphore for one in-flight call to Python.
+     *
+     * Each blocking call needs its own, since several may be outstanding at
+     * once. Pair with #pyhdl_if_waitSem to wait and #pyhdl_if_setSem to
+     * complete; the slot is released when the result is collected.
+     *
+     * @return The semaphore id, which travels with the call so the response
+     *         can find its way back.
+     */
     function automatic int pyhdl_if_allocSem();
         int ret = -1, i;
 
@@ -119,6 +170,22 @@
         return ret;
     endfunction
 
+    /**
+     * Waits for a call to Python to complete, without holding the GIL.
+     *
+     * Polls rather than blocking outright, because a Python thread may call
+     * back into SystemVerilog while this one waits -- and that re-entry needs
+     * both the GIL and the simulator's scheduler. Each pass pumps the Python
+     * event loop, drops the GIL, yields, and takes it again. The loop ends when
+     * the result arrives, or when a new Python-to-SystemVerilog call appears
+     * and must be serviced first.
+     *
+     * @param id Semaphore id from #pyhdl_if_allocSem.
+     * @param res The value the Python side returned.
+     * @param state The caller's GIL state. Passed `inout` because this task
+     *        releases and re-acquires it; the handle the caller holds after the
+     *        call is not the one it passed in.
+     */
     task automatic pyhdl_if_waitSem(
         input int           id,
         output PyObject     res,
@@ -176,6 +243,15 @@
         `PYHDL_IF_DEBUG(("<-- pyhdl_if_waitSem: id=%0d sv2py=%0d py2sv=%0d", id, __sv2py_call, __py2sv_resp));
     endtask
 
+    /**
+     * Completes a call to Python by publishing its result.
+     *
+     * Called from the response path when the coroutine finishes. Releases the
+     * task waiting in #pyhdl_if_waitSem on the same id.
+     *
+     * @param id Semaphore id the call was issued with.
+     * @param res Value to hand back to the waiting task.
+     */
     function automatic void pyhdl_if_setSem(
         input int           id,
         input PyObject      res);
@@ -183,6 +259,18 @@
         __callsem[id].put(1);
     endfunction
 
+    /**
+     * Constructs the Python peer of a SystemVerilog object.
+     *
+     * Calls the endpoint's `newObj`, which instantiates `cls_t` and binds it to
+     * the SystemVerilog side so calls can travel in both directions.
+     *
+     * @param cls_t The Python class to instantiate.
+     * @param sv_api_if The SystemVerilog object that should receive calls from
+     *        Python. Pass null for a one-way object, which is given the id -1.
+     * @param init_args Arguments for the constructor, as a Python tuple.
+     * @return The new Python object, or null if construction raised.
+     */
     function automatic PyObject pyhdl_if_newObject(
         PyObject        cls_t,
         ICallApi        sv_api_if,
@@ -213,6 +301,17 @@
         return ret;
     endfunction
 
+    /**
+     * Publishes an object under a hierarchical path so Python can find it.
+     *
+     * The path is what a Python-side lookup binds against -- normally
+     * `$sformatf("%m")` from the scope being registered.
+     *
+     * @param obj The Python object to publish.
+     * @param inst_path Hierarchical path to publish it under.
+     * @param trim_elems Leading path elements to drop, for trimming a testbench
+     *        prefix that means nothing to the Python side.
+     */
     function automatic void pyhdl_if_registerObject(
         PyObject            obj,
         string              inst_path,
@@ -234,6 +333,18 @@
         PyGILState_Release(state);
     endfunction
 
+    /**
+     * Binds an existing Python object to a SystemVerilog callee.
+     *
+     * Use this when the Python object already exists -- because Python created
+     * it -- and only the reverse direction needs wiring.
+     * #pyhdl_if_newObject does both at once for an object SystemVerilog
+     * constructs.
+     *
+     * @param obj The Python object to connect.
+     * @param sv_api_if The object incoming calls dispatch to. Null connects
+     *        nothing, leaving the Python object one-way.
+     */
     function automatic void pyhdl_if_connectObject(
         PyObject        obj,
         ICallApi        sv_api_if);
