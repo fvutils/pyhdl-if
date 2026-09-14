@@ -70,27 +70,38 @@ package:
       src: pypi
     - name: cxxheaderparser
       src: pypi
+    - name: packaging
+      src: pypi
+
+  # Everything needed to build the documentation, and nothing else. Kept apart
+  # from default-ci because the two have incompatible requirements: the wheel
+  # build runs across every supported Python and manylinux image, while
+  # sphinx-systemverilog depends on pyslang, which publishes no wheel for
+  # glibc 2.17 (manylinux2014) and none for cp38. Installing the doc toolchain
+  # into the wheel build meant an sdist build of pyslang that cannot succeed
+  # there -- for a toolchain that build has no use for.
+  #
+  # `uvm` is here for the same reason it always was: doc/source/conf.py
+  # elaborates the pyhdl_uvm package against the UVM sources to generate the
+  # SystemVerilog class reference, and drops that section entirely when they
+  # are absent.
+  - name: docs
+    deps:
     - name: sphinx
       src: pypi
     - name: sphinx-rtd-theme
       src: pypi
-    - name: cairosvg
-      src: pypi
     - name: sphinx-argparse
+      src: pypi
+    - name: cairosvg
       src: pypi
     - name: packaging
       src: pypi
     - name: sphinx-systemverilog
-      # The released package, not the source tree: CI documents against what a
-      # user installs. default-dev keeps the git checkout, so local development
-      # still gets an editable copy to change.
+      # The released package, not the source tree: the docs are built against
+      # what a user installs. default-dev keeps the git checkout, so local
+      # development still gets an editable copy to change.
       src: pypi
-
-  # The UVM library, needed only to build documentation: doc/source/conf.py
-  # elaborates the pyhdl_uvm package against it to generate the SystemVerilog
-  # class reference, and drops that section entirely when it is absent.
-  - name: docs
-    deps:
     - name: uvm
       url: https://www.accellera.org/images/downloads/standards/uvm/UVM-1800.2-2020.3.1.tar.gz
 
