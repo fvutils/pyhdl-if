@@ -811,6 +811,32 @@ vpi_set_param_tm = {
     # "void": 0
 }
 
+def is_mappable(f):
+    """True when every type in *f*'s signature has a VPI mapping.
+
+    The generator can only emit a wrapper for a function whose parameters it
+    can read off the VPI argument list and whose return value it can write
+    back, which means every type must appear in the tables above.
+
+    CPython adds functions the tables do not cover with each release --
+    3.13's ``PyDict_GetItemRef(PyObject *, PyObject *, PyObject **result)``
+    is one, an out-pointer that has no VPI representation. Those used to
+    abort the whole generation, so supporting a new Python meant first
+    finding the offending function and adding it to ``exclude`` by hand.
+    Deciding it from the signature keeps the next release from breaking the
+    build in the same way; ``exclude`` remains for functions that map fine
+    but should not be exposed anyway.
+    """
+    for param in f.parameters:
+        if param.type.format() not in vpi_get_param_tm:
+            return False
+    rtype = f.return_type
+    if rtype is not None and rtype.format() != "void":
+        if rtype.format() not in vpi_set_param_tm:
+            return False
+    return True
+
+
 def gen_vpi_get_param(it_name, ptype):
     tname = ptype.format()
 
@@ -984,6 +1010,7 @@ def main():
     print("Namespace: %s" % data.namespace.name)
 
     functions = []
+    unmappable = []
     for f in data.namespace.functions:
         name = f.name.segments[0].name
         first_under = name.find("_")
@@ -992,12 +1019,25 @@ def main():
         include = prefix in include_pref and prefix not in exclude_pref and name not in exclude
         include &= not f.vararg
         include &= not f.inline
+        # Same reason as vararg and inline: the generator has no way to
+        # express it. See is_mappable().
+        if include and not is_mappable(f):
+            unmappable.append(name)
+            include = False
 
         if include:
 #            print("function: %s" % name)
             functions.append(f)
 
     functions.sort(key=lambda f: f.name.segments[0].name)
+
+    # Say what was dropped rather than silently omitting it: a function
+    # missing from the DPI layer is otherwise only discovered by something
+    # failing to link against it.
+    if unmappable:
+        print("Note: %d function(s) skipped -- no VPI mapping for a type in "
+              "their signature: %s" % (
+                  len(unmappable), ", ".join(sorted(unmappable))))
 
     with open(os.path.join(share_dpi_dir, "pyhdl_dpi_imports.svh"), "w") as fp:
         gen_dpi_imports(fp, functions)
