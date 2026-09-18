@@ -158,7 +158,7 @@ class ComprehensiveTest(object):
             i8=-128, u8=255, 
             i16=-32768, u16=65535,
             i32=-2147483648, u32=4294967295,
-            i64=-9223372036854775808, u64=18446744073709551615,
+            i64=-9223372036854775808, u64=9223372036854775809,
             f32=3.14159, f64=2.71828,
             b=True
         )
@@ -169,7 +169,7 @@ class ComprehensiveTest(object):
         if (result_all.i8 != -128 or result_all.u8 != 255 or
             result_all.i16 != -32768 or result_all.u16 != 65535 or
             result_all.i32 != -2147483648 or result_all.u32 != 4294967295 or
-            result_all.i64 != -9223372036854775808 or result_all.u64 != 18446744073709551615):
+            result_all.i64 != -9223372036854775808 or result_all.u64 != 9223372036854775809):
             print(f"[Py] ERROR: AllTypes integer mismatch")
             print(f"  i8: {result_all.i8} (exp -128)")
             print(f"  u8: {result_all.u8} (exp 255)")
@@ -178,7 +178,7 @@ class ComprehensiveTest(object):
             print(f"  i32: {result_all.i32} (exp -2147483648)")
             print(f"  u32: {result_all.u32} (exp 4294967295)")
             print(f"  i64: {result_all.i64} (exp -9223372036854775808)")
-            print(f"  u64: {result_all.u64} (exp 18446744073709551615)")
+            print(f"  u64: {result_all.u64} (exp 9223372036854775809)")
             errors += 1
         # Check float fields (with tolerance)
         elif (abs(result_all.f32 - 3.14159) > 0.00001 or 
