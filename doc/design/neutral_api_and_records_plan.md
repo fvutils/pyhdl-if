@@ -494,15 +494,15 @@ reference. Notes:
   caused duplicate symbols in the UVM build (something in the archive
   pulls its own `__Dpi.o`). The fix now passes `V<top>__Dpi.o` in
   `VM_USER_LDFLAGS`, which Verilator's link rule puts before the archive.
-  Still local to `packages/dv-flow-libhdlsim`; needs to go upstream.
+  Now upstream (see below).
 - Found: since dv-flow-libhdlsim `22e5021` (2026-08-28), `SimLibUVM` on
   Verilator uses the UVM DPI backend from verilator-bin and builds with
   `--vpi`. With `--vpi`, Verilator's generated `main()` runs every
   `vlog_startup_routines` it links, including pyhdl-if's VPI-mode start-up,
   which calls `vpi_register_systf` (unsupported by Verilator): abort.
   Decision (2026-10-24): Verilator builds must not use `--vpi`; pyhdl-if
-  integrates via DPI. Fixed in dv-flow-libhdlsim (local checkout, needs to
-  go upstream): `SimLibUVM` now builds UVM's DPI layer without `--vpi` by
+  integrates via DPI. Fixed in dv-flow-libhdlsim
+  (upstream): `SimLibUVM` now builds UVM's DPI layer without `--vpi` by
   default. It compiles a generated wrapper (`uvm_dpi_novpi.cc`) with
   `uvm_common.c`, `uvm_regex.cc` and `uvm_svcmd_dpi.c`, and supplies the one
   VPI routine the command-line reader needs (`vpi_get_vlog_info`, from the
@@ -607,25 +607,18 @@ generator; its output is unchanged.
 
 Not done here; in rough priority order.
 
-1. **Upstream the two dv-flow-libhdlsim changes** (Phase 1/8 notes), both
-   only in the local `packages/dv-flow-libhdlsim` checkout; CI fetches the
-   upstream package, so the larger sim tests and the UVM test fail in CI
-   until they land:
-   - `vlt_sim_image.py`: pass `V<top>__Dpi.o` in `VM_USER_LDFLAGS`.
-   - `vlt_sim_lib_uvm.py` / `vlt_flow.dv`: UVM's DPI layer without `--vpi`
-     by default; `backdoor: true` for the old build.
-2. **xsim**: `pyhdl_if.sv` uses `$stacktrace`, which Vivado 2023.1's xsim
+1. **xsim**: `pyhdl_if.sv` uses `$stacktrace`, which Vivado 2023.1's xsim
    does not support; every DPI test fails on xsim (pre-existing). The new
    tests exclude xsim.
-3. **Faster byte queues**: a DPI open-array helper in the native library
+2. **Faster byte queues**: a DPI open-array helper in the native library
    that builds `bytes` directly; it changes only `pyhdl_if_rt_bytesToPy/
    FromPy` and `hdl_if.rt.conv`, not generated code.
-4. **SV front end gaps**: packed structs/unions, associative arrays, arrays
+3. **SV front end gaps**: packed structs/unions, associative arrays, arrays
    of arrays, parameterized classes, anonymous enums.
-5. **Passing a derived record by reference where the base is expected**:
+4. **Passing a derived record by reference where the base is expected**:
    SV unwraps a returning reference only to the exact record type
    (`$cast` to `<rec>_sv_adapter`).
-6. **Tutorial examples**: when `examples/0x_*` exist, add their checked-in
+5. **Tutorial examples**: when `examples/0x_*` exist, add their checked-in
    generated files to `GOLDENS` in `scripts/gen_records_goldens.py` so CI
    checks them.
 
