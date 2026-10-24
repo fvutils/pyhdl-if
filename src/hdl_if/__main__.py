@@ -5,6 +5,8 @@ from .cmd.cmd_ifc_gen_sv import CmdIfcGenSv
 from .cmd.cmd_ifc_gen_types import CmdIfcGenTypes
 from .cmd.cmd_libs import CmdLibs
 from .cmd.cmd_share import CmdShare
+from .cmd.cmd_gen import (
+    CmdGenFromPy, CmdGenFromSpec, CmdGenFromSv, add_gen_args, add_sv_args)
 
 def getparser():
     parser = argparse.ArgumentParser()
@@ -66,7 +68,8 @@ def getparser():
         help="Specifies the output file")
     ifc_gen_sv.add_argument("ifc",
         help="Specifies the interface to generate")
-    
+    ifc_gen_sv.set_defaults(func=CmdIfcGenSv())
+
     ifc_gen_types = subparsers.add_parser("ifc-gen-types",
         help="Generates struct types for use with the TLM interface")
     ifc_gen_types.add_argument("-m", "--module", action="append",
@@ -75,9 +78,39 @@ def getparser():
         help="Specifies the output file")
     ifc_gen_types.add_argument("ifc",
         help="Specifies the interfaces for which to generate types")
+    ifc_gen_types.set_defaults(func=CmdIfcGenTypes())
 
-    ifc_gen_sv.set_defaults(func=CmdIfcGenTypes())
 
+    gen_from_py = subparsers.add_parser("gen-from-py",
+        help="Generate SV and Python code for records and interfaces "
+             "declared in Python (dataclasses, IntEnums, Protocols)")
+    gen_from_py.add_argument("-m", "--module", action="append",
+        help="Python module to scan (repeatable)")
+    gen_from_py.add_argument("-i", "--include", action="append",
+        help="Only use classes whose module.Class matches this pattern (repeatable); "
+             "classes they refer to are always included")
+    gen_from_py.add_argument("-e", "--exclude", action="append",
+        help="Skip classes whose module.Class matches this pattern (repeatable)")
+    gen_from_py.add_argument("-P", "--pythonpath", action="append",
+        help="Directory to add to the Python path before importing (repeatable)")
+    add_gen_args(gen_from_py)
+    gen_from_py.set_defaults(func=CmdGenFromPy())
+
+    gen_from_spec = subparsers.add_parser("gen-from-spec",
+        help="Generate SV and Python code for records and interfaces "
+             "described in a v2 JSON spec")
+    gen_from_spec.add_argument("spec",
+        help="The spec file (see doc/pyhdl-if-v2.schema.json)")
+    add_gen_args(gen_from_spec)
+    gen_from_spec.set_defaults(func=CmdGenFromSpec())
+
+    gen_from_sv = subparsers.add_parser("gen-from-sv",
+        help="Generate SV and Python code for records and interfaces "
+             "declared in SystemVerilog (classes, interface classes, enums). "
+             "Needs pyslang")
+    add_sv_args(gen_from_sv)
+    add_gen_args(gen_from_sv)
+    gen_from_sv.set_defaults(func=CmdGenFromSv())
 
     return parser
 

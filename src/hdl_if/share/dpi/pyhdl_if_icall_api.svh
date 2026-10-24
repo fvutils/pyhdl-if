@@ -31,3 +31,12 @@ interface class ICallApi;
         input PyObject          args);
 
 endclass
+
+/**
+ * An ICallApi whose invokeFunc and invokeTask always return a new reference.
+ *
+ * Generated record and interface adapters implement this, so the task-call
+ * path knows it may release the result once it has been delivered.
+ */
+interface class ICallApiOwnedRes extends ICallApi;
+endclass

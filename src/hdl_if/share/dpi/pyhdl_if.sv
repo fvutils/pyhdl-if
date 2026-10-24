@@ -32,6 +32,47 @@ package pyhdl_if;
 
     int pyhdl_if_debug = 0;
 
+    /**
+     * Runtime API version this release provides to generated code.
+     *
+     * Must equal `PYHDL_IF_RT_API_VERSION` in `hdl_if/rt_api.py`.
+     */
+    parameter int PYHDL_IF_RT_API_VERSION = 1;
+
+    /**
+     * Oldest runtime API version this release still accepts.
+     *
+     * Must equal `PYHDL_IF_RT_API_MIN_VERSION` in `hdl_if/rt_api.py`.
+     */
+    parameter int PYHDL_IF_RT_API_MIN_VERSION = 1;
+
+    /**
+     * Checks that generated code targets a runtime API this release provides.
+     *
+     * A generated package calls this once, when it initializes, with the
+     * version it was stamped with.
+     *
+     * @param version The runtime API version the generated code targets.
+     * @param source Names the generated package, for the error message.
+     * @return 1 when the version is supported. Otherwise stops the
+     *         simulation with $fatal.
+     */
+    function automatic bit pyhdl_if_check_rt_api_version(
+        int         version,
+        string      source);
+        if (version > PYHDL_IF_RT_API_VERSION) begin
+            $fatal(1, "PyHDL-IF: %0s targets runtime API version %0d, but this pyhdl-if provides version %0d. Upgrade pyhdl-if.",
+                source, version, PYHDL_IF_RT_API_VERSION);
+            return 0;
+        end
+        if (version < PYHDL_IF_RT_API_MIN_VERSION) begin
+            $fatal(1, "PyHDL-IF: %0s targets runtime API version %0d, which this pyhdl-if no longer supports (oldest supported: %0d). Regenerate it.",
+                source, version, PYHDL_IF_RT_API_MIN_VERSION);
+            return 0;
+        end
+        return 1;
+    endfunction
+
     // Cached handles to Python objects
     PyObject        None;
     PyObject __hdl_pi_if;
@@ -310,6 +351,7 @@ package pyhdl_if;
      * PyHDL-IF Call
      ****************************************************************/
     typedef interface class ICallApi;
+    typedef interface class ICallApiOwnedRes;
 
     PyObject            __hdl_call_if;
     PyObject            __ep_h;
@@ -339,6 +381,7 @@ package pyhdl_if;
         endfunction
     endclass
 
+    `include "pyhdl_if_rt.svh"
     `include "pyhdl_if_taskcall_closure.svh"
     `include "pyhdl_if_icall_api.svh"
     `include "pyhdl_if_call_init.svh"

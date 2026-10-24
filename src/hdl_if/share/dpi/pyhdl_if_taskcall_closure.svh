@@ -57,6 +57,15 @@ class TaskCallClosure implements PyHdlPiRunnable;
             __py2sv_call, __py2sv_resp, __sv2py_call, __sv2py_resp));
         void'(PyTuple_SetItem(args, 0, res));
         res = PyObject_Call(evt_obj_set, args, null);
+
+        begin
+            // Generated record/interface adapters return a new reference;
+            // the event now holds its own, so release ours.
+            ICallApiOwnedRes owned;
+            if ($cast(owned, m_obj)) begin
+                Py_DecRef(args);
+            end
+        end
         `PYHDL_IF_DEBUG((
             "<-- TaskCallClosure: Send call completion: py2sv_call=%0d py2sv_resp=%0d sv2py_call=%0d sv2py_resp=%0d",
             __py2sv_call, __py2sv_resp, __sv2py_call, __sv2py_resp));

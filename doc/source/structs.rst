@@ -6,6 +6,12 @@ PyHDL-IF supports using Python ``ctypes.Structure`` types as function parameters
 and return types in API methods. This enables efficient passing of structured data 
 between Python and SystemVerilog.
 
+.. note::
+
+   For new code, see :doc:`records_interfaces`: records can nest, hold
+   strings, byte strings and lists, be passed by reference, and be declared
+   in SystemVerilog as well as Python.
+
 Overview
 ========
 
@@ -51,17 +57,17 @@ Once defined, structs can be used as parameters and return types in API methods:
         
         @hif.imp
         async def set_point(self, p: Point):
-            """Called from SV to set a point"""
+            """Implemented in SV; Python calls it to set a point"""
             pass
         
         @hif.imp
         async def get_point(self) -> Point:
-            """Called from SV to get a point"""
+            """Implemented in SV; Python calls it to get a point"""
             pass
         
         @hif.imp
         async def set_color(self, c: Color):
-            """Called from SV to set a color"""
+            """Implemented in SV; Python calls it to set a color"""
             pass
 
 Supported Field Types

@@ -52,7 +52,7 @@ def test_struct(pyhdl_dvflow, hdl_if_env):
     assert status == 0
     
     # Check the status file for PASS
-    status_file = os.path.join(out.output[0].basedir, "status.txt")
+    status_file = os.path.join(sim_run.rundir, "status.txt")
     assert os.path.isfile(status_file), f"status.txt not found at {status_file}"
     
     with open(status_file) as f:
@@ -101,7 +101,7 @@ def test_struct_comprehensive(pyhdl_dvflow, hdl_if_env):
     assert status == 0
     
     # Check the status file for PASS
-    status_file = os.path.join(out.output[0].basedir, "status.txt")
+    status_file = os.path.join(sim_run.rundir, "status.txt")
     assert os.path.isfile(status_file), f"status.txt not found at {status_file}"
     
     with open(status_file) as f:

@@ -47,7 +47,7 @@ def test_real_exp(hdlsim_dvflow, hdl_if_env):
 
     assert status == 0
 
-    with open(os.path.join(out.output[0].basedir, "status.txt"), "r") as fp:
+    with open(os.path.join(sim_run.rundir, "status.txt"), "r") as fp:
         status = fp.read().strip()
     assert "PASS:" in status and "FAIL:" not in status
 
@@ -104,7 +104,7 @@ def test_real_imp(hdlsim_dvflow, hdl_if_env):
 
     assert status == 0
 
-    with open(os.path.join(out.output[0].basedir, "status.txt"), "r") as fp:
+    with open(os.path.join(sim_run.rundir, "status.txt"), "r") as fp:
         status = fp.read().strip()
     assert "PASS:" in status and "FAIL:" not in status
 
@@ -144,6 +144,6 @@ def test_int_imp(hdlsim_dvflow, hdl_if_env):
 
     assert status == 0
 
-    with open(os.path.join(out.output[0].basedir, "status.txt"), "r") as fp:
+    with open(os.path.join(sim_run.rundir, "status.txt"), "r") as fp:
         status = fp.read().strip()
     assert "PASS:" in status and "FAIL:" not in status

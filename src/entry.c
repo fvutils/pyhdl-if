@@ -159,6 +159,36 @@ int pyhdl_if_dpi_entry(int debug, const char *python) {
 }
 
 /*******************************************************************
+ * vpi_is_verilator()
+ *
+ * Returns 1 if the simulator identifies itself as Verilator
+ *******************************************************************/
+typedef struct {
+    int     argc;
+    char    **argv;
+    char    *product;
+    char    *version;
+} vpi_vlog_info_t;
+
+static int vpi_is_verilator() {
+#if defined(_WIN32)
+    return 0;
+#else
+    lib_h_t lib = find_loaded_lib("vpi_get_vlog_info");
+    int (*get_info)(vpi_vlog_info_t *);
+    vpi_vlog_info_t info;
+
+    if (!lib) {
+        return 0;
+    }
+    get_info = (int (*)(vpi_vlog_info_t *))dlsym(lib, "vpi_get_vlog_info");
+    memset(&info, 0, sizeof(info));
+    return (get_info && get_info(&info) && info.product
+            && strstr(info.product, "Verilator"));
+#endif
+}
+
+/*******************************************************************
  * pyhdl_if_vpi_entry()
  * 
  * Manages start-up tasks for VPI integration
@@ -175,6 +205,13 @@ void pyhdl_if_vpi_entry() {
     }
 
     DEBUG("entry.c");
+
+    if (vpi_is_verilator()) {
+        // Verilator's VPI lacks vpi_register_systf, which this start-up
+        // needs. Leave it to the DPI entry, which pyhdl_if.sv calls.
+        DEBUG("pyhdl-if: Verilator; skipping VPI start-up");
+        return;
+    }
 
     if (!(pylib=init_python(""))) {
         DEBUG("pyhdl-pi-if: Failed to initialize Python");

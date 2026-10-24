@@ -1,0 +1,60 @@
+{
+  "pyhdl-if-spec": 2,
+  "enums": [
+    {
+      "name": "proto_e",
+      "width": 8,
+      "values": [
+        {"name": "PROTO_ICMP", "value": 1},
+        {"name": "PROTO_TCP", "value": 6},
+        {"name": "PROTO_UDP", "value": 17}
+      ]
+    }
+  ],
+  "records": [
+    {
+      "name": "hdr",
+      "fields": [
+        {"name": "src", "type": "u32"},
+        {"name": "dst", "type": "u32"},
+        {"name": "proto", "type": "proto_e"}
+      ]
+    },
+    {
+      "name": "pkt",
+      "fields": [
+        {"name": "ttl", "type": "u8"},
+        {"name": "id", "type": "i32"},
+        {"name": "valid", "type": "bool"},
+        {"name": "weight", "type": "f64"},
+        {"name": "name", "type": "str"},
+        {"name": "payload", "type": "bytes"},
+        {"name": "kind", "type": "proto_e"},
+        {"name": "h", "type": "hdr"},
+        {"name": "opts", "type": "list<i32>"},
+        {"name": "tag", "type": "u96"}
+      ]
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "cb_if",
+      "methods": [
+        {"name": "notify", "kind": "func", "params": [{"name": "v", "type": "i32"}]}
+      ]
+    },
+    {
+      "name": "pkt_svc",
+      "methods": [
+        {"name": "add", "kind": "func", "params": [{"name": "a", "type": "i32"}, {"name": "b", "type": "i32"}], "returns": "i32"},
+        {"name": "bump", "kind": "func", "params": [{"name": "p", "type": "pkt"}], "returns": "pkt"},
+        {"name": "touch", "kind": "func", "params": [{"name": "p", "type": "ref<pkt>"}]},
+        {"name": "make_ref", "kind": "func", "params": [{"name": "ttl", "type": "u8"}], "returns": "ref<pkt>"},
+        {"name": "xfer", "kind": "task", "params": [{"name": "p", "type": "pkt"}], "returns": "pkt"},
+        {"name": "touch_t", "kind": "task", "params": [{"name": "p", "type": "ref<pkt>"}]},
+        {"name": "subscribe", "kind": "func", "params": [{"name": "cb", "type": "cb_if"}]},
+        {"name": "fire", "kind": "func", "params": [{"name": "v", "type": "i32"}]}
+      ]
+    }
+  ]
+}

@@ -126,6 +126,17 @@
             end
         end
 
+        if (ret == -1 && __rt_m != null) begin
+            // Reclaim the slots of objects Python has released, then retry
+            pyhdl_if_rt_reapObjIds();
+            for (i=0; i<__objects.size(); i++) begin
+                if (__objects[i] == null) begin
+                    ret = i;
+                    break;
+                end
+            end
+        end
+
         if (ret == -1) begin
             __objects = new[__objects.size()+64](__objects);
             ret = i;
@@ -255,6 +266,11 @@
     function automatic void pyhdl_if_setSem(
         input int           id,
         input PyObject      res);
+        // The caller's reference lasts only for this call, so take our own;
+        // the task that collects the result owns it.
+        PyGILState_STATE state = PyGILState_Ensure();
+        Py_IncRef(res);
+        PyGILState_Release(state);
         __callsem_res[id] = res;
         __callsem[id].put(1);
     endfunction

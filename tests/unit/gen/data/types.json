@@ -1,0 +1,52 @@
+{
+  "pyhdl-if-spec": 2,
+  "enums": [
+    {"name": "sev_e", "width": 4, "signed": true,
+     "values": [{"name": "SEV_LOW", "value": -8}, {"name": "SEV_MID", "value": 0}, {"name": "SEV_HIGH", "value": 7}]},
+    {"name": "big_e", "width": 64,
+     "values": [{"name": "BIG_ZERO", "value": 0}, {"name": "BIG_TOP", "value": 18446744073709551615}]}
+  ],
+  "records": [
+    {"name": "base_rec", "fields": [
+      {"name": "a", "type": "u1"},
+      {"name": "b", "type": "i12"},
+      {"name": "c", "type": "u64"},
+      {"name": "d", "type": "i64"},
+      {"name": "e", "type": "f32"},
+      {"name": "s", "type": "i8"},
+      {"name": "t", "type": "u16"}
+    ]},
+    {"name": "derived_rec", "base": "base_rec", "fields": [
+      {"name": "items", "type": "list<base_rec>"},
+      {"name": "grid", "type": "list<list<u8>>"},
+      {"name": "strs", "type": "list<str>"},
+      {"name": "w", "type": "i80"},
+      {"name": "sev", "type": "sev_e"},
+      {"name": "big", "type": "big_e"},
+      {"name": "blobs", "type": "list<bytes>"},
+      {"name": "flag", "type": "bool"},
+      {"name": "x", "type": "f64"}
+    ]},
+    {"name": "empty_rec"}
+  ],
+  "interfaces": [
+    {"name": "empty_if"},
+    {"name": "svc2", "methods": [
+      {"name": "t0", "kind": "task"},
+      {"name": "f_list", "params": [{"name": "l", "type": "list<derived_rec>"}], "returns": "list<derived_rec>"},
+      {"name": "f_ref", "params": [{"name": "r", "type": "ref<derived_rec>"}], "returns": "ref<base_rec>"},
+      {"name": "f_if", "params": [{"name": "i", "type": "svc2"}], "returns": "svc2"},
+      {"name": "f_bytes", "params": [{"name": "b", "type": "bytes"}], "returns": "bytes"},
+      {"name": "f_str", "params": [{"name": "s", "type": "str"}], "returns": "str"},
+      {"name": "f_real", "params": [{"name": "x", "type": "f64"}, {"name": "y", "type": "f32"}], "returns": "f64"},
+      {"name": "f_bool", "params": [{"name": "b", "type": "bool"}], "returns": "bool"},
+      {"name": "f_enum", "params": [{"name": "e", "type": "sev_e"}], "returns": "big_e"},
+      {"name": "f_wide", "params": [{"name": "w", "type": "i80"}], "returns": "u100"},
+      {"name": "f_names", "params": [{"name": "state", "type": "i32"}, {"name": "args", "type": "i32"},
+                                     {"name": "method", "type": "i32"}, {"name": "ret", "type": "i32"},
+                                     {"name": "m_impl", "type": "i32"}, {"name": "m_obj", "type": "i32"}], "returns": "i32"},
+      {"name": "t_names", "kind": "task", "params": [{"name": "state", "type": "i32"}, {"name": "args", "type": "i32"}], "returns": "empty_rec"},
+      {"name": "f_empty", "params": [{"name": "e", "type": "empty_rec"}, {"name": "x", "type": "empty_if"}]}
+    ]}
+  ]
+}

@@ -52,7 +52,7 @@ def test_uvm_object_string(pyhdl_dvflow, hdl_if_env):
 
     assert len(out.output) == 1
 
-    with open(os.path.join(out.output[0].basedir, "sim.log"), "r") as fp:
+    with open(os.path.join(sim_run.rundir, "sim.log"), "r") as fp:
         simlog = fp.read()
 
     print("simlog:\n%s" % simlog)

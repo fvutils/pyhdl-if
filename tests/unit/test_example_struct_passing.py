@@ -53,7 +53,7 @@ def test_struct_passing_example(pyhdl_dvflow, hdl_if_env):
     assert status == 0, "Simulation failed"
     
     # Check the simulation log for success message
-    sim_log = os.path.join(out.output[0].basedir, "sim.log")
+    sim_log = os.path.join(sim_run.rundir, "sim.log")
     assert os.path.isfile(sim_log), f"sim.log not found at {sim_log}"
     
     with open(sim_log) as f:

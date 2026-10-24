@@ -57,9 +57,9 @@ def test_flush(pyhdl_dvflow, hdl_if_env):
     status = None
 
     # Check that output is correctly interleaved
-    if os.path.isfile(os.path.join(out.output[0].basedir, "sim.log")):
+    if os.path.isfile(os.path.join(sim_run.rundir, "sim.log")):
         print("HAVE: sim log")
-        with open(os.path.join(out.output[0].basedir, "sim.log"), "r") as fp:
+        with open(os.path.join(sim_run.rundir, "sim.log"), "r") as fp:
             log_contents = fp.read()
             print(log_contents)
             
@@ -73,13 +73,13 @@ def test_flush(pyhdl_dvflow, hdl_if_env):
     else:
         print("MISSING: sim log")
 
-    if os.path.isfile(os.path.join(out.output[0].basedir, "status.txt")):
-        with open(os.path.join(out.output[0].basedir, "status.txt"), "r") as fp:
+    if os.path.isfile(os.path.join(sim_run.rundir, "status.txt")):
+        with open(os.path.join(sim_run.rundir, "status.txt"), "r") as fp:
             status = fp.read().strip()
 
         assert status.startswith("PASS:")
     else:
-        for e in os.listdir(out.output[0].basedir):
+        for e in os.listdir(sim_run.rundir):
             print("Subelem: %s" % e)
 
     assert status is not None

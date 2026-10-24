@@ -60,3 +60,103 @@ package:
         desc: (Deprecated) JSON string defining the API classes. Use 'spec' instead
         type: str
         value: ""
+
+  - name: GenFromPy
+    desc: Generates SV and Python code for records and interfaces declared in Python
+    doc: |
+      Runs `pyhdl-if gen-from-py`. Produces the SV package as a
+      systemVerilogSource FileSet and a std.Env that puts the generated
+      Python module (and `pythonpath`) on PYTHONPATH for the simulation.
+    consumes:
+    - { type: std.SetEnv }
+    shell: pytask
+    run: hdl_if.dfm.gen_from.GenFromPy
+    with:
+      pkgname:
+        desc: Name of the SV package; the file is <pkgname>.sv
+        type: str
+      pymodule:
+        desc: Name of the generated Python module (default <pkgname>_api)
+        type: str
+        value: ""
+      modules:
+        desc: Python modules to scan
+        type: list
+      include:
+        desc: Only use classes whose module.Class matches one of these patterns
+        type: list
+      exclude:
+        desc: Skip classes whose module.Class matches one of these patterns
+        type: list
+      pythonpath:
+        desc: Directories the modules are imported from (relative to the flow's directory)
+        type: list
+
+  - name: GenFromSpec
+    desc: Generates SV and Python code for records and interfaces described in a v2 JSON spec
+    doc: |
+      Runs `pyhdl-if gen-from-spec`. Produces the SV package as a
+      systemVerilogSource FileSet and a std.Env that puts the generated
+      Python module on PYTHONPATH for the simulation.
+    consumes:
+    - { type: std.SetEnv }
+    shell: pytask
+    run: hdl_if.dfm.gen_from.GenFromSpec
+    with:
+      pkgname:
+        desc: Name of the SV package; the file is <pkgname>.sv
+        type: str
+      pymodule:
+        desc: Name of the generated Python module (default <pkgname>_api)
+        type: str
+        value: ""
+      spec:
+        desc: Path of the v2 JSON spec (relative to the flow's directory)
+        type: str
+
+  - name: GenFromSv
+    desc: Generates SV and Python code for records and interfaces declared in SystemVerilog
+    doc: |
+      Runs `pyhdl-if gen-from-sv` (needs pyslang) over the SV FileSets this
+      task needs. Produces the generated SV package as a systemVerilogSource
+      FileSet (compile it after the sources it mirrors) and a std.Env that
+      puts the generated Python module on PYTHONPATH.
+    consumes:
+    - filetype: systemVerilogSource
+    - filetype: verilogSource
+    - filetype: systemVerilogInclude
+    - { type: std.SetEnv }
+    shell: pytask
+    run: hdl_if.dfm.gen_from.GenFromSv
+    with:
+      pkgname:
+        desc: Name of the SV package; the file is <pkgname>.sv
+        type: str
+      pymodule:
+        desc: Name of the generated Python module (default <pkgname>_api)
+        type: str
+        value: ""
+      include:
+        desc: Only use definitions whose pkg::name matches one of these patterns
+        type: list
+      exclude:
+        desc: Skip definitions whose pkg::name matches one of these patterns
+        type: list
+      sv_fields:
+        desc: Which data members become fields, "public" or "rand"
+        type: str
+        value: ""
+      field_exclude:
+        desc: Skip fields whose pkg::Class.field matches one of these patterns
+        type: list
+      skip_base:
+        desc: Pass over base classes whose pkg::Class matches, dropping their fields
+        type: list
+      stop_at:
+        desc: Also stop the base-class walk at these pkg::Class patterns
+        type: list
+      skip_unsupported:
+        desc: Skip fields of unsupported types instead of failing
+        type: bool
+        value: false
+

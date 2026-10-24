@@ -53,7 +53,7 @@ def test_perf_py_to_sv_task(pyhdl_dvflow, hdl_if_env):
     assert status == 0
 
     # Print simulation log
-    sim_log_path = os.path.join(out.output[0].basedir, "sim.log")
+    sim_log_path = os.path.join(sim_run.rundir, "sim.log")
     if os.path.isfile(sim_log_path):
         print("\n" + "=" * 60)
         print("Simulation Log:")
@@ -62,7 +62,7 @@ def test_perf_py_to_sv_task(pyhdl_dvflow, hdl_if_env):
             print(fp.read())
 
     # Check performance results
-    perf_results_path = os.path.join(out.output[0].basedir, "perf_results.txt")
+    perf_results_path = os.path.join(sim_run.rundir, "perf_results.txt")
     assert os.path.isfile(perf_results_path), "perf_results.txt not found"
 
     results = {}

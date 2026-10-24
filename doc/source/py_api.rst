@@ -84,6 +84,45 @@ TLM interface
 .. automodule:: hdl_if.tlm.stream_rgy
    :members:
 
+Records and interfaces
+**********************
+
+See :doc:`records_interfaces` for the guide.
+
+Type hints and helpers for code that uses records:
+
+.. automodule:: hdl_if.rt.types
+   :members: IntT, Ref, uint, sint
+
+.. autofunction:: hdl_if.rt.copy
+
+Base classes of the generated Python classes:
+
+.. automodule:: hdl_if.rt.obj
+   :members: SvObj, SvRef, SvProxy, PyAdapter
+
+The runtime API version that generated code is checked against:
+
+.. automodule:: hdl_if.rt_api
+   :members:
+
+The generators, for tools that drive them directly rather than through the
+``gen-from-*`` commands:
+
+.. automodule:: hdl_if.gen.ir
+   :members: TypeUniverse, EnumDef, RecordDef, FieldDef, InterfaceDef, MethodDef, ParamDef, IrError
+
+.. automodule:: hdl_if.gen.spec
+   :members: load_spec, loads_spec, dump_spec, dumps_spec
+
+.. autofunction:: hdl_if.gen.front.py.universe_from_py
+
+.. autofunction:: hdl_if.gen.front.sv.universe_from_sv
+
+.. autofunction:: hdl_if.gen.py.gen_py
+
+.. autofunction:: hdl_if.gen.sv.gen_sv
+
 pytest runner
 *************
 

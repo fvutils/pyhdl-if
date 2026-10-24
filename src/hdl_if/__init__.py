@@ -36,6 +36,9 @@ from .decorators import (
     tlm_if, req_fifo, rsp_fifo, reqrsp_fifo, req_mbox, rsp_mbox,
 )
 from .hdl_obj_rgy import HdlObjRgy
+from .rt_api import (
+    PYHDL_IF_RT_API_VERSION, PYHDL_IF_RT_API_MIN_VERSION, check_rt_api_version,
+)
 
 #: The public surface of the package.  Everything not listed here is an
 #: implementation detail and may change without notice.
@@ -46,6 +49,9 @@ __all__ = [
     "tlm_if", "req_fifo", "rsp_fifo", "reqrsp_fifo", "req_mbox", "rsp_mbox",
     # Registries and services
     "Backend", "HdlObjRgy", "HdlServices", "TypeInfo",
+    # Runtime API version
+    "PYHDL_IF_RT_API_VERSION", "PYHDL_IF_RT_API_MIN_VERSION",
+    "check_rt_api_version",
     # Package layout
     "get_backend", "get_entry", "root", "share", "libs",
 ]

@@ -29,8 +29,8 @@ the ``hdl_if`` namespace::
 There are two families:
 
 * **Call interfaces** -- :func:`api` marks a class as an interface;
-  :func:`imp` marks a method Python *implements* and SystemVerilog calls;
-  :func:`exp` marks a method SystemVerilog implements and Python calls. From
+  :func:`imp` marks a method SystemVerilog *implements* and Python calls;
+  :func:`exp` marks a method Python implements and SystemVerilog calls. From
   these, ``hdl_if api`` generates the SystemVerilog package that carries the
   calls across.
 * **TLM interfaces** -- :func:`tlm_if` marks a class as a TLM interface, and
@@ -315,7 +315,7 @@ def api(*args: Any, **kwargs: Any):
             def __init__(self, base: int):
                 self.base = base
 
-            @hif.imp
+            @hif.exp
             async def read(self, addr: int) -> int:
                 return self.mem[addr]
 
@@ -338,20 +338,20 @@ def exp(func: Callable[P, R]) -> Callable[P, R]: ...
 def exp(*args: Any, **kwargs: Any) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 def exp(*args: Any, **kwargs: Any):
-    """Declare a method that SystemVerilog implements and Python calls.
+    """Declare a method that Python implements and SystemVerilog calls.
 
-    The decorated method is a *declaration*: its body is never run, so write
-    it as ``...``. Calling it from Python dispatches to the SystemVerilog
-    side. Declare it ``async`` when the SystemVerilog implementation is a
-    task and may consume simulation time; a plain ``def`` maps to a
-    SystemVerilog function and must return immediately.
+    Unlike :func:`imp`, the body here is real: it runs when SystemVerilog
+    calls in. Declare it ``async`` to be callable from a SystemVerilog task,
+    which lets the implementation await simulation time; a plain ``def`` is
+    callable from a SystemVerilog function and must not block.
 
     Example::
 
         @hif.api
-        class BfmApi:
+        class ScoreboardApi:
             @hif.exp
-            async def write(self, addr: int, data: int) -> None: ...
+            async def observed(self, addr: int, data: int) -> None:
+                self.seen.append((addr, data))
 
     Raises:
         Exception: If a parameter has no type annotation.
@@ -375,20 +375,20 @@ def imp(func: Callable[P, R]) -> Callable[P, R]: ...
 def imp(*args: Any, **kwargs: Any) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 def imp(*args: Any, **kwargs: Any):
-    """Declare a method that Python implements and SystemVerilog calls.
+    """Declare a method that SystemVerilog implements and Python calls.
 
-    Unlike :func:`exp`, the body here is real: it runs when SystemVerilog
-    calls in. Declare it ``async`` to be callable from a SystemVerilog task,
-    which lets the implementation await simulation time; a plain ``def`` is
-    callable from a SystemVerilog function and must not block.
+    The decorated method is a *declaration*: its body is never run, so write
+    it as ``...``. Calling it from Python dispatches to the SystemVerilog
+    side. Declare it ``async`` when the SystemVerilog implementation is a
+    task and may consume simulation time; a plain ``def`` maps to a
+    SystemVerilog function and must return immediately.
 
     Example::
 
         @hif.api
-        class ScoreboardApi:
+        class BfmApi:
             @hif.imp
-            async def observed(self, addr: int, data: int) -> None:
-                self.seen.append((addr, data))
+            async def write(self, addr: int, data: int) -> None: ...
 
     Raises:
         Exception: If a parameter has no type annotation.

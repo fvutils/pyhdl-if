@@ -97,12 +97,17 @@ setup_args = dict(
       "Documentation" : "https://dvkit.org/fvutils/pyhdl-if/",
       "Source" : "https://git.dvkit.org/fvutils/pyhdl-if",
   },
+  python_requires=">=3.9",
   install_requires=[
   ],
   extras_require={
     'pytest' : [
         'pytest',
         'pytest-asyncio'
+    ],
+    # gen-from-sv reads SystemVerilog with pyslang
+    'sv' : [
+        'pyslang>=12'
     ]
   },
   setup_requires=[

@@ -1,0 +1,209 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dvkit.org/fvutils/pyhdl-if/pyhdl-if-v2.schema.json",
+  "title": "pyhdl-if records and interfaces (spec format v2)",
+  "description": "Records, enums and interfaces shared between SystemVerilog and Python. Read by 'pyhdl-if gen-from-spec'.",
+  "type": "object",
+  "required": [
+    "pyhdl-if-spec"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "pyhdl-if-spec": {
+      "const": 2,
+      "description": "Spec format version."
+    },
+    "enums": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/enum"
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/record"
+      }
+    },
+    "interfaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/interface"
+      }
+    }
+  },
+  "definitions": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "type": {
+      "type": "string",
+      "description": "u<N>, i<N>, bool, f32, f64, str, bytes, list<T>, ref<record>, or the name of an enum, record or interface.",
+      "pattern": "^([ui][0-9]+|bool|f32|f64|str|bytes|list<.+>|ref<[A-Za-z_][A-Za-z0-9_]*>|[A-Za-z_][A-Za-z0-9_]*)$"
+    },
+    "py_ref": {
+      "type": "string",
+      "description": "module.Class of an existing Python definition to use instead of generating one."
+    },
+    "sv_ref": {
+      "type": "string",
+      "description": "pkg::name of an existing SystemVerilog definition to use instead of generating one."
+    },
+    "enum": {
+      "type": "object",
+      "required": [
+        "name",
+        "width",
+        "values"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/identifier"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "signed": {
+          "type": "boolean"
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "$ref": "#/definitions/identifier"
+              },
+              "value": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "py_ref": {
+          "$ref": "#/definitions/py_ref"
+        },
+        "sv_ref": {
+          "$ref": "#/definitions/sv_ref"
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/identifier"
+        },
+        "type": {
+          "$ref": "#/definitions/type"
+        },
+        "sv_type": {
+          "type": "string",
+          "description": "For an existing SV definition: the declaration as written in SV, with %s for the name (e.g. \"byte %s[$]\")."
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/identifier"
+        },
+        "base": {
+          "$ref": "#/definitions/identifier"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/field"
+          }
+        },
+        "py_ref": {
+          "$ref": "#/definitions/py_ref"
+        },
+        "sv_ref": {
+          "$ref": "#/definitions/sv_ref"
+        }
+      }
+    },
+    "method": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/identifier"
+        },
+        "kind": {
+          "enum": [
+            "func",
+            "task"
+          ],
+          "default": "func"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/field"
+          }
+        },
+        "returns": {
+          "$ref": "#/definitions/type"
+        },
+        "sv_returns": {
+          "type": "string",
+          "description": "For an existing SV interface class: the return type as written in SV."
+        },
+        "sv_ret_name": {
+          "type": "string",
+          "description": "For a task of an existing SV interface class: the name of the leading output argument that carries the result."
+        }
+      }
+    },
+    "interface": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/identifier"
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/method"
+          }
+        },
+        "py_ref": {
+          "$ref": "#/definitions/py_ref"
+        },
+        "sv_ref": {
+          "$ref": "#/definitions/sv_ref"
+        }
+      }
+    }
+  }
+}

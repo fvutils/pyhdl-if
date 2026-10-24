@@ -8,6 +8,14 @@ The SystemVerilog API provides three levels of Python API access:
 - An abstracted class-based convenience API
 - Direct access to the Python C API
 
+.. note::
+
+   The generated wrappers described here fix, per method, which side
+   implements it (``@imp``/``@exp``). :doc:`records_interfaces` is the more
+   general form: either side can implement an interface, records can be
+   copied or referenced, and declarations can start in SystemVerilog. Prefer
+   it for new code.
+
 Generated wrappers
 
 The SystemVerilog API generator creates wrapper classes that enable 

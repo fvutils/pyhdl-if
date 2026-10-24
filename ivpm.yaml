@@ -32,6 +32,8 @@ package:
       cache: true
     - name: pcpp
       src: pypi
+    - name: jsonschema
+      src: pypi
     - name: cxxheaderparser
       src: pypi
     - name: sphinx
@@ -46,6 +48,10 @@ package:
       src: pypi
     - name: sphinx-systemverilog
       url: https://github.com/fvutils/sphinx-systemverilog.git
+    # gen-from-sv; its tests skip without it. Not in default-ci: no pyslang
+    # wheels for every wheel-build image (see the docs dep-set below).
+    - name: pyslang
+      src: pypi
 
   - name: default-ci
     deps:
@@ -67,6 +73,8 @@ package:
       url: https://github.com/dv-flow/dv-flow-mgr.git
       dep-set: default-dev
     - name: pcpp
+      src: pypi
+    - name: jsonschema
       src: pypi
     - name: cxxheaderparser
       src: pypi

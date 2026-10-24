@@ -45,8 +45,8 @@ def test_pytest_runner(pyhdl_dvflow, hdl_if_env):
     print("Simulation completed with status: %d" % status, flush=True)
     
     # Check simulation log
-    if os.path.isfile(os.path.join(out.output[0].basedir, "sim.log")):
-        with open(os.path.join(out.output[0].basedir, "sim.log"), "r") as fp:
+    if os.path.isfile(os.path.join(sim_run.rundir, "sim.log")):
+        with open(os.path.join(sim_run.rundir, "sim.log"), "r") as fp:
             log_content = fp.read()
             print("=== Simulation Log ===", flush=True)
             print(log_content, flush=True)

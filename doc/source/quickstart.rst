@@ -73,7 +73,7 @@ PyHDL-IF supports passing structured data between Python and SystemVerilog using
     class GeometryAPI(object):
         @hif.imp
         async def draw_point(self, p: Point):
-            """Called from SystemVerilog"""
+            """Implemented in SystemVerilog; called from Python"""
             pass
 
 PyHDL-IF automatically generates SystemVerilog struct typedefs and conversion 
