@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+# 2b. Python -> SV: replay reference packets from a directed SV sequence.
+package:
+  name: py2sv_ref
+  with:
+    sim:
+      type: str
+      # vlt (Verilator), mti, vcs or xcm; set with -D sim=<sim>
+      value: "vlt"
+  imports:
+  - ../common/flow.yaml
+
+  tasks:
+  - name: pythonpath
+    uses: std.SetEnv
+    with:
+      prepend_path:
+        PYTHONPATH: ${{ srcdir }}
+
+  # Generates the SV side of the interchange types in ref_xchg.py
+  # (ref_xchg_pkg.sv) and the Python glue (ref_xchg_api.py). The same, by hand:
+  #   pyhdl-if gen-from-py -m ref_xchg --sv-out ref_xchg_pkg.sv --py-out ref_xchg_api.py
+  - name: ref-gen
+    uses: pyhdl-if.GenFromPy
+    with:
+      pkgname: ref_xchg_pkg
+      pymodule: ref_xchg_api
+      modules: [ref_xchg]
+      pythonpath: ["${{ srcdir }}"]
+
+  - name: ref-test
+    desc: ref_seq and ref_test
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [ref_test_pkg.sv]
+
+  - name: sim-img
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs:
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - pyhdl-if.SvPkg
+    - pyhdl-if.DpiLib
+    - tutorial.rtl
+    - tutorial.ifs
+    - tutorial.pkt
+    - tutorial.env
+    - ref-gen
+    - ref-test
+    - tutorial.tb
+    with:
+      top: [tb_top]
+
+  - name: sim-run
+    uses: "hdlsim.${{ sim }}.SimRun"
+    needs: [pythonpath, ref-gen, sim-img]
+    with:
+      plusargs:
+      - UVM_TESTNAME=ref_test

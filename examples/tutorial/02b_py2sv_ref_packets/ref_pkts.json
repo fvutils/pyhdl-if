@@ -1,0 +1,19 @@
+{
+  "description": "IPv4 forwarder conformance packets",
+  "packets": [
+    {"name": "route-10/8", "src": "172.16.0.1", "dst": "10.200.0.1", "payload": "00112233", "expect": "forward"},
+    {"name": "route-10.1/16", "src": "172.16.0.1", "dst": "10.1.3.1", "protocol": "tcp", "expect": "forward"},
+    {"name": "route-10.1.2/24", "src": "172.16.0.1", "dst": "10.1.2.255", "protocol": "icmp", "expect": "forward"},
+    {"name": "route-192.168/16", "src": "172.16.0.1", "dst": "192.168.255.255", "dont_fragment": true, "expect": "forward"},
+    {"name": "no-route", "src": "172.16.0.1", "dst": "8.8.8.8", "expect": "no_route"},
+    {"name": "ttl-last-hop", "src": "172.16.0.1", "dst": "10.0.0.1", "ttl": 2, "expect": "forward"},
+    {"name": "ttl-1", "src": "172.16.0.1", "dst": "10.0.0.1", "ttl": 1, "expect": "ttl"},
+    {"name": "ttl-0", "src": "172.16.0.1", "dst": "10.0.0.1", "ttl": 0, "expect": "ttl"},
+    {"name": "bad-checksum", "src": "172.16.0.1", "dst": "10.0.0.1", "corrupt_checksum": true, "expect": "bad_checksum"},
+    {"name": "record-route", "src": "172.16.0.1", "dst": "10.1.2.3", "options": "0707040000000000", "payload": "cafe", "expect": "forward"},
+    {"name": "max-options", "src": "172.16.0.1", "dst": "10.1.2.3",
+     "options": "01010101010101010101010101010101010101010101010101010101010101010101010101010100", "expect": "forward"},
+    {"name": "ihl-4", "src": "172.16.0.1", "dst": "10.0.0.1", "ihl": 4, "expect": "bad_header"},
+    {"name": "ihl-past-end", "src": "172.16.0.1", "dst": "10.0.0.1", "ihl": 6, "payload": "abcd", "expect": "bad_header"}
+  ]
+}

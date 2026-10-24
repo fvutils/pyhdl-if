@@ -14,13 +14,13 @@
 `define pyhdl_uvm_type_utils(uvm_t, uvm_w_t, base_t, base_w_t) \
     class uvm_w_t``_w extends uvm_t``_imp_impl #(uvm_w_t) implements pyhdl_uvm_object_if; \
     \
-        function new(uvm_object obj); \
-`ifdef VCS \
-            super.new(uvm_w_t ::new(obj)); \
-`else \
+        static function uvm_w_t mk_impl(uvm_object obj); \
             uvm_w_t impl = new(obj); \
-            super.new(impl); \
-`endif \
+            return impl; \
+        endfunction \
+    \
+        function new(uvm_object obj); \
+            super.new(mk_impl(obj)); \
         endfunction \
     \
         virtual function uvm_object get_object(); \

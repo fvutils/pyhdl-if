@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+# 3a. Python -> SV: an SV packet library (ipv4_lib) implemented in Python.
+package:
+  name: py_sv_lib
+  with:
+    sim:
+      type: str
+      # vlt (Verilator), mti, vcs or xcm; set with -D sim=<sim>
+      value: "vlt"
+  imports:
+  - ../common/flow.yaml
+
+  tasks:
+  # --- The library, as its author ships it (ipv4_lib/) ---
+  - name: lib-pythonpath
+    uses: std.SetEnv
+    with:
+      prepend_path:
+        PYTHONPATH: ${{ srcdir }}/ipv4_lib
+
+  # SV interface classes for the Protocols in ipv4_lib_if.py. By hand:
+  #   pyhdl-if gen-from-py -P ipv4_lib -m ipv4_lib_if \
+  #     --sv-out ipv4_lib_gen.sv --py-out ipv4_lib_gen_api.py
+  - name: lib-gen
+    uses: pyhdl-if.GenFromPy
+    with:
+      pkgname: ipv4_lib_gen
+      pymodule: ipv4_lib_gen_api
+      modules: [ipv4_lib_if]
+      pythonpath: ["${{ srcdir }}/ipv4_lib"]
+
+  - name: lib
+    desc: The SV facade, package ipv4_lib
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      base: ipv4_lib
+      include: [ipv4_lib.sv]
+
+  # --- The consumer: a UVM team that only writes SV ---
+  - name: lib-test
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [lib_test_pkg.sv]
+
+  - name: sim-img
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs:
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - pyhdl-if.SvPkg
+    - pyhdl-if.DpiLib
+    - lib-gen
+    - lib
+    - tutorial.rtl
+    - tutorial.ifs
+    - tutorial.pkt
+    - tutorial.env
+    - lib-test
+    - tutorial.tb
+    with:
+      top: [tb_top]
+
+  - name: sim-run
+    uses: "hdlsim.${{ sim }}.SimRun"
+    needs: [lib-pythonpath, lib-gen, sim-img]
+    with:
+      plusargs:
+      - UVM_TESTNAME=lib_test

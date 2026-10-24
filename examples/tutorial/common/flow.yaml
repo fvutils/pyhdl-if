@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+# Sources shared by every example. An example's sim-img lists them in
+# compile order: rtl, ifs, pkt, env, then its own sources, then tb.
+package:
+  name: tutorial
+
+  tasks:
+  - name: rtl
+    desc: The IPv4 forwarder DUT
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      base: rtl
+      include: [ipv4_fwd.sv]
+  - name: ifs
+    desc: Packet and register interfaces
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      base: tb
+      include: [pkt_if.sv, csr_if.sv]
+  - name: pkt
+    desc: The pkt_item transaction (ipv4_pkt_pkg)
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      base: env
+      include: [ipv4_pkt_pkg.sv]
+  - name: env
+    desc: The UVM environment and base test (ipv4_env_pkg)
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      base: env
+      include: [ipv4_env_pkg.sv]
+      incdirs: ["${{ srcdir }}/env"]
+  - name: tb
+    desc: Testbench top
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      base: tb
+      include: [tb_top.sv]

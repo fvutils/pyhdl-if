@@ -13,6 +13,13 @@
 - Fix: on Verilator built with `--vpi`, PyHDL-IF's VPI start-up aborted the
   simulation (Verilator has no `vpi_register_systf`). It now steps aside
   and PyHDL-IF starts through DPI.
+- Fix: the UVM integration (`pyhdl-if.UVMPkg`) did not build on Verilator
+  (`super.new` was not the first statement in the generated wrapper
+  constructors).
+- Tutorial examples in `examples/tutorial`: an IPv4 forwarder, its UVM env,
+  and examples of each way to use Python (a numpy scoreboard model, pyvsc
+  coverage of an SV item, Python reference packets in an SV sequence, an SV
+  library implemented with scapy, a Python test driving an SV env API).
 - Fix: `ifc-gen-sv` and `ifc-gen-types` had no command handler.
 - Fix: the `@imp`/`@exp` docstrings described the directions backwards.
 - `python_requires >= 3.9`.

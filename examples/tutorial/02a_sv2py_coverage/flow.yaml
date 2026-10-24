@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+# 2a. SV -> Python: sample the env's pkt_item in a pyvsc coverage model.
+package:
+  name: sv2py_cov
+  with:
+    sim:
+      type: str
+      # vlt (Verilator), mti, vcs or xcm; set with -D sim=<sim>
+      value: "vlt"
+  imports:
+  - ../common/flow.yaml
+
+  tasks:
+  - name: cov-if
+    desc: The pkt_cov_if interface class
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [cov_if_pkg.sv]
+
+  - name: cov-test
+    desc: The subscriber and cov_test
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [cov_test_pkg.sv]
+
+  - name: pythonpath
+    uses: std.SetEnv
+    with:
+      prepend_path:
+        PYTHONPATH: ${{ srcdir }}
+
+  # Mirrors pkt_item and pkt_cov_if into SV glue (cov_gen_pkg.sv) and a
+  # Python module (cov_gen_api.py). The same, by hand:
+  #   pyhdl-if gen-from-sv -I $UVM_HOME/src $UVM_HOME/src/uvm_pkg.sv \
+  #     ../common/env/ipv4_pkt_pkg.sv cov_if_pkg.sv \
+  #     -i 'ipv4_pkt_pkg::*' -i 'cov_if_pkg::*' \
+  #     --sv-out cov_gen_pkg.sv --py-out cov_gen_api.py
+  - name: cov-gen
+    uses: pyhdl-if.GenFromSv
+    needs:
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - tutorial.pkt
+    - cov-if
+    with:
+      pkgname: cov_gen_pkg
+      pymodule: cov_gen_api
+      include: ["ipv4_pkt_pkg::*", "cov_if_pkg::*"]
+
+  - name: sim-img
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs:
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - pyhdl-if.SvPkg
+    - pyhdl-if.DpiLib
+    - tutorial.rtl
+    - tutorial.ifs
+    - tutorial.pkt
+    - cov-if
+    - cov-gen
+    - tutorial.env
+    - cov-test
+    - tutorial.tb
+    with:
+      top: [tb_top]
+
+  - name: sim-run
+    uses: "hdlsim.${{ sim }}.SimRun"
+    needs: [pythonpath, cov-gen, sim-img]
+    with:
+      plusargs:
+      - UVM_TESTNAME=cov_test

@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+# The starting point: the UVM env with an SV-only scoreboard. No Python.
+package:
+  name: base
+  with:
+    sim:
+      type: str
+      # vlt (Verilator), mti, vcs or xcm; set with -D sim=<sim>
+      value: "vlt"
+  imports:
+  - ../common/flow.yaml
+
+  tasks:
+  - name: sim-img
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs:
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - tutorial.rtl
+    - tutorial.ifs
+    - tutorial.pkt
+    - tutorial.env
+    - tutorial.tb
+    with:
+      top: [tb_top]
+
+  - name: sim-run
+    uses: "hdlsim.${{ sim }}.SimRun"
+    needs: [sim-img]
+    with:
+      plusargs:
+      - UVM_TESTNAME=ipv4_base_test

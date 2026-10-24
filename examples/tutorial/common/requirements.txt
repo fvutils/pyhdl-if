@@ -1,0 +1,9 @@
+# Everything the tutorial examples need in the simulator's Python
+pyhdl-if[sv]        # [sv]: pyslang, for gen-from-sv (2a, 3b)
+dv-flow-mgr
+dv-flow-libhdlsim
+numpy               # 1
+pyvsc               # 2a, 3b
+pydantic            # 2b
+scapy               # 3a
+pytest              # each example's Python-only tests

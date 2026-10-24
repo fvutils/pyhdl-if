@@ -42,7 +42,6 @@ Install the following Python packages:
 
 Make available at least one of the following simulators:
 - Verilator (5.043+) (vlt)
-  - Note: Verilator does not run the UVM examples at this time
 - Cadence Xcelium (xcm)
 - Siemens Questa (mti)
 - Synopsys VCS (vcs)
@@ -66,6 +65,14 @@ You can see the detailed commands used to run the example by running:
 ```
 
 ## Available Examples
+
+### tutorial
+The examples for the "Three Ways to Use Python in Your UVM Testbench"
+session: an IPv4 forwarder, its UVM env, and six examples that each add
+Python in one way. Run with `make run`. See [tutorial/README.md](tutorial/README.md).
+
+### uvm/component_proxy_smoke
+A UVM component implemented in Python, through a component proxy.
 
 ### call/dpi/call_sv_bfm
 Demonstrates calling SystemVerilog tasks and functions from Python using a Wishbone initiator BFM.

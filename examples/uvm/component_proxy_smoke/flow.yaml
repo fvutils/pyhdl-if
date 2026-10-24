@@ -35,6 +35,7 @@ package:
     - defines
     - "hdlsim.${{ sim }}.SimLibUVM"
     - pyhdl-if.UVMPkg
+    - pyhdl-if.DpiLib
     - src
     with:
       top: [top]
@@ -42,7 +43,7 @@ package:
 
   - name: sim-run
     uses: "hdlsim.${{ sim }}.SimRun"
-    needs: [pythonpath, sim-img, pyhdl-if.DpiLib]
+    needs: [pythonpath, sim-img]
     with:
       #      args: 
       #- "-valgrind --tool=memcheck"

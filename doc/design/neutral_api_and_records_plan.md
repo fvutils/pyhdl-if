@@ -618,13 +618,15 @@ Not done here; in rough priority order.
 4. **Passing a derived record by reference where the base is expected**:
    SV unwraps a returning reference only to the exact record type
    (`$cast` to `<rec>_sv_adapter`).
-5. **Tutorial examples**: when `examples/0x_*` exist, add their checked-in
-   generated files to `GOLDENS` in `scripts/gen_records_goldens.py` so CI
-   checks them.
+5. **Tutorial examples**: done differently (2026-10-24). The examples
+   (`examples/tutorial/`) generate their glue in the dfm flow
+   (`GenFromSv`/`GenFromPy`) rather than checking it in, so there is
+   nothing to add to `GOLDENS`. `tests/unit/test_tutorial_examples.py`
+   runs every example on Verilator, and each example's Python-only tests.
 
 ## Out of scope here
 
-The tutorial examples (`examples/0x_*`) are tracked in `session_plan.md`.
+The tutorial examples (`examples/tutorial/`) are tracked in `session_plan.md`.
 Their dependencies on this plan:
 
 - 2a needs Phases 5-8.

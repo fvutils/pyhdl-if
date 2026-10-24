@@ -52,6 +52,15 @@ package:
     # wheels for every wheel-build image (see the docs dep-set below).
     - name: pyslang
       src: pypi
+    # The tutorial examples (examples/tutorial); their tests skip without them
+    - name: numpy
+      src: pypi
+    - name: pyvsc
+      src: pypi
+    - name: pydantic
+      src: pypi
+    - name: scapy
+      src: pypi
 
   - name: default-ci
     deps:

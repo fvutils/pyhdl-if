@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+# 3b. SV -> Python: drive the env's SV API from a Python test.
+package:
+  name: sv_api_py
+  with:
+    sim:
+      type: str
+      # vlt (Verilator), mti, vcs or xcm; set with -D sim=<sim>
+      value: "vlt"
+  imports:
+  - ../common/flow.yaml
+
+  tasks:
+  - name: api
+    desc: The ipv4_env_api interface class
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [env_api_pkg.sv]
+
+  # Mirrors ipv4_env_api (and the pkt_item it takes) for Python. By hand:
+  #   pyhdl-if gen-from-sv -I $UVM_HOME/src $UVM_HOME/src/uvm_pkg.sv \
+  #     ../common/env/ipv4_pkt_pkg.sv env_api_pkg.sv \
+  #     -i 'ipv4_pkt_pkg::*' -i 'env_api_pkg::*' \
+  #     --sv-out api_gen_pkg.sv --py-out api_gen_api.py
+  - name: api-gen
+    uses: pyhdl-if.GenFromSv
+    needs:
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - tutorial.pkt
+    - api
+    with:
+      pkgname: api_gen_pkg
+      pymodule: api_gen_api
+      include: ["ipv4_pkt_pkg::*", "env_api_pkg::*"]
+
+  - name: py-test
+    desc: ipv4_env_api_impl and py_test
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include: [py_test_pkg.sv]
+
+  - name: pythonpath
+    uses: std.SetEnv
+    with:
+      prepend_path:
+        PYTHONPATH: ${{ srcdir }}
+
+  - name: sim-img
+    uses: "hdlsim.${{ sim }}.SimImage"
+    needs:
+    - "hdlsim.${{ sim }}.SimLibUVM"
+    - pyhdl-if.SvPkg
+    - pyhdl-if.DpiLib
+    - tutorial.rtl
+    - tutorial.ifs
+    - tutorial.pkt
+    - api
+    - api-gen
+    - tutorial.env
+    - py-test
+    - tutorial.tb
+    with:
+      top: [tb_top]
+
+  - name: sim-run
+    uses: "hdlsim.${{ sim }}.SimRun"
+    needs: [pythonpath, api-gen, sim-img]
+    with:
+      plusargs:
+      - UVM_TESTNAME=py_test
