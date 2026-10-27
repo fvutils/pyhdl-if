@@ -446,6 +446,20 @@ yielding to Python, registering a TLM stream, and running pytest in-simulation.
    :exclude: __do_init, __pyhdl_pi_if_run, __pyhdl_py_poll_thread, pyhdl_if_dpi_entry
    :members:
 
+Records and Interfaces Runtime
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The runtime the packages written by the ``gen-from-*`` generators call (see
+:doc:`records_interfaces`): moving records across, calling methods on objects
+on the other side, and reporting runtime errors.
+
+.. autosvsummary::
+   :packages: pyhdl_if
+   :kinds: function task
+   :files: pyhdl_if_rt.svh
+   :exclude: __pyhdl_if_rt_attr, __pyhdl_if_rt_init
+   :members:
+
 Macros
 ~~~~~~
 
